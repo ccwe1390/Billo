@@ -43,6 +43,11 @@ the dated entry, not the digest.
 - [G - PRD grill (stack, hosting, data, errors) and PRD_ROADMAP.md written](#appendix-g---prd-grill-stack-hosting-data-errors-and-prd_roadmapmd-written-2026-10-17-1130-cdt) (10-17)
 - [H - M0.2 done - JDK 17 + Synthea installed; single-thread needed for determinism](#appendix-h---m02-done---jdk-17--synthea-installed-single-thread-needed-for-determinism-2026-10-17-1136-cdt) (10-17)
 - [I - Read OCI starter kit README and Hacker Toolkit PDF; Chicago region, Node 16, pitch gap](#appendix-i---read-oci-starter-kit-readme-and-hacker-toolkit-pdf-chicago-region-node-16-pitch-gap-2026-10-17-1145-cdt) (10-17)
+- [J - OCI stack created; Node 20.9 fix; research brief - space is crowded, accuracy edge not unique](#appendix-j---oci-stack-created-node-209-fix-research-brief---space-is-crowded-accuracy-edge-not-unique-2026-10-17-1233-cdt) (10-17)
+- [K - Option B facts verified; B.A.R.S. already built option B (prize winner)](#appendix-k---option-b-facts-verified-bars-already-built-option-b-prize-winner-2026-10-17-1239-cdt) (10-17)
+- [L - Event facts, rubric, and draft pivot plan (bill to financial assistance packet) received](#appendix-l---event-facts-rubric-and-draft-pivot-plan-bill-to-financial-assistance-packet-received-2026-10-17-1256-cdt) (10-17)
+- [M - Pivot adopted - bill to financial assistance packet; Python stack; deadline Sun 1:00 PM; PRD forked](#appendix-m---pivot-adopted---bill-to-financial-assistance-packet-python-stack-deadline-sun-100-pm-prd-forked-2026-10-17-1310-cdt) (10-17)
+- [N - Starter-kit apply failed (A1 out of capacity); E5 fallback; synthetic test bill](#appendix-n---starter-kit-apply-failed-a1-out-of-capacity-e5-fallback-synthetic-test-bill-2026-10-17-1314-cdt) (10-17)
 
 ---
 
@@ -324,3 +329,153 @@ milestone; **Evan chose to skip it for now** (chat 2026-10-17).
 
 **HONEST OPEN ITEM (not fixed):** no pitch prep is planned. The billing
 behavior is per a third-party README and unverified with Oracle.
+
+# Appendix J - OCI stack created; Node 20.9 fix; research brief - space is crowded, accuracy edge not unique (2026-10-17, ~12:33 CDT)
+**WHAT:**
+
+1. **OCI setup (Evan, in the console).** The OCI account exists. Evan created
+   the Resource Manager stack `HackTN26-starterkit` from the starter kit,
+   configured as Claude advised after reading the kit's Terraform via gh api:
+   - shape VM.Standard.A1.Flex, 2 OCPU / 12 GB;
+   - Databases = MySQL HeatWave only (Always Free default);
+   - tag `project=HackTN26`.
+
+   Its apply job was still running at the time of this entry. Facts are in
+   `services.md`: the image is chosen by shape; the installer is cloud-init
+   with no set -e; the installer pins `dev.mysql.com` in /etc/hosts. Whether
+   the budget alert was set before apply is NOT confirmed.
+2. **Corrections and gotchas.**
+   - Next.js needs Node >= 20.9 (context7 Next.js docs). This replaces the
+     earlier guess of "18.18+" in `services.md` and the PRD.
+   - `gotchas.md`: PowerShell 5.1 key permissions via icacls; VM commands run
+     inside SSH. The key file is to be saved as
+     `C:\Users\daruw\.ssh\HackTN26.pem` (Evan named it).
+   - Claude's slip: it first gave the icacls step before the key existed.
+3. **Research brief** `docs/research/2026-10-17_bill-decoder-crowding.md`
+   (Evan ran /research-brief).
+   - Method: hypotheses fixed first; 3 parallel agents; Claude re-read the
+     load-bearing pages in a browser; a fresh-agent cold assessment; one
+     extra collection round.
+   - Result: very crowded. Commercial: Mediloop already checks bills against
+     the EOB for our error types. About 51 core Devpost projects were seen by
+     one search route.
+   - Overlapping competitors: MedVoice (8 languages incl. zh/vi/ar), Footnote
+     (bill + EOB, 30 languages), and **GiveMeMyMoneyBack** (OwlHacks 2026:
+     bill vs EOB; "code decides, AI explains"; number-validated Spanish; and
+     "caught 19 / 19 planted errors, 0 false alarms").
+   - **The cold assessment flipped the brief's own recommendation.** Our
+     "measured accuracy" edge is not unique. What remains: end-to-end
+     photo->OCI->rules accuracy per error type, plus integrity-checked
+     translation in 5 languages including RTL.
+   - The "80% of bills have errors" figure traces to an advocacy firm's
+     founder: do not use it.
+   - Revised options: A' keep and pitch the narrow delta; B re-center on
+     financial assistance for LEP patients; C pivot.
+   - Design lesson for the PRD: errors planted by the same team that wrote
+     the rules pass by construction, so add an independent edge-case set.
+
+**HONEST OPEN ITEM (not fixed):**
+- The direction decision (A'/B/C) is Evan's and pending; the PRD is
+  unchanged until then.
+- The event rubric is MISSING, so any pitch strategy is an assumption.
+- The deploy job outcome, VM IP, and budget alert status are unconfirmed.
+- Cadence: two PM-CADENCE record-entry reminders (prompts #49, #52) were
+  served by this single entry, written after the research finished.
+
+# Appendix K - Option B facts verified; B.A.R.S. already built option B (prize winner) (2026-10-17, ~12:39 CDT)
+**WHAT:** Evan asked Claude to verify the unverified facts behind option B
+(re-center on charity care for LEP patients). Claude read each source's own
+page text. The full table is in the addendum of
+`docs/research/2026-10-17_bill-decoder-crowding.md`.
+
+- **Verified verbatim:**
+  - IRS 501(r): a written FAP is required for tax-exempt hospitals; web
+    publication and a notice on billing statements are required; the LEP
+    translation threshold is "the lesser of 1,000 individuals or 5
+    percent".
+  - CMS: "Nonprofit hospitals must give financial assistance"; "pause
+    collections".
+  - AJMC 2026: 213 hospitals (61.0%) offered a posted FAP in a non-English
+    language.
+  - Washington 2017: 28% of Spanish calls got no information vs 90% for
+    English.
+- **Corrected:** California's 400% FPL is eligibility to apply for "discount
+  payment or charity care", and only if uninsured OR high medical costs. It
+  is not a flat charity-care cutoff, as Claude had phrased it.
+- **Agent error caught:** the hackathon agent reported B.A.R.S. as "languages:
+  none stated". Its page says the screening is "in their preferred
+  language".
+- **Decisive:** B.A.R.S. (hackUMBC 2026, Second Overall winner) already
+  builds option B, including extracting hospital policy rules from published
+  PDFs with page citations. That falsifies Claude's previous-message claim
+  that policy extraction was "unclaimed". That claim came from a search that
+  never looked for it. Claude had marked it unverified, but still
+  recommended B on it.
+
+**WHY it matters:** both remaining directions (A' and B) now have
+prize-winning or near-identical hackathon precedents. Novelty cannot be the
+pitch; execution and measured results have to be.
+
+**HONEST OPEN ITEM (not fixed):** the direction decision is still Evan's. The
+Tennessee FAP sample was not done.
+
+# Appendix L - Event facts, rubric, and draft pivot plan (bill to financial assistance packet) received (2026-10-17, ~12:56 CDT)
+**WHAT:** Evan supplied the event facts and a draft plan (marked "not
+final").
+
+- **Deadline:** Evan says "tomorrow at 1:30 PM local". The draft plan says
+  hacking ends Sunday 2026-10-18 at 12:00 pm, with 4-minute presentations
+  (2 min pitch + 2 min demo) during a 1-5 pm showcase. A Humanitix listing
+  (search result, not opened) says the event runs Sat 9am - Sun 5pm CDT.
+  **Conflict unresolved: 12:00 pm vs 1:30 pm.**
+- **Rubric:** `docs/rubric.txt` (Evan) lists Communication, Social Impact,
+  Credibility, Problem Validation ("Have real customers provided input?"),
+  User Experience, and "Does the prototype actually work and leverage Oracle
+  Cloud Infrastructure capabilities?". No weights.
+- **Challenge text:** `docs/#2 Health Access, Equity + Experience.txt`.
+- **Draft plan ("HackTN26 Health Access Plan", Oct 17, 2026):** pivots to
+  "bill to help". A photo of a Nashville (VUMC) bill becomes a pre-filled
+  financial assistance packet, checked against the hospital's published
+  policy with citations and explained in Arabic or Spanish for the family
+  reader.
+  - Architecture: Cohere Command A Vision reads; a deterministic Python
+    rules engine decides; Command A phrases; OCI Language checks
+    translation; MySQL HeatWave holds the policy registry.
+  - Validation: a general-AI test, attendee interviews, and a timed task
+    comparison.
+  - Gate: VUMC thresholds confirmed from VUMC's own PDF by 3 pm, else a
+    labeled synthetic hospital.
+- **Checks Claude ran on the plan's facts (search summaries,
+  CLOSE-PARAPHRASE at best):**
+  - 2026 HHS poverty guidelines: $15,960 for 1 person, $33,000 for 4, +$5,680
+    per person (ASPE via search).
+  - Cohere Command A Vision is listed on-demand in US Midwest (Chicago) on
+    Oracle's models-by-region page (via search). Availability on the Free
+    Trial is untested.
+
+**HONEST OPEN ITEM (not fixed):**
+- Deadline conflict.
+- Stack conflict: the plan says Python; PRD decision 2026-10-17 says
+  Next.js.
+- The plan omits B.A.R.S. (Appendix K) as prior art.
+- PRD and HANDOFF still describe the Bill Decoder; no fork until Evan calls
+  the plan final.
+
+# Appendix M - Pivot adopted - bill to financial assistance packet; Python stack; deadline Sun 1:00 PM; PRD forked (2026-10-17, ~13:10 CDT)
+**WHAT:** Evan adopted the draft "HackTN26 Health Access Plan" (record Appendix L) with two changes: the stack is Python (FastAPI) + plain HTML/JS on the OCI VM, replacing the morning Next.js decision because of the 24-hour clock, the kit VM shipping Node 16 against Next.js needing >= 20.9, and the kit and console samples being Python; and the deadline comes from `docs/Hackathon Schedule.txt`: hacking finishes Sun 2026-10-18 1:00 PM CDT, the venue closes Sat 9:00 PM.
+
+- `PRD_ROADMAP.md` forked: a SUPERSEDED banner on the Bill Decoder plan, plus a new "CURRENT DIRECTION (forked 2026-10-17)" section (F1-F8) carrying the product, architecture, data, acceptance criteria, validation, schedule gates, failure modes, and open items. B.A.R.S. is added as prior art to name honestly in judge Q&A (the draft plan omitted it).
+- HANDOFF rewritten for the new mission. This also fixes a garbled path (`C:Usersdaruw<TAB>ools`) that an earlier node edit produced from unescaped backslashes.
+- Bins: decisions.md (stack), timeline.md (agenda), and important.md entry 3, updated in place to the real deadline with the original kept under it.
+
+**HONEST OPEN ITEM (not fixed):** Generative AI access is untested, VUMC thresholds are unverified, and the starter-kit result, VM IP, budget alert, team roster, and submission requirements are all unknown.
+
+# Appendix N - Starter-kit apply failed (A1 out of capacity); E5 fallback; synthetic test bill (2026-10-17, ~13:14 CDT)
+**WHAT:**
+
+- **Starter-kit apply failed.** Job ormjob20261017165954 failed at 17:27:34 UTC (12:27 CDT) with "Out of host capacity" for VM.Standard.A1.Flex (2 OCPU/12 GB) in US-CHICAGO-1-AD-1. Already created and kept in state: the network, MySQL DB system "Hackathon MySQL HeatWave" (MySQL.8, 50 GB), and a HeatWave.32GB cluster. Whether these are Always Free is UNVERIFIED.
+- **Fallback chosen (planned):** edit the stack to VM.Standard.E5.Flex 1 OCPU / 4 GB (paid, uses credits) and re-apply. Evan could not find "Edit" on the stack page; Claude pointed to the Variables tab or a top-right Actions menu. Result: pending. The details are in `operations.md`.
+- **Synthetic test bill made:** `spikes/synthetic-bill/bill-01.html` and its PNG, rendered by headless Edge. Fictional "Cumberland General Hospital (SYNTHETIC)", watermarked; line items sum to $4,812.40 (checked). It is for the first Command A Vision Playground call (gate ~1:45 PM).
+- `docs/The_Hacker_Toolkit_TEMPLATE_AND_EXAMPLES_ONLY.pdf` is gitignored: it is a copyrighted 4.7 MB worksheet set, not needed in the repo.
+
+**HONEST OPEN ITEM (not fixed):** no VM yet; the Generative AI call is untested; the budget alert is unconfirmed.

@@ -6,7 +6,7 @@ Knowledge:
 - decisions.md - module, users, metric, languages, scope (updated 2026-10-17)
 - gotchas.md - Synthea threading nondeterminism, moving jar tag, no adjustments, Java path (updated 2026-10-17)
 - people.md - roles, deciders, collaborators, orgs (updated 2026-10-17)
-- timeline.md - dated deadlines, windows, expiries (updated 2026-10-17)
+- timeline.md - event agenda; hacking ends Sun 1:00 PM; venue closes Sat 9 PM (updated 2026-10-17)
 - glossary.md - easily confused terms (updated 2026-10-17)
 - compliance.md - track rules; full event rules not yet seen (updated 2026-10-17)
 - budget.md - $500 OCI credits, $0 personal ceiling; expiry and account unknown (updated 2026-10-17)
@@ -38,7 +38,7 @@ Code:
 Project-specific bins:
 - languages.md - language ranking evidence + OCI Language support per language (updated 2026-10-17)
 
-Stubs (first line STATUS: N/A or empty): people, timeline, writing, hardware, architecture, conventions, testing, tooling, security, features, performance
+Stubs (first line STATUS: N/A or empty): people, writing, hardware, architecture, conventions, testing, tooling, security, features, performance
 
 Map (not a bin - see SKILL section 5.1):
 - DIRECTORY.md - skipped: no source files yet (needs >15)

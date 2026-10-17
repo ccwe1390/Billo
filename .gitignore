@@ -4,3 +4,5 @@
 .claude/drift-check.stamp
 # Synthea output (large, regenerable from seed; see .claude/project-memory/data.md)
 data/synthea/
+# copyrighted third-party worksheet PDF (Hackathons International), not needed in repo
+docs/The_Hacker_Toolkit_TEMPLATE_AND_EXAMPLES_ONLY.pdf

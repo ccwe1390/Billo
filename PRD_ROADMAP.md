@@ -1,5 +1,7 @@
 # TNHacks26 - Bill Decoder PRD & Roadmap
 
+> **SUPERSEDED by the 2026-10-17 fork.** The Bill Decoder plan below (GOAL through section 7) is kept for history. The current plan is the **CURRENT DIRECTION (forked 2026-10-17)** section at the end of this file.
+
 **Written 2026-10-17 by Claude (Opus 5.5) from the planning grill with Evan
 (record Appendices A-F + the PRD grill entry). Standing document - the
 executing model works through TASK BREAKDOWN top to bottom, one task at a
@@ -222,4 +224,172 @@ next. **Commits: only when Evan asks; never push without his instruction**
   disagree) - fine for US bills, verify in M0.3.
 - Every paid OCI call counts against $500; cache responses.
 - Event dates and deadline are unknown - do not invent a schedule.
-- OCI starter kit (github.com/ScottStroz/oci-hackathon-starterkit, read 2026-10-17): home region MUST be US Midwest (Chicago) and is permanent; the kit's VM has Node 16, too old for Next.js - install a current Node LTS in M6.1; its default shape E5.Flex is paid; Free Trial Generative AI model is cohere.command-a-03-2025 (no Grok). See services.md.
+- OCI starter kit (github.com/ScottStroz/oci-hackathon-starterkit, read 2026-10-17): home region MUST be US Midwest (Chicago) and is permanent; the kit's VM has Node 16, too old for Next.js (needs Node >= 20.9) - install a current Node LTS in M6.1; its default shape E5.Flex is paid; Free Trial Generative AI model is cohere.command-a-03-2025 (no Grok). See services.md.
+
+---
+
+## CURRENT DIRECTION (forked 2026-10-17 ~13:05 CDT): Bill to Help - bill photo to financial assistance packet
+
+**Why forked:** the research brief
+(`docs/research/2026-10-17_bill-decoder-crowding.md`) found the bill/EOB error
+checker crowded, and uninsured families get no EOB. Evan adopted the draft
+"HackTN26 Health Access Plan" (record Appendix L), with Python as the stack
+and the agenda's deadline (decided by Evan, 2026-10-17). Everything above
+this heading is SUPERSEDED. Error checking moves to Deferred.
+
+**GOAL:** By **Sun 2026-10-18 1:00 PM CDT** (hacking finishes; showcase
+1:05 PM), a web app running on our OCI VM turns a photo of a (synthetic)
+Nashville hospital bill into that hospital's financial assistance packet:
+- an eligibility estimate against the hospital's published policy and the
+  2026 HHS poverty guidelines, with every rule showing source, page, and
+  effective date;
+- pre-filled application fields, a document checklist, the deadline, and a
+  short English cover letter;
+- all explained in Arabic or Spanish for the family member helping a parent.
+
+The AI never decides: a vision model reads, a deterministic Python rules
+engine decides, a language model only phrases, and every number is locked.
+Nothing a user enters is stored. The family submits; the hospital decides.
+
+**SCOPE GUARD (decided by Evan 2026-10-17):**
+- Synthetic bills only, watermarked SYNTHETIC; no real patient data.
+- No immigration status, SSN, or ID questions.
+- No user data written anywhere.
+- No claim of "first", "unique", "money saved", or "we apply for you".
+- OCI only.
+- No diagnosis or treatment content.
+- If a task needs any of these broken, STOP and report.
+
+### F1. Product (the one journey that must work live, in under 90 seconds)
+
+Five screens:
+1. **Start:** pick a language (Arabic / Spanish / English) and "This bill is
+   for: me / a family member". Show "Nothing you enter is saved. Demo uses
+   synthetic bills only."
+2. **Bill:** upload or photograph the bill. Extracted fields appear beside
+   the image: hospital, statement date, account number, amount due, date of
+   service, insurance status. Each field is editable and must be confirmed.
+   Unreadable fields are left blank and asked for, never guessed.
+3. **Three questions:** household size; yearly household income; "Do you
+   file a tax return?" (changes the document list).
+4. **Result** in the chosen language, with an English toggle: percent of the
+   2026 poverty guideline, the policy tier with its citation (source, page,
+   effective date), the deadline, three lines on what the bill is, and a
+   Tennessee uninsured-protections card. Income over the policy's limits
+   gives an honest "not eligible under this policy" plus the payment-plan
+   contact.
+5. **Packet:** pre-filled application fields, the policy's document
+   checklist, an English cover letter with the Arabic/Spanish translation
+   beside it, and where to send it. Delivered as a **printable HTML page**
+   (Arabic shaping is handled by the browser; decided 2026-10-17). A server
+   PDF is not built.
+
+### F2. Architecture (all on OCI; stateless)
+- Python (FastAPI) + plain HTML/JS, one process on the starter-kit VM
+  (decided by Evan 2026-10-17; supersedes Next.js).
+- Endpoints: `POST /extract` (image -> fields with per-field confidence;
+  missing = null), `POST /evaluate` (fields + answers -> result with
+  citations), `POST /explain` (result + language -> text), `POST /packet`
+  (everything -> printable page).
+- OCI Generative AI, **Cohere Command A Vision** (extraction) and **Command
+  A** (phrasing), in US Midwest (Chicago). Listed on-demand in Chicago per
+  Oracle's models-by-region page (via search). Free-trial availability is
+  UNTESTED; confirm exact model IDs in the console.
+- OCI Language: translates the cover letter, and back-translates generated
+  Arabic/Spanish to check numbers.
+- Number lock: every number, date, and dollar amount in generated text must
+  match the engine's output; any mismatch falls back to a fixed template.
+- MySQL HeatWave (from the kit): policy registry (hospital, rule, value,
+  source, page, effective date, verifier). No patient data. Cut to a JSON
+  file if time runs short.
+
+### F3. Data
+- VUMC financial assistance policy, Appendix B, plain-language summary, and
+  application (public PDFs). **Gate 3:00 PM Sat:** if VUMC's thresholds can't
+  be confirmed from VUMC's own PDF, use a labeled synthetic hospital
+  ("Cumberland General, synthetic") with the same rule structure.
+- 2026 HHS poverty guidelines: $15,960 for 1 person, $33,000 for 4, +$5,680
+  per extra person. Checked via search summaries (ASPE); re-read the source
+  before it goes on a slide.
+- 10 synthetic bills (SYNTHETIC watermark, fake names and accounts, no
+  logos) and a 20-household answer key, both hand-computed.
+
+### F4. Acceptance criteria (the done-checks)
+- [ ] On 10 synthetic bills, the 4 key fields (hospital, statement date,
+      amount due, account number) are read correctly - report the real
+      count.
+- [ ] No field is used until the user confirms it; edits override the
+      model.
+- [ ] Tier results match the hand-computed key on 20 test households.
+- [ ] Every rule on screen shows its source document, page, and effective
+      date.
+- [ ] Arabic renders right to left; every number and date in the
+      Arabic/Spanish text matches the English exactly.
+- [ ] Over-limit income gives an honest "not eligible under this policy"
+      with the payment-plan contact.
+- [ ] No screen asks for immigration status, SSN, or ID; no user data is
+      written anywhere.
+- [ ] The full journey runs in under 90 seconds on the deployed OCI
+      address.
+
+**Cut order if short:**
+1. ~~PDF~~ (already a printable page)
+2. Database -> JSON file
+3. Spanish (keep Arabic)
+4. Back-translation check (keep the number lock)
+5. Camera capture (keep upload)
+
+**Never cut:** extraction, confirmation, the cited rule result, the packet.
+
+### F5. Validation (rubric: "Have real customers provided input?")
+- **V1 (first hour, no people needed):** give the synthetic bill to Claude,
+  ChatGPT, and Gemini (free tiers), 3 runs each, in English and Arabic, with
+  the prompt "My dad got this bill from the hospital. He doesn't have
+  insurance. What should we do?" Score yes/no on 5 points:
+  - mentions financial assistance unprompted;
+  - states VUMC's limits correctly;
+  - gives a deadline;
+  - lists VUMC's documents;
+  - produces a filled application or letter.
+  This decides the pitch.
+- **V2 (Sat afternoon + dinner check-in 6 PM):** 6-10 interviews with
+  attendees who helped a family member with a medical bill. No names,
+  amounts, or documents; quotes only with permission.
+- **V3 (Sun 9:00-10:30 AM):** a timed task comparison with 6-8 attendees,
+  current workaround vs our app, scored 0-4 against the answer key, order
+  alternated.
+- **Emails to VUMC financial assistance and Dollar For:** outward-facing.
+  Evan sends them himself; draft for his review first.
+- Report every number with its sample size. Never convert results to
+  dollars saved.
+
+### F6. Schedule (agenda: `docs/Hackathon Schedule.txt`; venue closes Sat 9:00 PM, reopens Sun 9:00 AM)
+
+| By | Gate |
+|---|---|
+| Sat ~1:45 PM | One successful Command A Vision call. JSON shapes agreed (bill fields, household answers, engine result, packet). Ask organizers what to submit and where. |
+| Sat 3:00 PM | VUMC rules confirmed from VUMC's PDF, or the synthetic hospital |
+| Sat 5:00 PM | A bill photo becomes a cited eligibility result on the OCI server. If not, stop adding features and fix that |
+| Sat 9:00 PM | Leave the venue; remote work only after this |
+| Sat ~11:00 PM | Feature freeze |
+| Sun 9:00-10:30 AM | V3 task comparison; rehearsal |
+| Sun ~12:00 PM | Recorded backup of the demo journey (lunch is 12:00) |
+| **Sun 1:00 PM** | **Hacking finishes** |
+| Sun 1:05 PM | Showcase |
+| Sun 3:30 PM | Final pitches |
+
+### F7. Failure modes
+| Failure | Early warning | Fallback |
+|---|---|---|
+| Generative AI unavailable, or bill reading unreliable | First call fails by ~1:45 PM, or fewer than 7/10 bills read correctly | Manual entry beside the bill image; everything else still runs on OCI. Say "photo reading off in this demo." |
+| VUMC thresholds unconfirmed | 3:00 PM gate | Labeled synthetic hospital; VUMC is "next step with the hospital's sign-off" |
+| Live demo fails on stage | Any rehearsal over 90 seconds | Recorded backup plus a local copy |
+
+### F8. Open items
+- **Prior art to name honestly in judge Q&A:** B.A.R.S. (hackUMBC 2026 Second
+  Overall: bill photo -> financial-assistance application, policy
+  extraction; Maryland) and CareRoute (paid, EN/ES).
+- Submission form, repo, and video requirements: ask organizers.
+- Team roster and roles: unconfirmed (the plan assumes 4).
+- Superseded-plan leftovers that no longer apply: Synthea snapshot (optional
+  for realistic line items), error types 1-6.

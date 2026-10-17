@@ -1,0 +1,55 @@
+How might we use technology to remove friction from the health journey so that individuals and communities can more easily access,
+understand, coordinate, and act on the support they need for better health and well-being?
+
+Why this matters
+Health outcomes are shaped by far more than a clinical encounter. People
+may encounter barriers in finding care, understanding information,
+navigating services, coordinating support, accessing transportation,
+communicating across languages, or maintaining trust in the systems
+designed to help them.
+
+
+Who could benefit
+Individuals, patients, families, and caregivers
+
+Clinicians, care teams, and healthcare administrators
+
+Community-based organizations and public-health partners
+
+Healthcare, insurance, and life-sciences organizations
+
+
+Challenge
+
+Build a scalable solution that improves health access, equity, experience,
+coordination, prevention, or operational effectiveness. Teams may focus on
+a specific point of friction - such as health literacy, access to services, care
+coordination, community health, accessibility, workforce capacity,
+preventive care, or social determinants of health. Teams should go deep on
+a clearly defined problem, user group, and measurable outcome.
+
+OCI / Oracle opportunity
+Use OCI Generative AI and privacy technologies to synthesize information, surface
+insights, personalize experiences, or streamline workflows in ways that respect the
+sensitivity of health-related information. Teams may also use OCI to build and scale
+a thoughtful, accessible experience that connects people, care teams, and
+community resources.
+
+
+Responsible innovation
+Use synthetic, public, or appropriately de-identified data. Solutions should not
+make autonomous diagnostic or treatment decisions. Consider privacy,
+transparency, accessibility, bias mitigation, and appropriate human oversight from
+the outset.
+
+
+What success looks like
+A compelling health or well-being problem with clear social value
+
+A usable prototype with a credible path to scale
+
+Improved access, understanding, coordination, or experience
+
+Thoughtful, responsible use of AI
+
+Meaningful application of Oracle and OCI capabilities

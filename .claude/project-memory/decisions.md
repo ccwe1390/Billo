@@ -79,3 +79,11 @@ Standing decisions (what is decided NOW). History lives in the record.
   important.md 1) and unbundling (CPT-based code-pair tables, licensing
   unclear). Every planted error carries a dollar value. Decided by: Evan,
   chat 2026-10-17.
+- 2026-10-17 ~13:00 CDT - Stack: Python (FastAPI) backend + plain HTML/JS
+  pages, one process on the OCI VM (Evan picked A). SUPERSEDES the morning's
+  Next.js + OCI TypeScript SDK decision. New facts since then: about 24 hours
+  left; the starter-kit VM ships Python 3.9 (3.12 installable) and Node 16
+  (Next.js needs Node >= 20.9); the kit and console GenAI samples are Python;
+  the draft plan is written in Python. Arabic PDF risk: use a printable HTML
+  page (the browser does RTL shaping), not server-side PDF. Decided by:
+  Evan, chat 2026-10-17.

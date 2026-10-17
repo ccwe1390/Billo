@@ -192,6 +192,15 @@ fenced = '```json\n{\n  "amount_due": "$4,812.40",\n  "statement_date": "10/01/2
 assert oci_client.parse_json_object(fenced) == {"amount_due": "$4,812.40", "statement_date": "10/01/2026"}
 assert oci_client.parse_json_object('{"a": 1}') == {"a": 1}
 
+# ---- numbers are shielded from machine translation ("$4,812.40" -> "$4.812,40" seen live)
+masked, nums = oci_client.protect_numbers("Amount due: $4,812.40. Account CGH-00482913. Apply by 2027-05-29.")
+assert masked == "Amount due: ${0}. Account CGH-{1}. Apply by {2}.", masked
+assert nums == ["4,812.40", "00482913", "2027-05-29"]
+assert oci_client.restore_numbers("Monto: ${0}. Cuenta CGH-{1}. Antes del {2}.", nums) == \
+    "Monto: $4,812.40. Cuenta CGH-00482913. Antes del 2027-05-29."
+many = " ".join(str(i) for i in range(12))
+assert oci_client.restore_numbers(oci_client.protect_numbers(many)[0], oci_client.protect_numbers(many)[1]) == many
+
 # replaceChildren() prints a null argument as "null": only fill() may call it
 assert js.count(".replaceChildren(") == 1 and "function fill(" in js
 

@@ -20,10 +20,10 @@ via the plan's ClearHealthCosts source, not re-read by Claude). Full plan:
 **Hard deadline: hacking finishes Sun 2026-10-18 1:00 PM CDT.** Venue closes
 Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
-## Current state - App runs in fake mode; live OCI not yet wired
+## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 14:24 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-T).
+**Last updated: 2026-10-17 14:57 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-V).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -37,7 +37,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-T).
 | Submission form / repo / video | **UNKNOWN** - ask organizers | - |
 | Team roster and roles | **UNCONFIRMED** (plan assumes 4) | - |
 | OCI account | Exists (tenancy root compartment); Chicago home region per kit guidance | console pastes |
-| Starter kit stack `HackTN26-starterkit` | First apply FAILED: "Out of host capacity" for A1.Flex 2/12 in AD-1 (VCN, subnets, MySQL DB system, HeatWave cluster were created and kept). Fallback: edit stack to E5.Flex 1 OCPU / 4 GB and re-apply - **result not reported yet**; no VM IP | operations.md |
+| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :80. SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
@@ -61,9 +61,10 @@ snapshot; history lives in the record (Phase 0, Appendices A-T).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## BLOCKED-ON-EVAN
-- Starter-kit apply result, VM public IP, SSH key saved at
-  `C:\Users\daruw\.ssh\HackTN26.pem`; budget alert.
-- VM: `webserver_public_ip` and the `ssh_private_key` from the stack job Outputs (save as `C:\Users\daruw\.ssh\HackTN26.pem`); which shape the re-apply used.
+- Budget alert: still UNCONFIRMED (the VM is E5.Flex, a paid shape).
+- Yes/no on fixing one line in record Appendix U (line 682 starts an
+  unclosed code fence, so the append script cannot add Appendix V).
+- Delete the downloaded Terraform state JSON from Downloads (it holds the SSH key).
 - Ask organizers: submission form, repo, video.
 - Team roster and who owns which role.
 - Any email to VUMC or Dollar For (outward-facing; Evan sends).
@@ -72,34 +73,40 @@ snapshot; history lives in the record (Phase 0, Appendices A-T).
 0. Plan rev 2 adopted with fixes 2026-10-17 ~13:47 (PRD F9; text in
    `docs/2026-10-17_HackTN26_Health_Access_Plan_rev2.txt`). Times: schedule
    file wins (1:00 PM finish, 9:00 PM venue close).
-1. DONE 14:22 CDT: first live Command A Vision call from code (bill-01 6/6;
-   blur test passed). Next: deploy to the VM (needs IP + SSH key from Evan),
-   then the 5:00 PM gate.
+1. DONE: gate 1 (14:22) and the 5:00 PM gate (14:53) - a blurred bill photo
+   -> cited result -> Spanish explanation + packet on the OCI server, 11.8 s.
+   Next: design research review (agent running), validation V1, VUMC gate.
 2. 3:00 PM: VUMC rules from VUMC's own PDF, or the synthetic hospital.
-3. 5:00 PM: bill photo -> cited eligibility result on the OCI server.
+3. Design system: review the research agent's brief and 3 directions
+   (`docs/research/2026-10-17_design-*`), Evan picks one, build before the
+   ~11 PM freeze.
 4. Validation V1 (general-AI test) in parallel, today.
 
 ## Handoff prompt
 
 ```
-Project: TNHacks26 (folder C:ClaudeCodeTNHacks27). Read in order:
+Project: TNHacks26 (folder C:\ClaudeCode\TNHacks27). Read in order:
 HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
-DIRECTION fork + F9 amendments), then the record's last 3 appendices.
+DIRECTION fork + F9 amendments), then the record's last 3 appendices and
+.claude/project-memory/operations.md (VM details).
 
-State (2026-10-17 13:52 CDT): "Bill to Help" - bill photo -> hospital
-financial-assistance packet, explained in Arabic/Spanish. Python FastAPI +
-plain HTML/JS. Engine, API, number lock, 5-screen UI and synthetic policy
-page work in FAKE_OCI=1 mode; 4 test files ALL PASS. No live OCI call from
-code yet; no VM yet (starter-kit apply failed on capacity; E5.Flex re-apply
-pending).
+State (2026-10-17 14:57 CDT): "Bill to Help" - bill photo -> hospital
+financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
+zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
+http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
+instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
+gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
+4 test files ALL PASS. SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
+opc@207.211.181.174. Record Appendix V is unwritten: Appendix U line 682
+opens an unclosed code fence and Evan has not yet approved fixing it.
 
 Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
 ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
 OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
-Next, in order: (1) Evan's OCI config + model ID -> run
-spikes/extract/extract_bill.py on bill-01 and the 4 bill-02 blur PNGs;
-(2) 3:00 PM VUMC gate or stay synthetic; (3) deploy to the VM; 5:00 PM gate
-= bill photo -> cited result on the OCI server; (4) validation V1.
+Next, in order: (1) 3:00 PM VUMC gate or stay synthetic; (2) review the
+design research (docs/research/2026-10-17_design-*), Evan picks a
+direction, build it before the ~11 PM freeze; (3) validation V1 (general-AI
+test); (4) after each change: commit, then redeploy (see operations.md).
 ```

@@ -36,3 +36,17 @@
     valid JSON"); the app would have returned 502 on every real /extract.
     Fixed: oci_client.parse_json_object falls back to the outermost {...};
     test added in tests/test_api.py.
+- 2026-10-17 14:53 CDT - GATE 2 (5:00 PM gate) PASSED ~2 h early, on the
+  OCI server http://207.211.181.174/ with real AI (instance principal):
+  bill-02-blur3 -> /extract 4.1 s (date_of_service null, person types it)
+  -> /evaluate 0.1 s (115%, free care, deadline 2027-06-02, cites p.1) ->
+  /explain es 4.4 s (Command A, number check passed) -> /packet es 1.1 s.
+  Total 9.7 s. n=1.
+  - Packet translation FAILED the number check: OCI Language rewrote
+    "$4,812.40" as "$4.812,40" (es). Placeholder test (8 languages, n=1):
+    {n} and X{n}X survived es/fr/de/ru/ar/zh-CN/ko/vi; [[n]], <n>, #n#
+    did not. Fix: numbers -> {n} before OCI Language, restored after
+    (oci_client.protect_numbers/restore_numbers). Re-run live: es, fr, de,
+    ru, ar, zh-CN, ko, vi packets all numbers_match=True. Server re-run
+    14:55: full journey 11.8 s, packet es numbers_match=True.
+  - Not tested live: zh-TW and hi packets (hi uses Command A, unprotected).

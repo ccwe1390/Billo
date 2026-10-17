@@ -1,12 +1,16 @@
 """All OCI calls live here. FAKE_OCI=1 returns fixed data with no network or credentials.
 
 Config (env): OCI_COMPARTMENT_ID, OCI_VISION_MODEL_ID, OCI_TEXT_MODEL_ID,
+OCI_AUTH (instance_principal on the OCI VM; otherwise ~/.oci/config),
 OCI_PROFILE (default DEFAULT), OCI_LANGUAGE_ENDPOINT (optional override).
 Nothing here writes to disk or logs request/response bodies.
 """
 import base64
+import functools
 import json
 import os
+
+from app import numlock
 
 GENAI_ENDPOINT = "https://inference.generativeai.us-chicago-1.oci.oraclecloud.com"
 
@@ -32,16 +36,23 @@ def _env(name):
     return value
 
 
-def _config():
+@functools.lru_cache(maxsize=1)
+def _auth():
+    """Client auth kwargs. OCI_AUTH=instance_principal: the VM authenticates as itself
+    (dynamic group + policy), so no key is stored on the server. Otherwise the API key
+    in ~/.oci/config (laptop). Cached: the signer refreshes its own token."""
     import oci
-    return oci.config.from_file("~/.oci/config", os.environ.get("OCI_PROFILE", "DEFAULT"))
+    if os.environ.get("OCI_AUTH") == "instance_principal":
+        signer = oci.auth.signers.InstancePrincipalsSecurityTokenSigner()
+        return {"config": {"region": signer.region}, "signer": signer}
+    return {"config": oci.config.from_file("~/.oci/config", os.environ.get("OCI_PROFILE", "DEFAULT"))}
 
 
 def _genai_client():
     import oci
     from oci.generative_ai_inference import GenerativeAiInferenceClient
     return GenerativeAiInferenceClient(
-        config=_config(), service_endpoint=GENAI_ENDPOINT,
+        service_endpoint=GENAI_ENDPOINT, **_auth(),
         retry_strategy=oci.retry.NoneRetryStrategy(), timeout=(10, 120))
 
 
@@ -116,30 +127,50 @@ def phrase(facts_en, language):
     return _chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False).strip()
 
 
+def protect_numbers(text):
+    """'Due: $4,812.40' -> ('Due: ${0}', ['4,812.40']). Same number pattern as numlock."""
+    nums = []
+
+    def keep(match):
+        nums.append(match.group(0))
+        return "{%d}" % (len(nums) - 1)
+    return numlock._NUM.sub(keep, text), nums
+
+
+def restore_numbers(text, nums):
+    for i, n in enumerate(nums):
+        text = text.replace("{%d}" % i, n)
+    return text
+
+
 def translate_many(texts, target_lang):
     """Translate English texts with OCI Language. Returns a list in the same order.
 
-    UNTESTED against the live service (SDK shapes read from the installed oci
-    2.188.0 package: AIServiceLanguageClient.batch_language_translation).
+    Numbers are swapped for {0}, {1}... before translating and put back after:
+    live on 2026-10-17 OCI Language turned "$4,812.40" into "$4.812,40" (es), and
+    {n} placeholders survived es/fr/de/ru/ar/zh-CN/ko/vi. A lost placeholder stays
+    lost, so the caller's number check rejects that text (fails closed).
     """
     if is_fake():
         return ["[%s draft] %s" % (target_lang.upper(), t) for t in texts]
     from oci.ai_language import AIServiceLanguageClient
     from oci.ai_language import models as m
     import oci
+    protected = [protect_numbers(t) for t in texts]
     kwargs = {}
     if os.environ.get("OCI_LANGUAGE_ENDPOINT"):
         kwargs["service_endpoint"] = os.environ["OCI_LANGUAGE_ENDPOINT"]
-    client = AIServiceLanguageClient(config=_config(), retry_strategy=oci.retry.NoneRetryStrategy(), **kwargs)
+    client = AIServiceLanguageClient(**_auth(), retry_strategy=oci.retry.NoneRetryStrategy(), **kwargs)
     details = m.BatchLanguageTranslationDetails(
         compartment_id=_env("OCI_COMPARTMENT_ID"),
         target_language_code=target_lang,
-        documents=[m.TextDocument(key=str(i), text=t, language_code="en") for i, t in enumerate(texts)])
+        documents=[m.TextDocument(key=str(i), text=masked, language_code="en")
+                   for i, (masked, _) in enumerate(protected)])
     result = client.batch_language_translation(details).data
     if result.errors:
         raise RuntimeError("translation returned %d document error(s)" % len(result.errors))
     by_key = {d.key: d.translated_text for d in result.documents}
-    return [by_key[str(i)] for i in range(len(texts))]
+    return [restore_numbers(by_key[str(i)], nums) for i, (_, nums) in enumerate(protected)]
 
 
 def translate_genai_many(texts, target_lang):

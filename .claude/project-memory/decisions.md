@@ -123,3 +123,10 @@ Standing decisions (what is decided NOW). History lives in the record.
   Hindi letters use Command A (no OCI Language support), so no back-check.
   Kurdish, Somali, Burmese, Amharic, Nepali: stated as a known gap. Decided
   by: Evan, chat 2026-10-17.
+- 2026-10-17 ~14:50 CDT - VM auth to OCI: instance principal (Evan chose A
+  over copying his API key). Dynamic group bill-to-help-vm (rule: instances
+  in the root compartment) + policy bill-to-help-vm-ai: `use
+  generative-ai-family` and `use ai-service-language-family` in tenancy.
+  `use` proved enough for chat and batch translation (live 14:53). No
+  credentials on the server. Code: OCI_AUTH=instance_principal in
+  oci_client._auth(). Decided by: Evan, chat 2026-10-17.

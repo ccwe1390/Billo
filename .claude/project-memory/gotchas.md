@@ -43,3 +43,15 @@
   blocks Claude from editing the record; the repair needs Evan (edit by
   hand, or relaunch with PM_RECORD_UNLOCK=1). Check before appending:
   grep -n '^\s\{0,3\}```' <body file> must print nothing.
+- 2026-10-17 - Machine translation mangles proper nouns, and the number
+  lock only guards digits. Protect names (hospital name) with the same {n}
+  placeholders as numbers and check they survive (oci_client.protect_numbers
+  keep=). Hindi uses Command A without placeholders, so it is unprotected.
+- 2026-10-17 - Windows console is cp1252: printing Arabic/Chinese from
+  Python raises UnicodeEncodeError. Use PYTHONIOENCODING=utf-8 and write to
+  a file.
+- 2026-10-17 - A page served from the public VM cannot fetch from
+  127.0.0.1 (Chromium blocks public-to-private requests). For browser tests
+  that need local files, run the app locally instead.
+- 2026-10-17 - The browser pane's screenshots can lag a fresh DOM change;
+  confirm the visible screen with JS before trusting a shot.

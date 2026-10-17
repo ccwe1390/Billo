@@ -138,3 +138,10 @@ Standing decisions (what is decided NOW). History lives in the record.
   Dipayan's feature/frontend branch stays unmerged; only its ideas (named
   loading steps, hard UI rules) were ported. Decided by: Evan, chat
   2026-10-17.
+- 2026-10-17 ~16:05 CDT - Translated letters: the hospital name is
+  protected like numbers; if it does not survive translation the packet
+  falls back to English (fail closed). Hindi is exempt from the name check
+  (its Command A path has no placeholders, so the check would make every
+  Hindi packet fall back) - proposed by the coding agent, accepted by Opus.
+  Letter wording changed to "apply for financial assistance". Decided by:
+  Evan (fix all six), details by Claude.

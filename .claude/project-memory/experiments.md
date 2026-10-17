@@ -50,3 +50,12 @@
     ru, ar, zh-CN, ko, vi packets all numbers_match=True. Server re-run
     14:55: full journey 11.8 s, packet es numbers_match=True.
   - Not tested live: zh-TW and hi packets (hi uses Command A, unprotected).
+- 2026-10-17 ~15:55 / 16:07 CDT - OCI Language and proper nouns. Before
+  the fix (reviewer screenshots, n=1 per language): the hospital name
+  "Cumberland General Hospital (SYNTHETIC)" came back as "(MONOETIC)" (ar,
+  zh-TW) and "CETIC" (zh-CN); zh-TW also dropped "Financial Assistance
+  Office"; "this application" became "this app" in ar/zh-CN/zh-TW. After
+  protecting the name with {n} placeholders and rewording the letter
+  (116d631), live run n=1 each: ar, zh-CN, zh-TW, es, fr, de, ru, ko, vi all
+  kept the name verbatim and passed the number check; no "app" wording in
+  ar/zh-CN/zh-TW; zh-TW kept the office name.

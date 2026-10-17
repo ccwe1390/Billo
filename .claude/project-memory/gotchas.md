@@ -26,3 +26,13 @@
   result screen as two stray "null" lines. Fixed at the chokepoint: all six
   callers in app/static/app.js go through `fill()`, which filters nulls;
   tests/test_api.py asserts `.replaceChildren(` appears only inside fill().
+- 2026-10-17 - OCI config on Windows: Notepad saved `config` as
+  `config.txt`, and the downloaded key was saved without `.pem` while
+  `key_file=` pointed at `oci_api_key.pem` -> ConfigFileNotFound. Fixed by
+  renaming both (Claude, 14:21 CDT). Check with
+  `py -c "import oci; oci.config.validate_config(oci.config.from_file())"`.
+- 2026-10-17 - Model IDs: on-demand serving accepts the model NAME (e.g.
+  `cohere.command-a-vision`, `cohere.command-a-03-2025`); list them with
+  oci.generative_ai.GenerativeAiClient.list_models (endpoint
+  https://generativeai.us-chicago-1.oci.oraclecloud.com) - the console's
+  "View code" showed `---`.

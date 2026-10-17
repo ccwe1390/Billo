@@ -54,6 +54,7 @@ the dated entry, not the digest.
 - [R - Team plan rev 2 adopted with fixes (PRD F9)](#appendix-r---team-plan-rev-2-adopted-with-fixes-prd-f9-2026-10-17-1351-cdt) (10-17)
 - [S - Blur test set and synthetic policy page; citations linked](#appendix-s---blur-test-set-and-synthetic-policy-page-citations-linked-2026-10-17-1352-cdt) (10-17)
 - [T - Language tiers built and reviewed; null-render bug fixed](#appendix-t---language-tiers-built-and-reviewed-null-render-bug-fixed-2026-10-17-1406-cdt) (10-17)
+- [U - Gate 1 passed from code; blur test passed; JSON-fence bug fixed](#appendix-u---gate-1-passed-from-code-blur-test-passed-json-fence-bug-fixed-2026-10-17-1424-cdt) (10-17)
 
 ---
 
@@ -655,3 +656,39 @@ the fake-mode server in the browser pane.
 
 **Not verified:** real OCI paths for every new language; the
 number-format risk (machine translation may write "4.812,40") is untested.
+
+# Appendix U - Gate 1 passed from code; blur test passed; JSON-fence bug fixed (2026-10-17 14:24 CDT)
+**What happened:** Gate 1 passed from code at 14:22 CDT (due ~1:45 PM).
+- Evan created the API key and `~/.oci/config`. Two naming slips blocked
+  the SDK (`config.txt`; key saved without `.pem`); Claude renamed both and
+  validated the config, printing only the region.
+- `GenerativeAiClient.list_models` (Chicago) listed 75 models;
+  `cohere.command-a-vision` is ACTIVE with CHAT capability.
+- Live extraction through the app's own code path
+  (`oci_client.extract_bill` + `main.normalize_bill`), temperature 0, n=1
+  per image:
+
+| Image | date_of_service | Other fields | Time |
+|---|---|---|---|
+| bill-01 | 2026-09-12 (correct) | 6/6 correct | 3.9 s |
+| bill-02 blur 0 | 2026-09-20 (correct) | correct* | 3.5 s |
+| bill-02 blur 1.5 | 2026-09-20 (correct) | correct* | 3.5 s |
+| bill-02 blur 3 | null (no guess) | correct | 3.3 s |
+| bill-02 blur 5 | null (no guess) | correct* | 3.2 s |
+
+*hospital name returned without "(SYNTHETIC)" on 3 of 4 bill-02 runs.
+
+**Bug found by the live run:** Command A Vision wrapped its JSON in a
+```json fence even with CohereResponseJsonFormat. Symptom: the spike
+printed "NOT valid JSON". Root cause: `json.loads` on fenced text; the app
+used the same call, so every real /extract would have returned 502 - the
+fake mode could never show this. Fix: `oci_client.parse_json_object`
+falls back to the outermost {...}; regression test in tests/test_api.py.
+All 4 test files ALL PASS.
+
+**Meaning for the demo:** the 0:14 line "it left the blurry date blank
+instead of guessing" is supported (n=1 per level, clean rendered PNGs, not
+phone photos - say so if asked).
+
+**Still blocked:** VM deploy needs the stack's public IP and SSH key from
+Evan. Not yet run live: Command A phrasing, OCI Language translation.

@@ -21,3 +21,18 @@
   a guessing model will likely copy one of those). Human read (agent +
   Opus check of blur3): legible at 0, barely at 1.5, unreadable at 3 and 5.
   Pass condition for the 0:14 demo line: date_of_service null at 3 and 5.
+- 2026-10-17 14:22 CDT - FIRST LIVE CALLS FROM CODE (gate 1, due ~1:45 PM,
+  passed ~37 min late). Model `cohere.command-a-vision` (ACTIVE in Chicago
+  per GenerativeAiClient.list_models; 75 models listed), temperature 0,
+  n=1 per image, through app.oci_client.extract_bill + main.normalize_bill.
+  - bill-01: 6/6 fields correct, 3.9 s.
+  - bill-02 blur 0 and 1.5: date of service 2026-09-20 correct.
+  - bill-02 blur 3 and 5: date_of_service null (no guess). PASS for the
+    0:14 demo line - n=1 each, clean rendered PNGs, not phone photos.
+  - Hospital name dropped "(SYNTHETIC)" on 3 of 4 bill-02 runs; all other
+    fields exact. Latency 3.2-3.9 s per bill.
+  - BUG found: the model wrapped its JSON in a ```json fence despite
+    CohereResponseJsonFormat, so json.loads failed (spike printed "NOT
+    valid JSON"); the app would have returned 502 on every real /extract.
+    Fixed: oci_client.parse_json_object falls back to the outermost {...};
+    test added in tests/test_api.py.

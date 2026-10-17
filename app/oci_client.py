@@ -62,6 +62,18 @@ def _chat(model_id, content_parts, json_mode):
     return "".join(getattr(p, "text", "") or "" for p in parts)
 
 
+def parse_json_object(text):
+    """Model text -> JSON. Command A Vision wraps its JSON in a ```json fence even in
+    JSON mode (seen live 2026-10-17), so fall back to the outermost {...}."""
+    try:
+        return json.loads(text)
+    except ValueError:
+        start, end = text.find("{"), text.rfind("}")
+        if start == -1 or end < start:
+            raise
+        return json.loads(text[start:end + 1])
+
+
 def extract_bill(image_bytes, mime):
     """Bill image -> the model's raw JSON as a dict (keys per EXTRACT_PROMPT)."""
     if is_fake():
@@ -80,7 +92,7 @@ def extract_bill(image_bytes, mime):
         m.CohereTextContentV2(text=EXTRACT_PROMPT),
         m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)),
     ], json_mode=True)
-    data = json.loads(text)
+    data = parse_json_object(text)
     if not isinstance(data, dict):
         raise ValueError("model did not return a JSON object")
     return data

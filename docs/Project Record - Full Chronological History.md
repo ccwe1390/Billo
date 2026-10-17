@@ -57,6 +57,7 @@ the dated entry, not the digest.
 - [U - Gate 1 passed from code; blur test passed; JSON-fence bug fixed](#appendix-u---gate-1-passed-from-code-blur-test-passed-json-fence-bug-fixed-2026-10-17-1424-cdt) (10-17)
 - [V - Deployed to OCI VM; 5 PM gate passed; number-safe translation](#appendix-v---deployed-to-oci-vm-5-pm-gate-passed-number-safe-translation-2026-10-17-1511-cdt) (10-17)
 - [W - Paper Trail design built and deployed (GO at 15:40)](#appendix-w---paper-trail-design-built-and-deployed-go-at-1540-2026-10-17-1541-cdt) (10-17)
+- [X - MySQL deleted; reviewer screenshots; axe audit; 6 bugs found](#appendix-x---mysql-deleted-reviewer-screenshots-axe-audit-6-bugs-found-2026-10-17-1602-cdt) (10-17)
 
 ---
 
@@ -799,3 +800,45 @@ Traditional Chinese labels render in a lighter system
 face; Devanagari and Arabic fonts load for every visitor because the
 language buttons show those scripts (~120 KB); all new es/ar/zh strings are
 AI drafts (TODO-REVIEW); Font Awesome Free license page unread.
+
+# Appendix X - MySQL deleted; reviewer screenshots; axe audit; 6 bugs found (2026-10-17 16:02 CDT)
+**What happened (Evan's answers to the risk list, ~15:49 CDT):** the
+submission is the teammates' presentation with a live demo of the site;
+the phone test is later; Dipayan has been told; Claude to delete the
+unused MySQL resources, produce reviewer screenshots (Arabic, Simplified +
+Traditional Chinese) and run the accessibility audit.
+
+**MySQL cleanup:** read-only checks first. The app has no database code;
+the kit's MySQL.8 DB system + HeatWave.32GB cluster had cost $0.3175 on
+2026-10-17 (not Always Free). Automatic backups were set to DELETE (they
+were RETAIN, which would have outlived the database), then HeatWave and the
+DB system were deleted via the SDK (DELETED 15:58 and 16:01). Live journey
+still passes.
+
+**Reviewer screenshots:** 21 images at 375px with REAL AI text. The live
+page could not fetch the bill image from localhost (the browser blocks
+public-to-private requests), so they were taken from a local server on the
+same commit, using real OCI through the laptop API key. Sent to Evan; kept
+in review-screens/ (gitignored).
+
+**Accessibility (axe-core 4.14.0):** 0 violations on all 5 screens in en
+and ar. Sanity checks: 47 rules passed on the Result screen; a planted
+img-without-alt was flagged critical. The packet page (sandboxed iframe,
+audited as its own page) has 2 moderate issues: no `<main>`, content
+outside landmarks. Report: docs/2026-10-17_accessibility-audit.md.
+
+**Bugs the screenshots exposed (axe passed all of them), awaiting Evan:**
+1. OCI Language translated the hospital name's "(SYNTHETIC)" as
+   "(MONOETIC)" (ar, zh-TW) or "CETIC" (zh-CN). The number lock only guards
+   digits, so names are unprotected.
+2. The packet's side-by-side letters overflow at phone width (351px of
+   content in a 276px column).
+3. A decorative check icon next to each field's checkbox looks ticked even
+   when the field is unconfirmed.
+4. In Arabic, English inputs and paragraphs are not marked LTR: the
+   hospital name is clipped and footnote markers land mid-sentence.
+5. "this application" was translated as "this app"; zh-TW dropped
+   "Financial Assistance Office".
+6. The packet lacks a `<main>` landmark.
+Also seen: a late /extract response can overwrite confirmations if a bill
+is uploaded twice quickly (edge case).

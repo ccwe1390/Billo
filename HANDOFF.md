@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 15:41 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-W).
+**Last updated: 2026-10-17 16:02 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-X).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -79,9 +79,15 @@ snapshot; history lives in the record (Phase 0, Appendices A-W).
 2. DONE 15:40: "Paper Trail" design live (record W, commit c689291).
 3. 3:00 PM VUMC gate passed with nobody opening VUMC's PDF: synthetic
    hospital stands unless Evan says otherwise.
-4. Pre-mortem open items (docs/2026-10-17_pre-mortem.md): T1 submission
-   rules, T2 validation V1 + interviews, T3 real-phone test, T8 billing /
-   HeatWave. Also: an axe/Lighthouse audit saved in docs/ (design done-check).
+4. Submission = teammates' presentation with a LIVE demo of the site (Evan,
+   ~15:49). Keep the live URL stable; record a backup video before it.
+5. Open: T2 V1 chatbot test (prompt + score sheet given in chat; Evan runs),
+   T3 real-phone test (Evan, later), budget alert. Done: MySQL/HeatWave
+   deleted (record X), axe audit clean (docs/2026-10-17_accessibility-audit.md),
+   reviewer screenshots sent (ar, zh-CN, zh-TW).
+6. Awaiting Evan's go: fix the 6 bugs in record X (name mistranslated as
+   "MONOETIC", packet overflow on phones, misleading check icon, RTL
+   direction, "this app" wording, packet <main>).
 
 ## Handoff prompt
 
@@ -91,7 +97,7 @@ HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
 DIRECTION fork + F9 amendments), then the record's last 3 appendices and
 .claude/project-memory/operations.md (VM details).
 
-State (2026-10-17 15:41 CDT): "Bill to Help" - bill photo -> hospital
+State (2026-10-17 16:02 CDT): "Bill to Help" - bill photo -> hospital
 financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
 zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
@@ -101,8 +107,9 @@ gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
 opc@207.211.181.174. UI: "Paper Trail" design (policy table with your row
 highlighted, footnoted citations; vendored Web Awesome CSS + IBM Plex;
 brief in docs/research/2026-10-17_design-system-brief.md). Record is
-current through Appendix W. Pre-mortem: docs/2026-10-17_pre-mortem.md
-(T4, T5 done; T1-T3, T8 open).
+current through Appendix X. Pre-mortem: docs/2026-10-17_pre-mortem.md
+(T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
+open). 6 bugs from the reviewer screenshots await Evan's go (record X).
 
 Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
 ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.

@@ -64,3 +64,10 @@
   /fonts/fonts.css, an Arabic woff2, a Web Awesome variant CSS and an icon
   all 200; live app.js contains the new markers; real-AI journey 11.4 s,
   Spanish packet numbers_match=True.
+- 2026-10-17 15:52-16:01 CDT - Deleted the starter kit's unused MySQL DB
+  system "TNHacks26 Bill Decoder" (MySQL.8) and its HeatWave.32GB cluster
+  via the OCI SDK, with Evan's approval. Automatic-backup retention was set
+  to DELETE first; final backup skipped. HeatWave DELETED 15:58:15, DB
+  system DELETED 16:01:35; list_db_systems shows 0 ACTIVE. Live journey
+  passed afterwards (16:01, 11.3 s). NEVER re-apply the HackTN26-starterkit
+  stack: Terraform would recreate both, and `destroy` would delete the VM.

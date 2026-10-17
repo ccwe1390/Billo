@@ -17,3 +17,10 @@
   account. So keep the account un-upgraded; spend past the credits then
   stops rather than charging the card (per the README - unverified with
   Oracle).
+- 2026-10-17 15:49 CDT - Usage API (read-only), cost on 2026-10-17 UTC so
+  far: $0.3175, all MySQL: DB ECPU $0.2928, HeatWave capacity $0.0220,
+  storage $0.0027. The kit's MySQL.8 DB system + HeatWave.32GB cluster are
+  NOT Always Free (~$0.10/hr), and the app never used them. Evan approved
+  deletion; Claude deleted both via the OCI SDK (automatic backups set to
+  DELETE first, final backup skipped). VM (E5.Flex) cost had not appeared
+  in the usage data yet (lag). Budget alert still UNCONFIRMED.

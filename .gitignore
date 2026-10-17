@@ -8,3 +8,7 @@ data/synthea/
 docs/The_Hacker_Toolkit_TEMPLATE_AND_EXAMPLES_ONLY.pdf
 __pycache__/
 *.pyc
+
+# local-only review artifacts (never deployed)
+review-screens/
+app/static/axe.min.js

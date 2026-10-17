@@ -49,7 +49,7 @@ act on a tripwire.
 |---|------|----------|------|-------|--------|
 | T6 | No recorded backup; the live demo depends on venue Wi-Fi, one VM and ~12 s of model calls | Server journey 11.8 s; single E5.Flex VM | Record the full journey Sun ~11:00 and label it "recorded this morning". Rehearse once on venue Wi-Fi | Evan | Sun 11:00 |
 | T7 | Pitch statistics unverified (29%, 52%, $14B, 2,984, 95,000) | Rev-2 plan: "open each before putting its number on a slide" | Open every source; cut any number that can't be confirmed | Claude (research) + Evan | Sun 10:00 |
-| T8 | The HeatWave cluster and the E5.Flex VM may bill; budget alert unconfirmed | operations.md: HeatWave.32GB Always-Free status UNVERIFIED; VM confirmed E5.Flex | Check Billing -> Cost analysis; set a budget alert; delete the HeatWave cluster if unused (the app stores nothing) | Evan | Sat 18:00 |
+| T8 | MOSTLY DONE 16:01 (MySQL + HeatWave deleted, record X; budget alert still open) - The HeatWave cluster and the E5.Flex VM may bill; budget alert unconfirmed | operations.md: HeatWave.32GB Always-Free status UNVERIFIED; VM confirmed E5.Flex | Check Billing -> Cost analysis; set a budget alert; delete the HeatWave cluster if unused (the app stores nothing) | Evan | Sat 18:00 |
 
 ### Track
 

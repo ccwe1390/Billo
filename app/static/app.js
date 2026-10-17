@@ -92,6 +92,27 @@ const T = {
   r_mismatch:  {en: "Your bill names a different hospital. This demo has only one hospital's policy, and it is synthetic, so this estimate is not about your hospital.", es: "Su factura menciona otro hospital. Esta demostración solo tiene la política de un hospital, y es sintética, así que esta estimación no corresponde a su hospital.", ar: "تذكر فاتورتك مستشفى مختلفًا. يحتوي هذا العرض التجريبي على سياسة مستشفى واحد فقط، وهي اصطناعية، لذا فإن هذا التقدير لا يخص مستشفاك.", "zh-CN": "您的账单上是另一家医院。本演示只有一家医院的政策，而且是合成的，所以此估算与您的医院无关。", "zh-TW": "您的帳單上是另一家醫院。本示範只有一家醫院的政策，而且是合成的，所以此估算與您的醫院無關。"}, // TODO-REVIEW es+ar+zh
   r_deadline_passed:{en: "This date has passed. Ask the hospital whether it will still accept your application.", es: "Esta fecha ya pasó. Pregunte al hospital si todavía aceptará su solicitud.", ar: "لقد مضى هذا التاريخ. اسأل المستشفى هل سيقبل طلبك رغم ذلك.", "zh-CN": "这个日期已经过了。请询问医院是否仍会接受您的申请。", "zh-TW": "這個日期已經過了。請詢問醫院是否仍會接受您的申請。"}, // TODO-REVIEW es+ar+zh
   income_hint: {en: "Type the amount in US dollars, like 38000 or 38,000.50.", es: "Escriba el monto en dólares de EE. UU., como 38000 o 38,000.50.", ar: "اكتب المبلغ بالدولار الأمريكي، مثل 38000 أو 38,000.50.", "zh-CN": "请用美元填写金额，例如 38000 或 38,000.50。", "zh-TW": "請用美元填寫金額，例如 38000 或 38,000.50。"}, // TODO-REVIEW es+ar+zh
+  home_open:   {en: "All bills from this visit", es: "Todas las facturas de esta visita", ar: "جميع فواتير هذه الزيارة", "zh-CN": "本次就诊的所有账单", "zh-TW": "本次就診的所有帳單"}, // TODO-REVIEW es+ar+zh
+  load_home:   {en: "Adding up all the bills...", es: "Sumando todas las facturas...", ar: "جارٍ جمع كل الفواتير...", "zh-CN": "正在汇总所有账单...", "zh-TW": "正在彙總所有帳單..."}, // TODO-REVIEW es+ar+zh
+  home_title:  {en: "All bills from this visit", es: "Todas las facturas de esta visita", ar: "جميع فواتير هذه الزيارة", "zh-CN": "本次就诊的所有账单", "zh-TW": "本次就診的所有帳單"}, // TODO-REVIEW es+ar+zh
+  home_estimate:{en: "Up to {amt} could be reduced if the hospital approves.", es: "Hasta {amt} podrían reducirse si el hospital lo aprueba.", ar: "قد يصل التخفيض إلى {amt} إذا وافق المستشفى.", "zh-CN": "如果医院批准，最多可减免 {amt}。", "zh-TW": "如果醫院核准，最多可減免 {amt}。"}, // TODO-REVIEW es+ar+zh
+  home_estimate_note:{en: "Estimate. Synthetic bills. The hospital decides.", es: "Estimación. Facturas sintéticas. El hospital decide.", ar: "تقدير. فواتير اصطناعية. المستشفى هو من يقرر.", "zh-CN": "估算。合成账单。由医院决定。", "zh-TW": "估算。合成帳單。由醫院決定。"}, // TODO-REVIEW es+ar+zh
+  home_not_eligible:{en: "Not eligible under this policy. Ask the hospital about a payment plan.", es: "No califica según esta política. Pregunte al hospital por un plan de pagos.", ar: "غير مؤهل بحسب هذه السياسة. اسأل المستشفى عن خطة سداد.", "zh-CN": "根据本政策不符合资格。请向医院咨询付款计划。", "zh-TW": "根據本政策不符合資格。請向醫院洽詢付款計畫。"}, // TODO-REVIEW es+ar+zh
+  home_one_approval:{en: "One approval may cover all {n} bills.", es: "Una sola aprobación puede cubrir las {n} facturas.", ar: "قد تغطي موافقة واحدة جميع الفواتير الـ {n}.", "zh-CN": "一次批准可能涵盖全部 {n} 份账单。", "zh-TW": "一次核准可能涵蓋全部 {n} 份帳單。"}, // TODO-REVIEW es+ar+zh
+  home_yours:  {en: "(your bill)", es: "(su factura)", ar: "(فاتورتك)", "zh-CN": "（您的账单）", "zh-TW": "（您的帳單）"}, // TODO-REVIEW es+ar+zh
+  home_bill_line:{en: "{amount}, statement date {date}", es: "{amount}, fecha del estado de cuenta {date}", ar: "{amount}، تاريخ الكشف {date}", "zh-CN": "{amount}，账单日期 {date}", "zh-TW": "{amount}，帳單日期 {date}"}, // TODO-REVIEW es+ar+zh
+  home_bill_deadline:{en: "Apply by {date}", es: "Presente la solicitud antes del {date}", ar: "قدّم الطلب قبل {date}", "zh-CN": "请在 {date} 前申请", "zh-TW": "請在 {date} 前申請"}, // TODO-REVIEW es+ar+zh
+  home_bill_reduction:{en: "Could be reduced by up to {amount}", es: "Podría reducirse hasta {amount}", ar: "قد ينخفض بما يصل إلى {amount}", "zh-CN": "最多可减免 {amount}", "zh-TW": "最多可減免 {amount}"}, // TODO-REVIEW es+ar+zh
+  rem_title:   {en: "Reminders", es: "Recordatorios", ar: "تذكيرات", "zh-CN": "提醒", "zh-TW": "提醒"}, // TODO-REVIEW es+ar+zh
+  rem_apply:   {en: "Apply by {date}.", es: "Presente la solicitud antes del {date}.", ar: "قدّم الطلب قبل {date}.", "zh-CN": "请在 {date} 前申请。", "zh-TW": "請在 {date} 前申請。"}, // TODO-REVIEW es+ar+zh
+  rem_follow:  {en: "30 days after you apply: if you have no decision yet, call {phone}.", es: "30 días después de presentarla: si aún no tiene una decisión, llame al {phone}.", ar: "بعد 30 يومًا من التقديم: إن لم يصلك قرار، اتصل على {phone}.", "zh-CN": "申请 30 天后：如果还没有决定，请致电 {phone}。", "zh-TW": "申請 30 天後：如果還沒有決定，請致電 {phone}。"}, // TODO-REVIEW es+ar+zh
+  rem_reuse:   {en: "Another bill from this hospital? Your answers are reused while this page is open.", es: "¿Otra factura de este hospital? Sus respuestas se reutilizan mientras esta página esté abierta.", ar: "فاتورة أخرى من هذا المستشفى؟ يُعاد استخدام إجاباتك ما دامت هذه الصفحة مفتوحة.", "zh-CN": "这家医院还有其他账单？本页面打开期间，您的回答会被重复使用。", "zh-TW": "這家醫院還有其他帳單？本頁面開啟期間，您的回答會被重複使用。"}, // TODO-REVIEW es+ar+zh
+  rem_ics:     {en: "Add to my calendar", es: "Agregar a mi calendario", ar: "أضف إلى تقويمي", "zh-CN": "添加到我的日历", "zh-TW": "加入我的行事曆"}, // TODO-REVIEW es+ar+zh
+  ics_deadline:{en: "BillScan: apply for financial assistance by today", es: "BillScan: presente hoy, a más tardar, la solicitud de asistencia financiera", ar: "BillScan: قدّم طلب المساعدة المالية اليوم كحد أقصى", "zh-CN": "BillScan：今天是申请经济援助的最后期限", "zh-TW": "BillScan：今天是申請財務援助的最後期限"}, // TODO-REVIEW es+ar+zh
+  ics_follow:  {en: "BillScan: follow up on your financial assistance application", es: "BillScan: dé seguimiento a su solicitud de asistencia financiera", ar: "BillScan: تابع طلب المساعدة المالية", "zh-CN": "BillScan：跟进您的经济援助申请", "zh-TW": "BillScan：追蹤您的財務援助申請"}, // TODO-REVIEW es+ar+zh
+  chip_selected:{en: "{name} selected", es: "{name} seleccionado", ar: "تم اختيار {name}", "zh-CN": "已选择 {name}", "zh-TW": "已選擇 {name}"}, // TODO-REVIEW es+ar+zh
+  qr_alt:      {en: "QR code that opens BillScan on a phone", es: "Código QR que abre BillScan en un teléfono", ar: "رمز QR يفتح BillScan على الهاتف", "zh-CN": "可在手机上打开 BillScan 的二维码", "zh-TW": "可在手機上開啟 BillScan 的 QR 碼"}, // TODO-REVIEW es+ar+zh
+  qr_caption:  {en: "Scan to open on a phone", es: "Escanee para abrir en un teléfono", ar: "امسح الرمز للفتح على الهاتف", "zh-CN": "扫码即可在手机上打开", "zh-TW": "掃描即可在手機上開啟"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = {en: "English", es: "Español", ar: "العربية", "zh-CN": "简体中文", "zh-TW": "繁體中文",
                     vi: "Tiếng Việt", fr: "Français", ko: "한국어", ru: "Русский", de: "Deutsch", hi: "हिन्दी"};
@@ -105,7 +126,8 @@ const FIELD_ORDER = [
 const REQUIRED = new Set(["statement_date", "amount_due_cents"]); // the engine needs these two
 
 const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, answers: null,
-          result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0};
+          result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0,
+          home: null, homeSeq: 0, fromQr: false};
 let firstShow = true, curScreen = 0;
 
 // ---------- helpers
@@ -149,11 +171,14 @@ function show(n) {
   }
   const changed = n !== curScreen;
   curScreen = n;
-  for (let i = 1; i <= 5; i++) document.getElementById("s" + i).hidden = i !== n;
+  for (let i = 1; i <= 6; i++) document.getElementById("s" + i).hidden = i !== n;
   applyDir();
-  renderSteps(n);
+  const chrome = n !== 6; // the Home screen is not one of the five steps
+  document.getElementById("steps").hidden = !chrome;
+  document.getElementById("step-cap").hidden = !chrome;
+  if (chrome) renderSteps(n);
   document.getElementById("foot").textContent = t("not_affiliated");
-  [null, renderStart, renderBill, renderQuestions, renderResult, renderPacketShell][n]();
+  [null, renderStart, renderBill, renderQuestions, renderResult, renderPacketShell, renderHome][n]();
   if (!firstShow && changed) { // move focus to the new screen's heading so keyboard and screen-reader users land on it
     const h = document.querySelector("#s" + n + " h2");
     if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
@@ -268,10 +293,25 @@ function blankBill() {
 function langBtn(l) {
   return el("button", {"aria-pressed": String(S.lang === l), lang: l, onclick: () => { S.lang = l; S.view = viewFor(l); show(1); }}, LANG_NAMES[l]);
 }
+// Desktop only: a QR code that opens this page on a phone with the hospital preselected. Any failure draws nothing.
+function qrFigure() {
+  try {
+    if (typeof qrcode !== "function" || !window.matchMedia("(min-width: 900px)").matches) return null;
+    const q = qrcode(0, "M");
+    q.addData(location.origin + "/?hospital=cumberland_synthetic");
+    q.make();
+    return el("figure", {class: "qr"},
+      el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),
+      el("figcaption", null, t("qr_caption")));
+  } catch (e) {
+    return null;
+  }
+}
 function renderStart() {
   const root = document.getElementById("s1");
   fill(root,
     el("p", {class: "notice"}, t("notice")),
+    S.fromQr ? el("p", {class: "chip"}, ...tNodes("chip_selected", {name: "Cumberland General Hospital (SYNTHETIC)"})) : null,
     el("p", {class: "muted"}, t("no_id")),
     el("h2", {class: "with-icon", id: "pick-lang-label"}, icon("globe"), t("pick_lang")),
     el("div", {class: "row", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER1.map(langBtn)),
@@ -281,6 +321,7 @@ function renderStart() {
     el("div", {class: "row", role: "group", "aria-labelledby": "for-whom-label"}, ...[["self", "me"], ["family", "family"]].map(([v, k]) =>
       el("button", {"aria-pressed": String(S.forWhom === v), onclick: () => { S.forWhom = v; show(1); }}, t(k)))),
     el("div", {class: "row"}, el("button", {class: "primary", onclick: () => { showMsg(""); show(2); }}, t("start"))),
+    qrFigure(),
   );
 }
 
@@ -328,7 +369,7 @@ async function onFile(ev) {
   const seq = (S.extractSeq = (S.extractSeq || 0) + 1); // a newer upload makes this one stale
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
   S.imageUrl = URL.createObjectURL(f);
-  S.bill = null;
+  S.bill = null; S.home = null; // a new photo makes the all-bills totals stale
   renderBill();
   showMsg(t("reading"), true);
   const upload = await shrinkImage(f);
@@ -443,7 +484,7 @@ async function submitAnswers() {
     return;
   }
   if (seq !== S.submitSeq) return;
-  S.view = viewFor(S.lang); showMsg("");
+  S.view = viewFor(S.lang); showMsg(""); S.home = null; // new answers: recompute the all-bills totals
   S.busy = false; show(4);
 }
 
@@ -522,7 +563,97 @@ function renderResult() {
     el("div", {class: "row"},
       el("button", {onclick: () => show(3)}, t("back")),
       eligible ? el("button", {class: "primary", onclick: () => { show(5); loadPacket(); }}, t("r_packet")) : null,
+      el("button", {onclick: () => show(6)}, t("home_open")),
       el("button", {onclick: restart}, t("restart"))));
+}
+
+// ---------- screen 6: home (all bills from this visit)
+function money(cents) { // 481240 -> "$4,812.40"; integer math only
+  const dollars = Math.floor(cents / 100), rest = cents % 100;
+  return "$" + String(dollars).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "." + String(rest).padStart(2, "0");
+}
+function icsText(s) { // RFC 5545 TEXT escaping
+  return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r\n|\r|\n/g, "\\n");
+}
+function utcStamp(d) { // YYYYMMDDTHHMMSSZ
+  return d.toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+}
+// events: [{date: "YYYYMMDD", summary: text}] -> iCalendar text, CRLF line endings (pure: easy to test)
+function buildIcs(events, now) {
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//BillScan//Demo//EN"];
+  events.forEach((ev, i) => {
+    const uid = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : Date.now() + "-" + i;
+    lines.push("BEGIN:VEVENT", "UID:" + uid + "@billscan.demo", "DTSTAMP:" + utcStamp(now),
+      "DTSTART;VALUE=DATE:" + ev.date, "SUMMARY:" + icsText(ev.summary), "END:VEVENT");
+  });
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n") + "\r\n";
+}
+function downloadIcs(h) {
+  const now = new Date();
+  const later = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 30); // the user's local today + 30 days
+  const ymd = later.getFullYear() + String(later.getMonth() + 1).padStart(2, "0") + String(later.getDate()).padStart(2, "0");
+  const ics = buildIcs([
+    {date: h.earliest_deadline.date.replace(/-/g, ""), summary: t("ics_deadline")},
+    {date: ymd, summary: t("ics_follow")},
+  ], now);
+  const url = URL.createObjectURL(new Blob([ics], {type: "text/calendar"}));
+  const a = el("a", {href: url, download: "billscan-reminders.ics"});
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000); // a moment later, so the download has started
+}
+function homeNav() {
+  return el("div", {class: "row"},
+    el("button", {onclick: () => { showMsg(""); show(4); }}, t("back")),
+    el("button", {onclick: restart}, t("restart")));
+}
+function renderHome() {
+  const root = document.getElementById("s6");
+  const h = S.home;
+  if (!h) {
+    fill(root, el("h2", null, t("home_title")), homeNav());
+    showMsg(t("load_home"), true);
+    const seq = (S.homeSeq = (S.homeSeq || 0) + 1);
+    post("/household", {answers: S.answers, bill: S.bill}).then(result => {
+      if (seq !== S.homeSeq || curScreen !== 6) return;
+      S.home = result; showMsg(""); renderHome();
+    }, e => {
+      if (seq !== S.homeSeq || curScreen !== 6) return;
+      showMsg(e.message); fill(root, el("h2", null, t("home_title")), homeNav());
+    });
+    return;
+  }
+  const notes = makeNotes();
+  const headline = h.eligible
+    ? el("div", {class: "card"},
+        el("p", {class: "lead"}, ...tNodes("home_estimate", {amt: money(h.estimate_cents)})),
+        el("p", {class: "muted"}, t("home_estimate_note")))
+    : el("div", {class: "card"}, el("p", {class: "lead"}, t("home_not_eligible")));
+  const covers = h.one_application_covers_all
+    ? [el("p", null, ...tNodes("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
+       englishOnly("p", {class: "muted"}, h.coverage.text_en)]
+    : [];
+  const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => el("li", {class: "card"},
+    el("p", null, englishOnly("strong", null, b.label_en), b.source === "yours" ? " " + t("home_yours") : null),
+    el("p", null, ...tNodes("home_bill_line", {amount: money(b.amount_due_cents), date: b.statement_date})),
+    el("p", null, ...tNodes("home_bill_deadline", {date: b.deadline.date})),
+    h.eligible ? el("p", null, ...tNodes("home_bill_reduction", {amount: money(b.reduction_cents)})) : null)));
+  const reminders = el("div", {class: "card"},
+    el("strong", null, t("rem_title")),
+    el("p", null, ...tNodes("rem_apply", {date: h.earliest_deadline.date})),
+    el("p", null, ...tNodes("rem_follow", {phone: h.contacts.phone})),
+    el("p", null, t("rem_reuse")),
+    el("div", {class: "row"}, el("button", {onclick: () => downloadIcs(h)}, t("rem_ics"))));
+  fill(root,
+    el("h2", null, t("home_title")),
+    headline,
+    ...covers,
+    bills,
+    reminders,
+    notes.list(),
+    homeNav());
 }
 
 // ---------- screen 5: packet
@@ -547,8 +678,9 @@ async function loadPacket() {
 
 function restart() {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
-  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0});
+  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0, home: null, homeSeq: 0});
   showMsg(""); show(1);
 }
 
+S.fromQr = new URLSearchParams(location.search).get("hospital") === "cumberland_synthetic";
 show(1);

@@ -183,6 +183,15 @@ mark.hl { padding: 0 var(--s1); font-weight: 700; color: var(--ink); background-
 ul.plain { margin: 0; padding-inline-start: var(--s5); list-style: disc; }
 ul.plain li { margin-block: var(--s1); }
 
+/* ---------- home (all bills from this visit), start-screen chip and QR */
+ul.plain.bills { margin: var(--s3) 0; padding: 0; list-style: none; }
+ul.plain.bills > li { margin-block: var(--s3); }
+.bills .card strong { display: inline; margin: 0; }
+.chip { display: block; width: fit-content; max-width: 100%; margin: 0 0 var(--s3); padding: var(--s1) var(--s3); font-size: var(--fs-14); font-weight: 700; color: var(--pen); border: 1px solid var(--pen); border-radius: 4px; }
+.qr { margin-block: var(--s5) 0; margin-inline: 0; padding: 0; text-align: center; border: 0; }
+.qr img { display: block; margin-inline: auto; image-rendering: pixelated; }
+.qr figcaption { margin-block-start: var(--s2); font-size: var(--fs-14); color: var(--ink-2); }
+
 /* footnotes: one ordered list; each row is a full-width link, 48px tall at least */
 .notes { list-style: none; margin: var(--s4) 0 0; padding: 0; border-block-start: 1px solid var(--rule); font-size: var(--fs-14); }
 .notes li { margin: 0; border-block-end: 1px solid var(--rule); }

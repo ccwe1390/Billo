@@ -1,12 +1,12 @@
 "use strict";
-// Bill to Help UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
+// BillScan UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
 
 // UI strings. Every es, ar, zh-CN and zh-TW string is a draft for a human translator.
 // TODO-REVIEW: all es/ar/zh strings below (one marker per line).
 // Tier 1 (en, es, ar, zh-CN, zh-TW) has a translated interface. Tier 2 (vi, fr, ko, ru, de, hi) keeps the
 // English interface (t() falls back to en): only the explanation and the packet letter are translated.
 const T = {
-  app_title:   {en: "Bill to Help", es: "Factura a Ayuda", ar: "من الفاتورة إلى المساعدة", "zh-CN": "从账单到帮助", "zh-TW": "從帳單到幫助"}, // TODO-REVIEW es+ar+zh
+  app_title:   {en: "BillScan", es: "BillScan", ar: "BillScan", "zh-CN": "BillScan", "zh-TW": "BillScan"}, // brand name: identical in every language
   notice:      {en: "Nothing you enter is saved. Demo uses synthetic bills only.", es: "Nada de lo que escribe se guarda. La demostración usa solo facturas sintéticas.", ar: "لا يتم حفظ أي شيء تدخله. العرض التجريبي يستخدم فواتير اصطناعية فقط.", "zh-CN": "您输入的任何内容都不会被保存。演示仅使用合成账单。", "zh-TW": "您輸入的任何內容都不會被儲存。示範僅使用合成帳單。"}, // TODO-REVIEW es+ar+zh
   no_id:       {en: "We do not ask for your name, immigration status, Social Security number, or ID.", es: "No pedimos su nombre, su estatus migratorio, su número de Seguro Social ni su identificación.", ar: "لا نطلب اسمك أو وضعك في الهجرة أو رقم الضمان الاجتماعي أو أي هوية.", "zh-CN": "我们不会询问您的姓名、移民身份、社会安全号码或身份证件。", "zh-TW": "我們不會詢問您的姓名、移民身分、社會安全號碼或身分證件。"}, // TODO-REVIEW es+ar+zh
   pick_lang:   {en: "Choose a language", es: "Elija un idioma", ar: "اختر اللغة", "zh-CN": "选择语言", "zh-TW": "選擇語言"}, // TODO-REVIEW es+ar+zh
@@ -301,6 +301,27 @@ function renderBill() {
       el("button", {class: "primary", id: "bill-next", disabled: true, onclick: () => show(3)}, t("continue_"))));
   if (S.bill) renderFields();
 }
+// Downscale big photos in the browser (long side 2000 px, JPEG 0.85) so phone photos fit the upload cap.
+// Any failure returns the original file; the server then accepts or refuses it as before.
+async function shrinkImage(file) {
+  const small = (file.type === "image/png" || file.type === "image/jpeg") && file.size <= 2 * 1024 * 1024;
+  try {
+    const bmp = await createImageBitmap(file, {imageOrientation: "from-image"});
+    const long = Math.max(bmp.width, bmp.height);
+    if (small && long <= 2000) { bmp.close(); return file; }
+    const scale = Math.min(1, 2000 / long);
+    const cw = Math.round(bmp.width * scale), ch = Math.round(bmp.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = cw; canvas.height = ch;
+    canvas.getContext("2d").drawImage(bmp, 0, 0, cw, ch);
+    bmp.close();
+    const blob = await new Promise(r => canvas.toBlob(r, "image/jpeg", 0.85));
+    if (!blob) return file;
+    return new File([blob], "bill.jpg", {type: "image/jpeg"});
+  } catch (e) {
+    return file;
+  }
+}
 async function onFile(ev) {
   const f = ev.target.files[0];
   if (!f) return;
@@ -310,8 +331,10 @@ async function onFile(ev) {
   S.bill = null;
   renderBill();
   showMsg(t("reading"), true);
+  const upload = await shrinkImage(f);
+  if (seq !== S.extractSeq) return;
   const fd = new FormData();
-  fd.append("file", f);
+  fd.append("file", upload);
   let failMsg = t("read_failed");
   try {
     const r = await fetch("/extract", {method: "POST", body: fd});

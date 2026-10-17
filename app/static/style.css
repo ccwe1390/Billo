@@ -1,4 +1,4 @@
-/* Bill to Help: "Paper Trail" design system (brief: docs/research/2026-10-17_design-system-brief.md, Direction 1).
+/* BillScan: "Paper Trail" design system (brief: docs/research/2026-10-17_design-system-brief.md, Direction 1).
    Loads AFTER Web Awesome (default theme + native.css) and is UNLAYERED, so it wins over their @layer rules.
    Rules that hold everywhere: logical properties only (it must mirror in Arabic); no box-shadow except the focus halo;
    weights 400 and 700 only; every control is at least 48px; --rule is for borders and dividers, never text. */

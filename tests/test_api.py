@@ -142,11 +142,11 @@ assert "<script>alert(1)" not in evil_html and "&lt;script&gt;" in evil_html
 
 # translation that changes a number -> fallback to English-only
 real_tr = oci_client.translate_many
-oci_client.translate_many = lambda texts, lang: [t.replace("4,812.40", "4,812.04") for t in texts]
+oci_client.translate_many = lambda texts, lang, keep=(): [t.replace("4,812.40", "4,812.04") for t in texts]
 fb = main.packet(body, format="json")
 assert fb["translation_check"] == {"numbers_match": False, "fallback_used": True}
 assert fb["cover_letter_translated"] == ""
-oci_client.translate_many = lambda texts, lang: (_ for _ in ()).throw(NotImplementedError())
+oci_client.translate_many = lambda texts, lang, keep=(): (_ for _ in ()).throw(NotImplementedError())
 assert main.packet(body, format="json")["translation_check"]["fallback_used"]
 oci_client.translate_many = real_tr
 
@@ -208,6 +208,34 @@ assert oci_client.restore_numbers("Monto: ${0}. Cuenta CGH-{1}. Antes del {2}.",
     "Monto: $4,812.40. Cuenta CGH-00482913. Antes del 2027-05-29."
 many = " ".join(str(i) for i in range(12))
 assert oci_client.restore_numbers(oci_client.protect_numbers(many)[0], oci_client.protect_numbers(many)[1]) == many
+
+# names are shielded too: the hospital name must not be machine-translated ("(MONOETIC)" seen live)
+hosp = "Cumberland General Hospital (SYNTHETIC)"
+masked, nums = oci_client.protect_numbers("To %s: due $4,812.40" % hosp, keep=[hosp])
+assert masked == "To {0}: due ${1}", masked
+assert nums == [hosp, "4,812.40"], nums
+assert oci_client.restore_numbers(masked, nums) == "To %s: due $4,812.40" % hosp
+assert oci_client.protect_numbers("Due $4,812.40") == ("Due ${0}", ["4,812.40"])      # no keep: unchanged
+real_tr = oci_client.translate_many
+oci_client.translate_many = lambda texts, lang, keep=(): [t.replace("(SYNTHETIC)", "(MONOETIC)") for t in texts]
+mangled = main.packet(body, format="json")
+assert mangled["translation_check"]["fallback_used"] is True and mangled["cover_letter_translated"] == ""
+oci_client.translate_many = lambda texts, lang, keep=(): list(texts)
+intact = main.packet(body, format="json")
+assert intact["translation_check"]["fallback_used"] is False and intact["cover_letter_translated"]
+oci_client.translate_many = real_tr
+
+# packet layout: <main> landmark, letter columns stack on phones; family wording is unambiguous
+ar_html = main.packet(body).body.decode("utf-8")
+assert "<main>" in ar_html and "max-width:640px" in ar_html
+fam = main.packet(main.ResultIn(bill=B, answers=answers(language="en", for_whom="family"), result=res), format="json")
+assert "apply for financial assistance" in fam["cover_letter_en"] and "with this application" not in fam["cover_letter_en"]
+
+# confirm labels carry only the real checkbox (a decorative check icon looked ticked when unconfirmed)
+assert 'cb, icon("check")' not in js
+# English bill values in RTL pages: inputs pick their own direction; deadline and documents stay one LTR run
+assert js.count('dir: "auto"') >= 3
+assert 'el("p", {lang: "en", dir: "ltr"}, deadlineLine(' in js
 
 # no placeholder copy may reach a demo screen (pre-mortem T4)
 assert "Content pending" not in js and "TODO-CONTENT" not in js

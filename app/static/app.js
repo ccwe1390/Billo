@@ -309,17 +309,17 @@ function renderFields() {
       input = el("select", {id}, ...[["", "ins_blank"], ["self_pay", "ins_self_pay"], ["insured", "ins_insured"], ["unknown", "ins_unknown"]]
         .map(([v, k]) => el("option", {value: v, selected: (f.value || "") === v}, t(k))));
     } else if (name.endsWith("date") || name === "date_of_service") {
-      input = el("input", {type: "date", id, value: f.value || ""});
+      input = el("input", {type: "date", id, dir: "auto", value: f.value || ""});
     } else if (name === "amount_due_cents") {
-      input = el("input", {type: "text", id, inputmode: "decimal", value: f.value === null ? "" : centsToDollars(f.value)});
+      input = el("input", {type: "text", id, dir: "auto", inputmode: "decimal", value: f.value === null ? "" : centsToDollars(f.value)});
     } else {
-      input = el("input", {type: "text", id, value: f.value || "", autocomplete: "off"});
+      input = el("input", {type: "text", id, dir: "auto", value: f.value || "", autocomplete: "off"});
     }
     const cb = el("input", {type: "checkbox", id: id + "-ok"});
     const hint = el("span", {class: "hint"});
     const wrap = el("div", {class: "field"},
       el("label", {for: id}, t(labelKey) + (REQUIRED.has(name) ? " *" : "")), input, hint,
-      el("label", {class: "check", for: id + "-ok"}, cb, icon("check"), t("confirm")));
+      el("label", {class: "check", for: id + "-ok"}, cb, t("confirm")));
     const sync = () => {
       const blank = f.value === null || f.value === "";
       hint.textContent = blank ? t("unreadable") + (REQUIRED.has(name) ? " (" + t("required") + ")" : "") : "";
@@ -415,8 +415,8 @@ function renderResult() {
     : [el("div", {class: "card"}, el("strong", null, t("r_tier")), englishOnly("p", {class: "stat"}, r.tier.label_en))];
   const tierNote = el("p", {class: "muted tbl-note"}, t("r_policy_en"), notes.mark(r.tier.citation));
   const deadline = el("div", {class: "deadline"}, el("strong", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
-    el("p", null, deadlineLine(r.deadline), notes.mark(r.deadline.citation)));
-  const docs = el("ul", {class: "plain"}, ...r.documents.map(d => el("li", null, englishOnly("span", null, d.label_en), notes.mark(d.citation))));
+    el("p", {lang: "en", dir: "ltr"}, deadlineLine(r.deadline), notes.mark(r.deadline.citation)));
+  const docs = el("ul", {class: "plain"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, notes.mark(d.citation)))));
   const c = r.contacts;
   const contactCard = eligible
     ? el("div", {class: "card"}, el("strong", null, t("r_contact")), el("p", null, t("r_email") + ": ", englishOnly("span", null, c.email)),

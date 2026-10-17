@@ -255,7 +255,7 @@ def _letter_en(bill, answers, result):
     n = answers.household_size
     lines = ["To the Financial Assistance Office, %s:" % hospital, ""]
     lines.append("I am asking for financial assistance for the hospital bill below."
-                 + (" I am helping a family member with this application." if answers.for_whom == "family" else ""))
+                 + (" I am helping a family member apply for financial assistance." if answers.for_whom == "family" else ""))
     lines.append("")
     if _val(bill, "account_number"):
         lines.append("Account number: %s" % _val(bill, "account_number"))
@@ -302,11 +302,14 @@ def build_packet(bill, answers, result):
     letter_tr = ""
     if lang != "en":
         sources = [letter] + [c["label_en"] for c in checklist]
+        hospital = _val(bill, "hospital_name")
+        # Hindi (Command A, no placeholders) cannot keep the name verbatim: no name check there
+        keep = [hospital] if isinstance(hospital, str) and hospital and lang != "hi" else []
         try:
             if lang == "hi":  # OCI Language has no Hindi: Command A, no back-check
                 translated = oci_client.translate_genai_many(sources, "hi")
             else:
-                translated = oci_client.translate_many(sources, lang)
+                translated = oci_client.translate_many(sources, lang, keep=keep)
         except Exception:
             translated = None
         if translated is None:
@@ -315,7 +318,7 @@ def build_packet(bill, answers, result):
             check["back_checked"] = lang != "hi"
             for i, (src, tr) in enumerate(zip(sources, translated)):
                 ok, _m, _u = numlock.check(tr, numlock.extract_numbers(src))
-                if not ok:
+                if not ok or any(k in src and k not in tr for k in keep):
                     check = {"numbers_match": False, "fallback_used": True}
                     translated[i] = ""
             letter_tr = translated[0]
@@ -359,6 +362,7 @@ table{border-collapse:collapse;width:100%}td,th{border:1px solid #bbb;padding:5p
 .cols{display:flex;gap:16px}.cols>div{flex:1;border:1px solid #bbb;padding:10px;white-space:pre-wrap}
 .box{display:inline-block;width:14px;height:14px;border:1.5px solid #111;margin-inline-end:8px;vertical-align:middle}
 li{margin:6px 0;list-style:none}
+@media (max-width:640px){.cols{display:block}.cols>div{margin-bottom:10px}}
 @media print{body{margin:0}.cols{display:block}.cols>div{margin-bottom:10px}}
 """
 
@@ -385,11 +389,11 @@ def render_packet_html(packet, result, lang):
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" '
         'content="width=device-width,initial-scale=1"><title>Financial assistance packet</title>'
-        "<style>%s</style></head><body>%s<h1>Financial assistance packet</h1>"
+        "<style>%s</style></head><body>%s<main><h1>Financial assistance packet</h1>"
         "<p>%s</p><h2>Estimate</h2><p>%s. Income is about %d%% of the %d poverty guideline.</p>%s"
         "<p>%s</p>%s<h2>Application fields</h2><table>%s</table>"
         "<h2>Documents to include</h2><ul>%s</ul><h2>Cover letter</h2>%s"
-        "<h2>Where to send it</h2><p>Email: %s<br>Phone: %s</p>%s</body></html>"
+        "<h2>Where to send it</h2><p>Email: %s<br>Phone: %s</p>%s</main></body></html>"
     ) % (_PACKET_CSS, synth, _E(p["notice_en"]), _E(r["tier"]["label_en"]), r["percent_of_fpl"], r["fpl"]["year"],
          _cite(r["tier"].get("citation")), _E(r["deadline"]["text_en"]), _cite(r["deadline"].get("citation")),
          rows, "".join(items), cols, _E(send["email"]), _E(send["phone"]), _cite(send.get("citation")))

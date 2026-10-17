@@ -9,6 +9,7 @@ import base64
 import functools
 import json
 import os
+import re
 
 from app import numlock
 
@@ -127,14 +128,25 @@ def phrase(facts_en, language):
     return _chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False).strip()
 
 
-def protect_numbers(text):
-    """'Due: $4,812.40' -> ('Due: ${0}', ['4,812.40']). Same number pattern as numlock."""
+def protect_numbers(text, keep=()):
+    """'Due: $4,812.40' -> ('Due: ${0}', ['4,812.40']). Same number pattern as numlock.
+
+    `keep`: literal strings (e.g. the hospital name) that must not be translated; they
+    are swapped for {i} first (longest first), the numbers take the following indices.
+    """
     nums = []
 
-    def keep(match):
+    def take(match):
         nums.append(match.group(0))
         return "{%d}" % (len(nums) - 1)
-    return numlock._NUM.sub(keep, text), nums
+    names = sorted({k for k in keep if k}, key=len, reverse=True)
+    if names:
+        text = re.sub("|".join(re.escape(k) for k in names), take, text)
+        # numbers inside the new {i} placeholders are not numbers to protect
+        text = "".join(part if re.fullmatch(r"\{\d+\}", part) else numlock._NUM.sub(take, part)
+                       for part in re.split(r"(\{\d+\})", text))
+        return text, nums
+    return numlock._NUM.sub(take, text), nums
 
 
 def restore_numbers(text, nums):
@@ -143,20 +155,21 @@ def restore_numbers(text, nums):
     return text
 
 
-def translate_many(texts, target_lang):
+def translate_many(texts, target_lang, keep=()):
     """Translate English texts with OCI Language. Returns a list in the same order.
 
     Numbers are swapped for {0}, {1}... before translating and put back after:
     live on 2026-10-17 OCI Language turned "$4,812.40" into "$4.812,40" (es), and
     {n} placeholders survived es/fr/de/ru/ar/zh-CN/ko/vi. A lost placeholder stays
-    lost, so the caller's number check rejects that text (fails closed).
+    lost, so the caller's number check rejects that text (fails closed). `keep` strings
+    (names) get the same placeholders; the caller checks they survived.
     """
     if is_fake():
         return ["[%s draft] %s" % (target_lang.upper(), t) for t in texts]
     from oci.ai_language import AIServiceLanguageClient
     from oci.ai_language import models as m
     import oci
-    protected = [protect_numbers(t) for t in texts]
+    protected = [protect_numbers(t, keep) for t in texts]
     kwargs = {}
     if os.environ.get("OCI_LANGUAGE_ENDPOINT"):
         kwargs["service_endpoint"] = os.environ["OCI_LANGUAGE_ENDPOINT"]

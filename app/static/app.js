@@ -52,9 +52,6 @@ const T = {
   r_payplan:   {en: "Payment plan contact", es: "Contacto para plan de pagos", ar: "جهة الاتصال لخطة السداد", "zh-CN": "付款计划联系方式", "zh-TW": "付款計畫聯絡方式"}, // TODO-REVIEW es+ar+zh
   r_phone:     {en: "Phone", es: "Teléfono", ar: "الهاتف", "zh-CN": "电话", "zh-TW": "電話"}, // TODO-REVIEW es+ar+zh
   r_email:     {en: "Email", es: "Correo electrónico", ar: "البريد الإلكتروني", "zh-CN": "电子邮件", "zh-TW": "電子郵件"}, // TODO-REVIEW es+ar+zh
-  r_tn_title:  {en: "Tennessee protections for uninsured patients", es: "Protecciones de Tennessee para pacientes sin seguro", ar: "حمايات ولاية تينيسي للمرضى غير المؤمَّنين", "zh-CN": "田纳西州对无保险患者的保护", "zh-TW": "田納西州對無保險患者的保護"}, // TODO-REVIEW es+ar+zh
-  // TODO-CONTENT: no sourced text exists yet. Replace with a short summary that cites a Tennessee source.
-  r_tn_body:   {en: "Content pending: a sourced summary will go here. Nothing on this card is legal advice.", es: "Contenido pendiente: aquí irá un resumen con fuente. Nada en esta tarjeta es asesoría legal.", ar: "المحتوى قيد الإعداد: سيُضاف هنا ملخص موثّق بمصدره. لا شيء في هذه البطاقة يُعد استشارة قانونية.", "zh-CN": "内容待补：此处将放入有来源的摘要。本卡片内容均不构成法律建议。", "zh-TW": "內容待補：此處將放入有來源的摘要。本卡片內容均不構成法律建議。"}, // TODO-REVIEW es+ar+zh
   r_fallback:  {en: "Shown in English: the translated text did not pass the number check.", es: "Se muestra en inglés: el texto traducido no pasó la verificación de números.", ar: "معروض بالإنجليزية: النص المترجم لم يجتز فحص الأرقام.", "zh-CN": "以英文显示：翻译后的文字未通过数字检查。", "zh-TW": "以英文顯示：翻譯後的文字未通過數字檢查。"}, // TODO-REVIEW es+ar+zh
   r_policy_en: {en: "Policy text is shown in English, as the hospital wrote it.", es: "El texto de la política se muestra en inglés, como lo escribió el hospital.", ar: "نص السياسة معروض بالإنجليزية كما كتبه المستشفى.", "zh-CN": "政策文本按医院原文以英文显示。", "zh-TW": "政策文本依醫院原文以英文顯示。"}, // TODO-REVIEW es+ar+zh
   r_see_en:    {en: "Show in English", es: "Ver en inglés", ar: "عرض بالإنجليزية", "zh-CN": "显示英文", "zh-TW": "顯示英文"}, // TODO-REVIEW es+ar+zh
@@ -338,7 +335,6 @@ function renderResult() {
     el("p", {class: "muted"}, t("r_policy_en")),
     eligible ? el("div", {class: "card"}, el("strong", null, t("r_docs")), docs) : null,
     contactCard,
-    el("div", {class: "card"}, el("strong", null, t("r_tn_title")), el("p", null, t("r_tn_body"))),
     eligible ? null : el("p", null, t("r_no_packet")),
     el("div", {class: "row"},
       el("button", {onclick: () => show(3)}, t("back")),

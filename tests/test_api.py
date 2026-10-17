@@ -201,6 +201,9 @@ assert oci_client.restore_numbers("Monto: ${0}. Cuenta CGH-{1}. Antes del {2}.",
 many = " ".join(str(i) for i in range(12))
 assert oci_client.restore_numbers(oci_client.protect_numbers(many)[0], oci_client.protect_numbers(many)[1]) == many
 
+# no placeholder copy may reach a demo screen (pre-mortem T4)
+assert "Content pending" not in js and "TODO-CONTENT" not in js
+
 # replaceChildren() prints a null argument as "null": only fill() may call it
 assert js.count(".replaceChildren(") == 1 and "function fill(" in js
 

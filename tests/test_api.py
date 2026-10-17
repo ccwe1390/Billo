@@ -187,6 +187,14 @@ t_block = js[js.index("const T = {"):js.index("\nconst LANG_NAMES")]
 rows = [ln for ln in t_block.splitlines() if re.match(r"^  \w+:\s*\{en:", ln)]
 assert len(rows) >= 60, len(rows)
 assert all('"zh-CN":' in ln and '"zh-TW":' in ln for ln in rows), [ln[:30] for ln in rows if '"zh-TW":' not in ln]
+new_keys = ["step_1", "step_2", "step_3", "step_4", "step_5", "step_of", "load_evaluate", "load_explain", "load_packet",
+            "tbl_income", "tbl_result", "band_upto", "band_between", "band_above", "you_tag", "not_affiliated"]
+for k in new_keys:
+    row = [ln for ln in rows if re.match(r"^  %s:\s*\{en:" % k, ln)]
+    assert len(row) == 1 and '"zh-CN":' in row[0] and '"zh-TW":' in row[0], k
+assert "working:" not in t_block and 't("working")' not in js     # replaced by the named loading steps
+# Result screen: step bar marks the current step; the tier table is read from the engine result
+assert "aria-current" in js and "r.tiers" in js
 # ---- Command A Vision fences its JSON even in JSON mode (live run 2026-10-17)
 fenced = '```json\n{\n  "amount_due": "$4,812.40",\n  "statement_date": "10/01/2026"\n}\n```'
 assert oci_client.parse_json_object(fenced) == {"amount_due": "$4,812.40", "statement_date": "10/01/2026"}

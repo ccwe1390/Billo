@@ -42,6 +42,7 @@ the dated entry, not the digest.
 - [F - Hindi fallback to OCI Generative AI confirmed](#appendix-f---hindi-fallback-to-oci-generative-ai-confirmed-2026-10-17-1114-cdt) (10-17)
 - [G - PRD grill (stack, hosting, data, errors) and PRD_ROADMAP.md written](#appendix-g---prd-grill-stack-hosting-data-errors-and-prd_roadmapmd-written-2026-10-17-1130-cdt) (10-17)
 - [H - M0.2 done - JDK 17 + Synthea installed; single-thread needed for determinism](#appendix-h---m02-done---jdk-17--synthea-installed-single-thread-needed-for-determinism-2026-10-17-1136-cdt) (10-17)
+- [I - Read OCI starter kit README and Hacker Toolkit PDF; Chicago region, Node 16, pitch gap](#appendix-i---read-oci-starter-kit-readme-and-hacker-toolkit-pdf-chicago-region-node-16-pitch-gap-2026-10-17-1145-cdt) (10-17)
 
 ---
 
@@ -290,3 +291,36 @@ type 3 needs adjustments we generate. That design is open.
 a re-download may differ; keep the hashed copy. The adjustment design for
 error 3 is undecided. M0.1 (OCI access, budget alert) is still
 BLOCKED-ON-EVAN.
+
+# Appendix I - Read OCI starter kit README and Hacker Toolkit PDF; Chicago region, Node 16, pitch gap (2026-10-17, ~11:45 CDT)
+**WHAT:** Evan shared two sources, and both were read.
+
+1. **OCI hackathon starter kit README** (github.com/ScottStroz/oci-hackathon-starterkit,
+   third-party, not confirmed as TNHacks26-official). Facts filed in
+   `important.md` entry 6, `services.md`, `budget.md`, and the PRD gotchas:
+   - The home region must be US Midwest (Chicago) and is permanent.
+   - Sign up with the promo-credit email.
+   - The kit's VM ships Node 16, too old for Next.js, so a current Node LTS
+     goes on in M6.1.
+   - The default E5.Flex shape is paid.
+   - The Free Trial Generative AI model is cohere.command-a-03-2025, and Grok
+     is not available.
+   - Auth is through an API signing key in `~/.oci/config`.
+   - Per its FAQ, paid usage bills only after an explicit account upgrade.
+2. **"The Hacker Toolkit" PDF** (Hackathons International, (c) 2020, 13
+   pages). It is a set of worksheet templates: Hacker Mindset, Rapid
+   Ideation, Hacker's Canvas, Business Model CPR, and Pitch Like A Pro. The
+   Read tool failed (pdftoppm not installed), so the text was pulled with a
+   zero-dependency Node script that decodes each font's ToUnicode map. The
+   example pages yielded only their labels; their filled-in content is
+   likely images and was not read. No event-specific facts are in it.
+
+**Gap Claude flagged:** the toolkit's pitch structure covers persona,
+problem, purpose, customer benefits, competitive landscape, core team,
+revenue streams, and roadmap. Our docs cover none of competitive landscape,
+revenue/scale path, or a concrete persona. The track also lists "credible
+path to scale" as a success criterion. Claude offered a pitch-prep PRD
+milestone; **Evan chose to skip it for now** (chat 2026-10-17).
+
+**HONEST OPEN ITEM (not fixed):** no pitch prep is planned. The billing
+behavior is per a third-party README and unverified with Oracle.

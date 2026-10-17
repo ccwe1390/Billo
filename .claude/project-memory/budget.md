@@ -12,3 +12,8 @@
   source. Still unknown: expiry date, whose account/tenancy holds them, whether
   a payment card is on file (overrun risk), and whether they cover Generative
   AI, Document Understanding, and Language.
+- 2026-10-17 - Starter kit FAQ (github.com/ScottStroz/oci-hackathon-starterkit README (read 2026-10-17; third-party kit, not confirmed as TNHacks26-official)): the card is for identity
+  verification; paid usage is billed only after you explicitly upgrade the
+  account. So keep the account un-upgraded; spend past the credits then
+  stops rather than charging the card (per the README - unverified with
+  Oracle).

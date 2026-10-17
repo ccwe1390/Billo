@@ -18,3 +18,19 @@ never values.
   (Compute vs Functions), OCI Vault for secrets.
 - 2026-10-17 - Decided (Evan): OCI Language is the translator; the website is
   hosted on OCI. See decisions.md.
+- 2026-10-17 - From the OCI starter kit README (github.com/ScottStroz/oci-hackathon-starterkit README (read 2026-10-17; third-party kit, not confirmed as TNHacks26-official)):
+  - Account: Chicago home region (permanent), same email as the promo
+    credits, Individual, MFA via Oracle Mobile Authenticator.
+  - Kit deploys via Resource Manager: VCN + subnets + gateways, one compute
+    instance (default VM.Standard.E5.Flex, 1 OCPU, 4 GB - a PAID shape; other
+    shapes allowed; E5 capacity not guaranteed), plus MySQL HeatWave (Always
+    Free default) and/or Autonomous DB (paid). We store nothing, so no DB is
+    needed by our design.
+  - The kit's VM ships Node.js 16, Python 3.9 (3.12 installable), Java.
+    Next.js needs a newer Node than 16 (I think 18.18+; verify) - install a
+    current Node LTS on the VM in M6.1.
+  - Generative AI auth in the kit = API signing key in ~/.oci/config (key
+    file chmod 600), separate from the SSH key. Instance principals are not
+    covered by the kit.
+  - Free Trial model to use: cohere.command-a-03-2025. Grok is NOT supported
+    in the Free Trial.

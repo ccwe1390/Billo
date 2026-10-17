@@ -1,6 +1,6 @@
 # project-memory index - TNHacks26
 
-Read first: important.md - 5 critical entries (updated 2026-10-17)
+Read first: important.md - 6 critical entries (updated 2026-10-17)
 
 Knowledge:
 - decisions.md - module, users, metric, languages, scope (updated 2026-10-17)
@@ -14,7 +14,7 @@ Knowledge:
 
 Running systems:
 - operations.md - one OCI Compute VM for Next.js; no jobs/backups by design (updated 2026-10-17)
-- services.md - candidate OCI services (Document Understanding, Generative AI, Language), unverified in use (updated 2026-10-17)
+- services.md - OCI services + starter-kit facts (region, shapes, Node 16, Free Trial model) (updated 2026-10-17)
 
 Output:
 - experiments.md - planned headline metric: per-type precision/recall on planted errors (updated 2026-10-17)

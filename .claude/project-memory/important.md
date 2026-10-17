@@ -54,3 +54,12 @@ call. No batch or load run without a cost estimate first. Cache model outputs
 during development instead of re-calling.
 **Why:** If a card is on file, spend past the credits becomes real charges.
 **Source:** Evan's message 2026-10-17; detail in budget.md.
+
+## 6. OCI home region must be US Midwest (Chicago) - permanent (2026-10-17)
+**What:** The OCI starter kit says to pick US Midwest (Chicago) as the Home
+Region at sign-up, and that it cannot be changed later. Sign up with the same
+email that the hackathon promotional credits go to; customer type Individual.
+**Constrains:** M0.1 account creation. Wrong region or email cannot be undone
+and may strand the $500 credits.
+**Why:** Irreversible account setting.
+**Source:** github.com/ScottStroz/oci-hackathon-starterkit README (read 2026-10-17; third-party kit, not confirmed as TNHacks26-official); detail in services.md.

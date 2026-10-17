@@ -49,7 +49,7 @@ flags; the person decides what to do.
 ## Current state - PRD written, no code
 
 **Last updated: 2026-10-17** - this file is the only live snapshot; history
-lives in the record (Phase 0, Appendices A-H).
+lives in the record (Phase 0, Appendices A-I).
 
 > **2026-10-17 - PRD written (record Appendix G).** Stack Next.js + OCI
 > TypeScript SDK; one OCI Compute VM; Synthea-based bills with planted errors

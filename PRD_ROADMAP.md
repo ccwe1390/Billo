@@ -222,3 +222,4 @@ next. **Commits: only when Evan asks; never push without his instruction**
   disagree) - fine for US bills, verify in M0.3.
 - Every paid OCI call counts against $500; cache responses.
 - Event dates and deadline are unknown - do not invent a schedule.
+- OCI starter kit (github.com/ScottStroz/oci-hackathon-starterkit, read 2026-10-17): home region MUST be US Midwest (Chicago) and is permanent; the kit's VM has Node 16, too old for Next.js - install a current Node LTS in M6.1; its default shape E5.Flex is paid; Free Trial Generative AI model is cohere.command-a-03-2025 (no Grok). See services.md.

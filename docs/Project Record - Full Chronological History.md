@@ -64,6 +64,7 @@ the dated entry, not the digest.
 - [AB - Audit fixes deployed (c4a28f0); live journey 10.7 s](#appendix-ab---audit-fixes-deployed-c4a28f0-live-journey-107-s-2026-10-17-1700-cdt) (10-17)
 - [AC - V1 chatbot test: 13/13 raise assistance, 0/13 give the window or a letter](#appendix-ac---v1-chatbot-test-1313-raise-assistance-013-give-the-window-or-a-letter-2026-10-17-1803-cdt) (10-17)
 - [AD - F10 approved; build started on branch f10 (deploy on hold)](#appendix-ad---f10-approved-build-started-on-branch-f10-deploy-on-hold-2026-10-17-1835-cdt) (10-17)
+- [AE - F10 built on branch f10, deploy-ready (not deployed)](#appendix-ae---f10-built-on-branch-f10-deploy-ready-not-deployed-2026-10-17-1846-cdt) (10-17)
 
 ---
 
@@ -1075,3 +1076,41 @@ untouched.
 
 **Running:** Agent A (parallel Hindi calls, answer-key test, coverage rule,
 evaluate_many, rename), Agent B (BillScan rename, photo downscaling).
+
+# Appendix AE - F10 built on branch f10, deploy-ready (not deployed) (2026-10-17, 18:46 CDT)
+**What happened:** the F10 build finished on branch `f10` (18:45 CDT), about
+45 minutes ahead of the plan's 21:30 target. Three Sonnet agents worked
+disjoint files in two waves; Opus reviewed every diff on disk, made three
+fixes of its own, and ran the checks. Nothing is deployed: the live server
+still runs c4a28f0 until Evan says go.
+
+**Commits on f10 since record AD:** b818bcd (BillScan rename, photo
+downscaling), acefc8d (parallel Hindi, 20-household answer key,
+coverage-period rule, evaluate_many), cc3c333 (Hindi paragraphs in
+parallel), 26fb1e4 (/household, /stats), d95be49 (Home, reminders, .ics,
+QR chip, Start-screen QR), 87e0609 (dashboard page), 7da44d0 (QR on bill-02).
+
+**Opus fixes on agent work:** the photo is shrunk AFTER the "Reading the
+bill" message and re-render (it was before, leaving the old Continue
+button live); `S.home` is cleared on a new photo or new answers (the agent
+flagged the stale estimate and did not decide); the Hindi paragraph split.
+
+**Finding:** R1 as specified (3 texts in parallel) did NOT speed up Hindi:
+live 19.2 s, because the cover letter is one long model call. Splitting
+each text into its paragraphs, 4 at a time, gave 7.2 s live with the number
+and name checks passing (n=1).
+
+**Verification:** 5 test files ALL PASS (new tests/test_answer_key.py: 20
+hand-computed households). Browser, fake mode: a 4000x3000 PNG uploads as a
+38 KB JPEG; Home shows 5 bills, "Up to $8,837.65 could be reduced if the
+hospital approves.", "One approval may cover all 5 bills" with its footnote,
+the photographed bill marked as yours, no sideways scroll; Arabic Home at
+375 px is right to left; the .ics has 2 events (2027-05-29 and today + 30)
+and makes no network call; ?hospital=cumberland_synthetic shows the chip in
+en and ar; the Start-screen QR shows at 1280 px only; /dashboard.html shows
+counts, languages and 9 rules with "Review by 2027-01-13"; 0 console
+errors. bill-02 renders with a sharp QR and the date blurred only at blur 3/5.
+
+**Not done:** axe re-run (axe-core is not on disk; a download needs Evan's
+OK); the 10-bill accuracy run (planned after the freeze); deploy, HTTPS and
+the phone checks wait for Evan's go.

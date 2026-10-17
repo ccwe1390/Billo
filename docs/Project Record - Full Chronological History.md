@@ -41,6 +41,7 @@ the dated entry, not the digest.
 - [E - Website hosted on OCI, OCI Language translates; website profile applied](#appendix-e---website-hosted-on-oci-oci-language-translates-website-profile-applied-2026-10-17-1113-cdt) (10-17)
 - [F - Hindi fallback to OCI Generative AI confirmed](#appendix-f---hindi-fallback-to-oci-generative-ai-confirmed-2026-10-17-1114-cdt) (10-17)
 - [G - PRD grill (stack, hosting, data, errors) and PRD_ROADMAP.md written](#appendix-g---prd-grill-stack-hosting-data-errors-and-prd_roadmapmd-written-2026-10-17-1130-cdt) (10-17)
+- [H - M0.2 done - JDK 17 + Synthea installed; single-thread needed for determinism](#appendix-h---m02-done---jdk-17--synthea-installed-single-thread-needed-for-determinism-2026-10-17-1136-cdt) (10-17)
 
 ---
 
@@ -250,3 +251,42 @@ send design (M6.2) is open. Per-task commits are not authorized in the PRD;
 commits stay on request. Unverified: Always Free VM coverage, instance
 principals for the AI services, the public MUE table, CPT descriptor
 licensing.
+
+# Appendix H - M0.2 done - JDK 17 + Synthea installed; single-thread needed for determinism (2026-10-17, ~11:36 CDT)
+**WHAT:** PRD M0.2 is done. Evan approved downloading two files into
+`C:\Users\daruw\tools\`:
+- Eclipse Temurin JDK 17.0.20.1+1, Windows x64 ZIP from
+  github.com/adoptium/temurin17-binaries. 190,817,615 bytes; the sha256
+  e53a79c3...affc7cb0 matched Adoptium's API checksum. Extracted portably
+  (no installer, no PATH change). `java -version` prints Temurin-17.0.20.1+1.
+- `synthea-with-dependencies.jar` from Synthea's `master-branch-latest`
+  release (published 2026-08-18). 197,025,542 bytes, matching the GitHub API
+  size. No upstream checksum exists; our sha256 is 018ad7f0...fae224ac.
+
+Synthea's README requires JDK 17 or newer and recommends LTS 17 or 25.
+
+**Run:** 10 patients, `-s 42 -cs 42 -r 20261017`, CSV only. Exit 0, about
+21 s. Output: 11 patients (10 alive + 1 dead), claims_transactions 7400 rows
+(CHARGE 2242, PAYMENT 2906, TRANSFERIN 1126, TRANSFEROUT 1126), claims 686,
+encounters 515, payers 10, procedures 1386.
+
+**Bug found (symptom -> root cause -> fix):** two runs with identical seeds
+produced different file hashes on every CSV. After sorting rows, 16 of 18
+files matched, but `claims_transactions.csv` (9798 differing lines,
+including different IDs) and `payers.csv` (different revenue totals, e.g.
+Humana 274284.00 vs 274968.00) still differed. Root cause (inferred,
+unverified): Synthea's default multithreading makes ordering and shared
+payer state depend on thread timing. Fix: `--generate.thread_pool_size=1`.
+Two runs with it were byte-identical on every CSV. That run is the canonical
+snapshot `data/synthea/s42-p10-r20261017-t1/`; per-file hashes are in the
+`.sha256` beside it. The other test runs (made this session) were deleted.
+`data/synthea/` is gitignored.
+
+**Finding that affects M1.3:** the snapshot has zero rows with a nonzero
+ADJUSTMENTS amount. Synthea provides no contractual adjustments, so error
+type 3 needs adjustments we generate. That design is open.
+
+**HONEST OPEN ITEM (not fixed):** the jar comes from a moving release tag, so
+a re-download may differ; keep the hashed copy. The adjustment design for
+error 3 is undecided. M0.1 (OCI access, budget alert) is still
+BLOCKED-ON-EVAN.

@@ -49,7 +49,7 @@ flags; the person decides what to do.
 ## Current state - PRD written, no code
 
 **Last updated: 2026-10-17** - this file is the only live snapshot; history
-lives in the record (Phase 0, Appendices A-G).
+lives in the record (Phase 0, Appendices A-H).
 
 > **2026-10-17 - PRD written (record Appendix G).** Stack Next.js + OCI
 > TypeScript SDK; one OCI Compute VM; Synthea-based bills with planted errors
@@ -70,7 +70,7 @@ lives in the record (Phase 0, Appendices A-G).
 | Candidate OCI services | Document Understanding, Generative AI, Language - from Oracle docs, untested | services.md |
 | Stack, hosting, data, errors | **Decided** (PRD_ROADMAP.md section 4) | record Appendix G |
 | Code | **None yet** | - |
-| Java (needed for Synthea) | **Not installed** | checked 2026-10-17 |
+| Java + Synthea | **Installed**: Temurin 17 + Synthea jar in `C:Usersdaruw	ools`; 10-patient snapshot in `data/synthea/` (gitignored) | record Appendix H |
 
 ### Track requirements (from the pasted text, 2026-10-17)
 
@@ -92,14 +92,13 @@ lives in the record (Phase 0, Appendices A-G).
   build and in what order.
 
 ## BLOCKED-ON-EVAN
-- Approve a JDK install OR a prebuilt Synthea sample download (PRD M0.2).
 - Event dates, submission deadline, rules/judging
   link, team roster.
 - OCI: whose account holds the $500, expiry, and whether Generative AI,
   Document Understanding, and Language are covered.
 
 ## Next actions
-1. PRD M0: Evan confirms OCI account + sets a budget alert (M0.1) and
-   approves the Synthea route (M0.2); then the extraction spike (M0.3).
+1. PRD M0: Evan confirms OCI account + sets a budget alert (M0.1); then the
+   extraction spike (M0.3). M0.2 done 2026-10-17.
 2. M1-M2 can start before M0.1-M0.2 clear: scaffold, code map, rules, eval.
 3. Evan supplies event facts (dates, rules, team).

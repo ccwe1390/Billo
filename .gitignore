@@ -2,3 +2,5 @@
 .claude/pm-cadence.json
 .claude/*.tmp
 .claude/drift-check.stamp
+# Synthea output (large, regenerable from seed; see .claude/project-memory/data.md)
+data/synthea/

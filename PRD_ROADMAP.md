@@ -112,7 +112,7 @@ while M0's blocked items wait on Evan.
    holds the $500, its expiry, and set a budget alert (e.g. at $100 and
    $300) in the OCI console. Done: Evan confirms; values recorded in
    `budget.md` and `services.md` (names only, no secrets).
-2. **Synthea data.** BLOCKED-ON-EVAN: approve either installing a JDK or
+2. **Synthea data.** **[x] DONE 2026-10-17 (record Appendix H): JDK route; canonical snapshot `data/synthea/s42-p10-r20261017-t1/`.** Was BLOCKED-ON-EVAN: approve either installing a JDK or
    downloading a prebuilt Synthea CSV sample. Then place CSVs in
    `data/synthea/` (gitignored if large). Done: row counts of
    `claims_transactions.csv`, `claims.csv`, `encounters.csv` recorded in
@@ -214,7 +214,9 @@ next. **Commits: only when Evan asks; never push without his instruction**
 (per-task commits not yet authorized).
 **Gotchas that will bite you:**
 - Synthea procedure codes are SNOMED-CT, not CPT/HCPCS - bills need our map.
-- Java is not installed on Evan's machine (checked 2026-10-17).
+- ~~Java is not installed on Evan's machine (checked 2026-10-17).~~ (struck 2026-10-17: Temurin 17 installed portably at `C:Usersdaruw	oolsjdk-17.0.20.1+1`, not on PATH)
+- Synthea MUST run with `--generate.thread_pool_size=1`, or the same seed gives different files (data.md).
+- Synthea output has no contractual adjustments; error type 3 needs adjustments we generate in M1.3 (design open).
 - OCI Language has no Hindi, Tagalog, or Haitian Creole.
 - Document Understanding table extraction may be English-only (docs
   disagree) - fine for US bills, verify in M0.3.

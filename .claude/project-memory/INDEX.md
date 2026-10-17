@@ -4,7 +4,7 @@ Read first: important.md - 5 critical entries (updated 2026-10-17)
 
 Knowledge:
 - decisions.md - module, users, metric, languages, scope (updated 2026-10-17)
-- gotchas.md - none yet (updated 2026-10-17)
+- gotchas.md - Synthea threading nondeterminism, moving jar tag, no adjustments, Java path (updated 2026-10-17)
 - people.md - roles, deciders, collaborators, orgs (updated 2026-10-17)
 - timeline.md - dated deadlines, windows, expiries (updated 2026-10-17)
 - glossary.md - easily confused terms (updated 2026-10-17)
@@ -26,10 +26,10 @@ Physical:
 Code:
 - architecture.md - none yet (updated 2026-10-17)
 - conventions.md - none yet (updated 2026-10-17)
-- dependencies.md - OCI TypeScript SDK packages (2.143.0 seen 2026-10-17), not installed (updated 2026-10-17)
+- dependencies.md - OCI TS SDK; JDK 17 + Synthea jar installed with hashes (updated 2026-10-17)
 - testing.md - framework, layout, coverage/frozen rules (updated 2026-10-17)
 - tooling.md - build/lint/format/CI + required commands (updated 2026-10-17)
-- data.md - Synthea CSV files we use, SNOMED->CPT gap, Java missing (updated 2026-10-17)
+- data.md - Synthea snapshot command, row counts, determinism, adjustment gap (updated 2026-10-17)
 - security.md - none yet (updated 2026-10-17)
 - features.md - none yet (updated 2026-10-17)
 - performance.md - none yet (updated 2026-10-17)
@@ -38,7 +38,7 @@ Code:
 Project-specific bins:
 - languages.md - language ranking evidence + OCI Language support per language (updated 2026-10-17)
 
-Stubs (first line STATUS: N/A or empty): gotchas, people, timeline, writing, hardware, architecture, conventions, testing, tooling, security, features, performance
+Stubs (first line STATUS: N/A or empty): people, timeline, writing, hardware, architecture, conventions, testing, tooling, security, features, performance
 
 Map (not a bin - see SKILL section 5.1):
 - DIRECTORY.md - skipped: no source files yet (needs >15)

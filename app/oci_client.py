@@ -209,11 +209,19 @@ def translate_genai_many(texts, target_lang, keep=()):
             % (LANGUAGE_NAMES[target_lang], masked))
         reply = _chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False,
                       max_tokens=2000).strip()
-        return restore_numbers(reply, nums)
+        return restore_numbers(reply, nums) if text.strip() else text
 
-    # 3 at a time; executor.map keeps the order and re-raises a worker's error here.
-    with ThreadPoolExecutor(max_workers=3) as executor:
-        return list(executor.map(one, texts))
+    # One long letter dominated the time (19 s live, 2026-10-17), so each text is split into its
+    # blank-line paragraphs and the paragraphs run 4 at a time; executor.map keeps the order and
+    # re-raises a worker's error here. A name split across paragraphs cannot happen: names sit in one line.
+    parts = [text.split("\n\n") for text in texts]
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        flat = list(executor.map(one, [p for ps in parts for p in ps]))
+    out, i = [], 0
+    for ps in parts:
+        out.append("\n\n".join(flat[i:i + len(ps)]))
+        i += len(ps)
+    return out
 
 
 def translate(text, target_lang):

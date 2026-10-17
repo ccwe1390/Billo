@@ -101,3 +101,11 @@ Rules that apply to all four:
   per-field score (Command A Vision gives none) and `0.0` when the value is
   null. `/explain` and `/packet` take BillFields + HouseholdAnswers and
   recompute the EngineResult on the server; a client-sent `result` is ignored.
+
+- 2026-10-17 15:25 CDT, still draft (additive, no version bump):
+  EngineResult gains `tiers`, the whole policy table for the Result screen,
+  in policy order: `[{id, label_en, discount_percent, eligible,
+  min_percent_exclusive, max_percent, citation, current}]`. `current` is true
+  for exactly the matched tier, marked by position (two tiers share id
+  "discount"). `locked_numbers` is unchanged: table numbers are rendered from
+  data, never from generated text.

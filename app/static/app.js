@@ -41,8 +41,24 @@ const T = {
   yes:         {en: "Yes", es: "Sí", ar: "نعم", "zh-CN": "是", "zh-TW": "是"}, // TODO-REVIEW es+ar+zh
   no:          {en: "No", es: "No", ar: "لا", "zh-CN": "否", "zh-TW": "否"}, // TODO-REVIEW es+ar+zh
   see_result:  {en: "See my result", es: "Ver mi resultado", ar: "اعرض نتيجتي", "zh-CN": "查看我的结果", "zh-TW": "查看我的結果"}, // TODO-REVIEW es+ar+zh
-  working:     {en: "Working...", es: "Procesando...", ar: "جارٍ المعالجة...", "zh-CN": "处理中...", "zh-TW": "處理中..."}, // TODO-REVIEW es+ar+zh
+  load_evaluate:{en: "Checking the hospital's policy...", es: "Revisando la política del hospital...", ar: "جارٍ فحص سياسة المستشفى...", "zh-CN": "正在核对医院的政策...", "zh-TW": "正在核對醫院的政策..."}, // TODO-REVIEW es+ar+zh
+  load_explain:{en: "Writing your explanation...", es: "Escribiendo su explicación...", ar: "جارٍ كتابة الشرح الخاص بك...", "zh-CN": "正在撰写您的说明...", "zh-TW": "正在撰寫您的說明..."}, // TODO-REVIEW es+ar+zh
+  load_packet: {en: "Building your packet...", es: "Creando su paquete...", ar: "جارٍ إنشاء حزمتك...", "zh-CN": "正在生成您的材料包...", "zh-TW": "正在建立您的資料包..."}, // TODO-REVIEW es+ar+zh
+  step_1:      {en: "Start", es: "Inicio", ar: "البداية", "zh-CN": "开始", "zh-TW": "開始"}, // TODO-REVIEW es+ar+zh
+  step_2:      {en: "Bill", es: "Factura", ar: "الفاتورة", "zh-CN": "账单", "zh-TW": "帳單"}, // TODO-REVIEW es+ar+zh
+  step_3:      {en: "Questions", es: "Preguntas", ar: "الأسئلة", "zh-CN": "问题", "zh-TW": "問題"}, // TODO-REVIEW es+ar+zh
+  step_4:      {en: "Result", es: "Resultado", ar: "النتيجة", "zh-CN": "结果", "zh-TW": "結果"}, // TODO-REVIEW es+ar+zh
+  step_5:      {en: "Packet", es: "Paquete", ar: "الحزمة", "zh-CN": "材料包", "zh-TW": "資料包"}, // TODO-REVIEW es+ar+zh
+  step_of:     {en: "Step {n} of {total}", es: "Paso {n} de {total}", ar: "الخطوة {n} من {total}", "zh-CN": "第 {n} 步，共 {total} 步", "zh-TW": "第 {n} 步，共 {total} 步"}, // TODO-REVIEW es+ar+zh
+  tbl_income:  {en: "Household income (percent of the poverty guideline)", es: "Ingreso del hogar (porcentaje de la guía de pobreza)", ar: "دخل الأسرة (نسبة من الحد الفيدرالي للفقر)", "zh-CN": "家庭收入（占贫困线的百分比）", "zh-TW": "家庭收入（占貧困線的百分比）"}, // TODO-REVIEW es+ar+zh
+  tbl_result:  {en: "Result", es: "Resultado", ar: "النتيجة", "zh-CN": "结果", "zh-TW": "結果"}, // TODO-REVIEW es+ar+zh
+  band_upto:   {en: "Up to {max}%", es: "Hasta {max}%", ar: "حتى {max}%", "zh-CN": "不超过 {max}%", "zh-TW": "不超過 {max}%"}, // TODO-REVIEW es+ar+zh
+  band_between:{en: "Above {min}% up to {max}%", es: "Más de {min}% hasta {max}%", ar: "أكثر من {min}% حتى {max}%", "zh-CN": "超过 {min}% 至 {max}%", "zh-TW": "超過 {min}% 至 {max}%"}, // TODO-REVIEW es+ar+zh
+  band_above:  {en: "Above {min}%", es: "Más de {min}%", ar: "أكثر من {min}%", "zh-CN": "超过 {min}%", "zh-TW": "超過 {min}%"}, // TODO-REVIEW es+ar+zh
+  you_tag:     {en: "You: {pct}%", es: "Usted: {pct}%", ar: "أنت: {pct}%", "zh-CN": "您：{pct}%", "zh-TW": "您：{pct}%"}, // TODO-REVIEW es+ar+zh
+  not_affiliated:{en: "Independent tool. Not affiliated with any hospital.", es: "Herramienta independiente. No está afiliada a ningún hospital.", ar: "أداة مستقلة. لا ترتبط بأي مستشفى.", "zh-CN": "独立工具，与任何医院均无关联。", "zh-TW": "獨立工具，與任何醫院均無關聯。"}, // TODO-REVIEW es+ar+zh
   r_title:     {en: "Your result", es: "Su resultado", ar: "نتيجتك", "zh-CN": "您的结果", "zh-TW": "您的結果"}, // TODO-REVIEW es+ar+zh
+  r_decides:   {en: "This is an estimate. The hospital makes the final decision.", es: "Esto es una estimación. El hospital toma la decisión final.", ar: "هذا تقدير فقط. المستشفى هو من يتخذ القرار النهائي.", "zh-CN": "这只是估算。最终决定由医院做出。", "zh-TW": "這只是估算。最終決定由醫院做出。"}, // TODO-REVIEW es+ar+zh
   r_percent:   {en: "Your income is about {pct}% of the {year} federal poverty guideline", es: "Su ingreso es aproximadamente el {pct}% de la guía federal de pobreza de {year}", ar: "دخلك يعادل تقريبًا {pct}% من الحد الفيدرالي للفقر لعام {year}", "zh-CN": "您的收入约为 {year} 年联邦贫困线的 {pct}%", "zh-TW": "您的收入約為 {year} 年聯邦貧困線的 {pct}%"}, // TODO-REVIEW es+ar+zh
   r_tier:      {en: "Under this hospital's policy", es: "Según la política de este hospital", ar: "بحسب سياسة هذا المستشفى", "zh-CN": "根据本医院的政策", "zh-TW": "根據本醫院的政策"}, // TODO-REVIEW es+ar+zh
   r_deadline:  {en: "Deadline", es: "Fecha límite", ar: "الموعد النهائي", "zh-CN": "截止日期", "zh-TW": "截止日期"}, // TODO-REVIEW es+ar+zh
@@ -52,9 +68,6 @@ const T = {
   r_payplan:   {en: "Payment plan contact", es: "Contacto para plan de pagos", ar: "جهة الاتصال لخطة السداد", "zh-CN": "付款计划联系方式", "zh-TW": "付款計畫聯絡方式"}, // TODO-REVIEW es+ar+zh
   r_phone:     {en: "Phone", es: "Teléfono", ar: "الهاتف", "zh-CN": "电话", "zh-TW": "電話"}, // TODO-REVIEW es+ar+zh
   r_email:     {en: "Email", es: "Correo electrónico", ar: "البريد الإلكتروني", "zh-CN": "电子邮件", "zh-TW": "電子郵件"}, // TODO-REVIEW es+ar+zh
-  r_tn_title:  {en: "Tennessee protections for uninsured patients", es: "Protecciones de Tennessee para pacientes sin seguro", ar: "حمايات ولاية تينيسي للمرضى غير المؤمَّنين", "zh-CN": "田纳西州对无保险患者的保护", "zh-TW": "田納西州對無保險患者的保護"}, // TODO-REVIEW es+ar+zh
-  // TODO-CONTENT: no sourced text exists yet. Replace with a short summary that cites a Tennessee source.
-  r_tn_body:   {en: "Content pending: a sourced summary will go here. Nothing on this card is legal advice.", es: "Contenido pendiente: aquí irá un resumen con fuente. Nada en esta tarjeta es asesoría legal.", ar: "المحتوى قيد الإعداد: سيُضاف هنا ملخص موثّق بمصدره. لا شيء في هذه البطاقة يُعد استشارة قانونية.", "zh-CN": "内容待补：此处将放入有来源的摘要。本卡片内容均不构成法律建议。", "zh-TW": "內容待補：此處將放入有來源的摘要。本卡片內容均不構成法律建議。"}, // TODO-REVIEW es+ar+zh
   r_fallback:  {en: "Shown in English: the translated text did not pass the number check.", es: "Se muestra en inglés: el texto traducido no pasó la verificación de números.", ar: "معروض بالإنجليزية: النص المترجم لم يجتز فحص الأرقام.", "zh-CN": "以英文显示：翻译后的文字未通过数字检查。", "zh-TW": "以英文顯示：翻譯後的文字未通過數字檢查。"}, // TODO-REVIEW es+ar+zh
   r_policy_en: {en: "Policy text is shown in English, as the hospital wrote it.", es: "El texto de la política se muestra en inglés, como lo escribió el hospital.", ar: "نص السياسة معروض بالإنجليزية كما كتبه المستشفى.", "zh-CN": "政策文本按医院原文以英文显示。", "zh-TW": "政策文本依醫院原文以英文顯示。"}, // TODO-REVIEW es+ar+zh
   r_see_en:    {en: "Show in English", es: "Ver en inglés", ar: "عرض بالإنجليزية", "zh-CN": "显示英文", "zh-TW": "顯示英文"}, // TODO-REVIEW es+ar+zh
@@ -122,6 +135,8 @@ function showMsg(text, info) {
 function show(n) {
   for (let i = 1; i <= 5; i++) document.getElementById("s" + i).hidden = i !== n;
   applyDir();
+  renderSteps(n);
+  document.getElementById("foot").textContent = t("not_affiliated");
   [null, renderStart, renderBill, renderQuestions, renderResult, renderPacketShell][n]();
 }
 async function post(path, body, asText) {
@@ -145,13 +160,75 @@ function dollarsToCents(s) {
 function centsToDollars(c) {
   return Math.floor(c / 100) + "." + String(c % 100).padStart(2, "0");
 }
-function cite(c) {
-  if (!c || !c.source) return null;
-  let s = t("src") + ": " + c.source;
-  if (c.page !== null && c.page !== undefined && c.page !== "") s += ", " + t("page") + " " + c.page;
-  if (c.effective_date) s += ", " + t("effective") + " " + c.effective_date;
-  if (c.url) return englishOnly("a", {class: "cite", href: c.url, target: "_blank", rel: "noopener"}, s);
-  return englishOnly("span", {class: "cite"}, s);
+function bdiEn(text) { return el("bdi", {lang: "en", dir: "ltr"}, String(text)); } // English run, isolated from the page direction
+function hasPage(c) { return c.page !== null && c.page !== undefined && c.page !== ""; }
+// The pieces of one citation. Translated words (Source, page, effective) sit OUTSIDE every <bdi>; only the English parts are inside.
+function citeParts(c) {
+  const parts = [t("src") + ": ", bdiEn(c.source)];
+  if (hasPage(c)) parts.push(", " + t("page") + " ", bdiEn(c.page));
+  if (c.effective_date) parts.push(", " + t("effective") + " ", bdiEn(c.effective_date));
+  return parts;
+}
+function icon(name) { // decorative Phosphor icon, served locally
+  return el("img", {src: "icons/" + name + ".svg", alt: "", width: "24", height: "24", class: "icon"});
+}
+// Translated template -> nodes. Each {var} (and a % right after it) goes in <bdi dir="ltr"> so numbers do not flip in Arabic.
+function tNodes(key, vars) {
+  const out = [];
+  const tpl = t(key);
+  const re = /\{(\w+)\}(%?)/g;
+  let last = 0, m;
+  while ((m = re.exec(tpl)) !== null) {
+    if (m.index > last) out.push(tpl.slice(last, m.index));
+    out.push(el("bdi", {dir: "ltr"}, String((vars || {})[m[1]]) + m[2]));
+    last = re.lastIndex;
+  }
+  if (last < tpl.length) out.push(tpl.slice(last));
+  return out;
+}
+// Free translated text -> nodes, with emails, money, dates, phones, account numbers and percents isolated in <bdi dir="ltr">.
+const ISOLATE_RE = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+|\$\s?\d[\d,]*(?:\.\d+)?|\b\d{4}-\d{2}-\d{2}\b|\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}|\b[A-Z]{2,}-\d+\b|\d+(?:[.,]\d+)*%/g;
+function isolate(text) {
+  const out = [];
+  let last = 0, m;
+  ISOLATE_RE.lastIndex = 0;
+  while ((m = ISOLATE_RE.exec(text)) !== null) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(el("bdi", {dir: "ltr"}, m[0]));
+    last = ISOLATE_RE.lastIndex;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+// Numbered footnotes for one screen: mark(c) returns the [n] marker, list() returns the ONE ordered list. Same citation = same number.
+function makeNotes() {
+  const items = [], index = new Map();
+  return {
+    mark(c) {
+      if (!c || !c.source) return null;
+      const key = [c.source, c.page, c.effective_date].join("|");
+      if (!index.has(key)) { items.push(c); index.set(key, items.length); }
+      const n = index.get(key);
+      return el("sup", {class: "fn-mark"}, el("bdi", {dir: "ltr"}, "[" + n + "]"));
+    },
+    list() {
+      if (!items.length) return null;
+      return el("ol", {class: "notes", role: "list", "aria-label": t("src")}, ...items.map((c, i) => {
+        const row = [el("span", {class: "fn-num", dir: "ltr"}, "[" + (i + 1) + "]"), el("span", {class: "fn-text"}, ...citeParts(c))];
+        return el("li", {id: "fn-" + (i + 1)}, c.url
+          ? el("a", {class: "note", href: c.url, target: "_blank", rel: "noopener"}, ...row)
+          : el("span", {class: "note"}, ...row));
+      }));
+    },
+  };
+}
+function renderSteps(n) { // segmented step bar; the current step carries aria-current="step"
+  fill(document.getElementById("steps"), ...[1, 2, 3, 4, 5].map(i => {
+    const cur = i === n;
+    return el("li", {class: cur ? "now" : i < n ? "done" : "", "aria-current": cur ? "step" : false},
+      el("span", {class: "sr-only"}, t("step_of", {n: i, total: 5}) + ": " + t("step_" + i)));
+  }));
+  document.getElementById("step-cap").textContent = t("step_of", {n, total: 5}) + ": " + t("step_" + n);
 }
 function blankBill() {
   const f = {};
@@ -168,7 +245,7 @@ function renderStart() {
   fill(root,
     el("p", {class: "notice"}, t("notice")),
     el("p", {class: "muted"}, t("no_id")),
-    el("h2", null, t("pick_lang")),
+    el("h2", {class: "with-icon"}, icon("globe"), t("pick_lang")),
     el("div", {class: "row"}, ...TIER1.map(langBtn)),
     el("p", {class: "muted", lang: "en", dir: "ltr"}, "More languages (interface in English)"),
     el("div", {class: "row"}, ...TIER2.map(langBtn)),
@@ -184,7 +261,7 @@ function renderBill() {
   const root = document.getElementById("s2");
   const file = el("input", {type: "file", accept: "image/png,image/jpeg", id: "bill-file"});
   file.addEventListener("change", onFile);
-  const left = el("div", null, el("label", {for: "bill-file"}, t("upload")), file);
+  const left = el("div", null, el("label", {for: "bill-file", class: "with-icon"}, icon("camera"), t("upload")), file);
   if (S.imageUrl) left.append(el("img", {src: S.imageUrl, alt: ""}));
   const right = el("div", {id: "fields"});
   fill(root,
@@ -242,7 +319,7 @@ function renderFields() {
     const hint = el("span", {class: "hint"});
     const wrap = el("div", {class: "field"},
       el("label", {for: id}, t(labelKey) + (REQUIRED.has(name) ? " *" : "")), input, hint,
-      el("label", {class: "check", for: id + "-ok"}, cb, t("confirm")));
+      el("label", {class: "check", for: id + "-ok"}, cb, icon("check"), t("confirm")));
     const sync = () => {
       const blank = f.value === null || f.value === "";
       hint.textContent = blank ? t("unreadable") + (REQUIRED.has(name) ? " (" + t("required") + ")" : "") : "";
@@ -287,10 +364,11 @@ function renderQuestions() {
 async function submitAnswers() {
   S.answers = {contract_version: 1, language: S.lang, for_whom: S.forWhom, household_size: Number(S.size),
                annual_income_cents: dollarsToCents(S.income), files_tax_return: S.tax};
-  S.busy = true; showMsg(t("working"), true);
+  S.busy = true; showMsg(t("load_evaluate"), true);
   document.getElementById("q-go").disabled = true;
   try {
     S.result = await post("/evaluate", {bill: S.bill, answers: S.answers});
+    showMsg(t("load_explain"), true);
     S.explain = await post("/explain", {bill: S.bill, answers: S.answers, result: S.result});
     S.view = viewFor(S.lang); showMsg("");
     S.busy = false; show(4);
@@ -300,6 +378,23 @@ async function submitAnswers() {
 }
 
 // ---------- screen 4: result
+function bandText(tier) { // "Up to 200%", "Above 200% up to 300%", "Above 400%"
+  const key = tier.min_percent_exclusive == null ? "band_upto" : tier.max_percent == null ? "band_above" : "band_between";
+  return tNodes(key, {min: tier.min_percent_exclusive, max: tier.max_percent});
+}
+function tierTable(r) { // the hospital's own tier table; the row that matches the household is marked
+  const rows = r.tiers.map(tr => el("tr", tr.current ? {class: "you", "aria-current": "true"} : null,
+    el("th", {scope: "row"}, ...bandText(tr), tr.current ? el("span", {class: "you-tag"}, ...tNodes("you_tag", {pct: r.percent_of_fpl})) : null),
+    el("td", null, englishOnly("span", null, tr.label_en))));
+  return el("table", null,
+    el("thead", null, el("tr", null, el("th", {scope: "col"}, t("tbl_income")), el("th", {scope: "col"}, t("tbl_result")))),
+    el("tbody", null, ...rows));
+}
+function deadlineLine(d) { // the English sentence with its date highlighted
+  const i = d.text_en.indexOf(d.date);
+  if (i < 0) return englishOnly("mark", {class: "hl"}, d.text_en);
+  return el("span", {lang: "en", dir: "ltr"}, d.text_en.slice(0, i), el("mark", {class: "hl"}, d.date), d.text_en.slice(i + d.date.length));
+}
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
   const english = S.view === "en";
@@ -312,34 +407,41 @@ function renderResult() {
   const nativeLines = showNative ? S.explain.text.split("\n") : [];
   const nativeDir = S.lang === "ar" ? "rtl" : "ltr";
   const eligible = r.tier.eligible;
-  const docs = el("ul", null, ...r.documents.map(d => el("li", null, englishOnly("span", null, d.label_en), cite(d.citation))));
+  // Footnote markers are numbered in the order they are created, so build the page top to bottom.
+  const notes = makeNotes();
+  const lead = el("p", {class: "lead"}, ...tNodes("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year}), notes.mark(r.fpl.citation));
+  const tierBlock = Array.isArray(r.tiers) && r.tiers.length
+    ? [el("p", {class: "excerpt-head"}, t("r_tier")), tierTable(r)]
+    : [el("div", {class: "card"}, el("strong", null, t("r_tier")), englishOnly("p", {class: "stat"}, r.tier.label_en))];
+  const tierNote = el("p", {class: "muted tbl-note"}, t("r_policy_en"), notes.mark(r.tier.citation));
+  const deadline = el("div", {class: "deadline"}, el("strong", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
+    el("p", null, deadlineLine(r.deadline), notes.mark(r.deadline.citation)));
+  const docs = el("ul", {class: "plain"}, ...r.documents.map(d => el("li", null, englishOnly("span", null, d.label_en), notes.mark(d.citation))));
   const c = r.contacts;
   const contactCard = eligible
     ? el("div", {class: "card"}, el("strong", null, t("r_contact")), el("p", null, t("r_email") + ": ", englishOnly("span", null, c.email)),
-        el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.phone)), cite(c.citation))
+        el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.phone)), notes.mark(c.citation))
     : el("div", {class: "card"}, el("strong", null, t("r_payplan")),
-        el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.payment_plan_phone || c.phone)), cite(c.citation));
+        el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.payment_plan_phone || c.phone)), notes.mark(c.citation));
   const toggle = S.lang === "en" || tier2 ? null
     : el("button", {onclick: () => { S.view = english ? S.lang : "en"; show(4); }}, english ? t("r_see_native") : t("r_see_en"));
   fill(root,
     el("h2", null, t("r_title")),
     toggle ? el("div", {class: "row"}, toggle) : null,
-    el("p", {class: "stat"}, t("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year})),
-    cite(r.fpl.citation),
-    el("div", {class: "card tier"}, el("strong", null, t("r_tier")),
-      englishOnly("p", {class: "stat"}, r.tier.label_en), cite(r.tier.citation)),
-    el("div", {class: "card"}, el("strong", null, t("r_deadline")),
-      englishOnly("p", null, r.deadline.text_en), cite(r.deadline.citation)),
+    lead,
+    el("p", {class: "decides"}, t("r_decides")),
+    ...tierBlock,
+    tierNote,
+    deadline,
     el("div", {class: "card explain"}, el("strong", null, t("r_about")),
       ...enLines.map(l => el("p", {dir: "ltr", lang: "en"}, l)),
-      ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, l))),
+      ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, ...isolate(l)))),
     showNative ? el("p", {class: "muted"}, t("ai_note")) : null,
     fb && (tier2 || !english) ? el("p", {class: "muted"}, t("r_fallback")) : null,
-    el("p", {class: "muted"}, t("r_policy_en")),
-    eligible ? el("div", {class: "card"}, el("strong", null, t("r_docs")), docs) : null,
+    eligible ? el("div", {class: "card"}, el("strong", {class: "with-icon"}, icon("file"), t("r_docs")), docs) : null,
     contactCard,
-    el("div", {class: "card"}, el("strong", null, t("r_tn_title")), el("p", null, t("r_tn_body"))),
     eligible ? null : el("p", null, t("r_no_packet")),
+    notes.list(),
     el("div", {class: "row"},
       el("button", {onclick: () => show(3)}, t("back")),
       eligible ? el("button", {class: "primary", onclick: () => { show(5); loadPacket(); }}, t("r_packet")) : null,
@@ -352,12 +454,12 @@ function renderPacketShell() {
     el("h2", null, t("p_title")), el("p", {class: "muted"}, t("p_sub")),
     el("div", {class: "row"},
       el("button", {onclick: () => show(4)}, t("back")),
-      el("button", {class: "primary", id: "print-btn", disabled: true, onclick: () => document.getElementById("packet-frame").contentWindow.print()}, t("p_print")),
+      el("button", {class: "primary", id: "print-btn", disabled: true, onclick: () => document.getElementById("packet-frame").contentWindow.print()}, icon("printer"), t("p_print")),
       el("button", {onclick: restart}, t("restart"))),
     el("iframe", {id: "packet-frame", title: t("p_title"), sandbox: "allow-modals allow-same-origin"}));
 }
 async function loadPacket() {
-  showMsg(t("working"), true);
+  showMsg(t("load_packet"), true);
   try {
     const page = await post("/packet", {bill: S.bill, answers: S.answers, result: S.result}, true);
     document.getElementById("packet-frame").srcdoc = page;

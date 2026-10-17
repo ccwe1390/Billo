@@ -72,6 +72,20 @@ def test_demo_case():
     assert r["tier"]["discount_percent"] == 100
 
 
+def test_tiers_table():
+    r = run(3_800_000)
+    tiers = r["tiers"]
+    assert len(tiers) == 4
+    current = [i for i, t in enumerate(tiers) if t["current"]]
+    assert current == [0], current
+    assert tiers[0]["label_en"] == r["tier"]["label_en"]
+    got = [(t["min_percent_exclusive"], t["max_percent"]) for t in tiers]
+    assert got == [(None, 200), (200, 300), (300, 400), (400, None)], got
+    for income, idx in ((6_600_100, 1), (13_200_000, 2), (13_200_100, 3)):
+        current = [i for i, t in enumerate(run(income)["tiers"]) if t["current"]]
+        assert current == [idx], (income, current)
+
+
 def test_deadline():
     r = run(3_800_000, statement="2026-10-01")
     assert r["deadline"]["date"] == "2027-05-29"

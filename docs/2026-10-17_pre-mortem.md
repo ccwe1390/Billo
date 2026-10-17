@@ -40,8 +40,8 @@ act on a tripwire.
 | T1 | Submission requirements (form, repo, video) unknown | HANDOFF: UNKNOWN since the morning. The event page mentions judges "evaluating the video presentations" | Ask organizers in Slack now. If a video is required, record it Sun ~11:00 together with the backup | Evan | Sat 17:00 |
 | T2 | Problem Validation has zero evidence | Rubric: "Have real customers provided input?" No V1-V3 results exist. The venue closes at 21:00 | Run V1 (the chatbot test, ~45 min, no people needed) next. Do interviews at dinner check-in (18:00) | Evan / team | Sat 21:00 |
 | T3 | The journey has never run on a phone with a real camera photo | Every live run used rendered PNGs. Upload accepts only `image/png,image/jpeg` with an 8 MB cap (app.js:185, main.py) | Evan photographs a printed bill-02 on his phone against the live URL. If it is slow or rejected, Claude adds in-browser downscaling (~2000 px JPEG) before upload | Evan, then Claude | Sat 19:00 |
-| T4 | A "Content pending" placeholder shows on the result screen | app.js:57 / app.js:341 | Hide the card until sourced text exists; a sourced Tennessee summary is optional | Claude | Sat 18:00 |
-| T5 | The redesign breaks the working demo | Design agent running; 11 languages + RTL; UI checks are manual | Redesign changes CSS and markup only, never the API calls. Deploy only after a scripted journey run plus a browser check in en/ar/zh-CN. Keep the last good commit to roll back to | Claude | Sat 23:00 |
+| T4 | DONE 15:06 (145c8af, live) - A "Content pending" placeholder showed on the result screen | app.js:57 / app.js:341 | Hide the card until sourced text exists; a sourced Tennessee summary is optional | Claude | Sat 18:00 |
+| T5 | DONE 15:40 (c689291, live; checks in record W) - The redesign breaks the working demo | Design agent running; 11 languages + RTL; UI checks are manual | Redesign changes CSS and markup only, never the API calls. Deploy only after a scripted journey run plus a browser check in en/ar/zh-CN. Keep the last good commit to roll back to | Claude | Sat 23:00 |
 
 ### Fast-Follow (before Sun 12:00)
 

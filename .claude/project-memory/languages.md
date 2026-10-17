@@ -1,4 +1,4 @@
-# languages - TNHacks27
+# languages - TNHacks26
 
 Which languages the Bill Decoder explains bills in, and the evidence. Searched
 2026-10-17. Explanations are in the user's language; appeal letters stay in
@@ -40,3 +40,8 @@ English (for the provider).
   Oracle sources both include them, so vi is treated as supported (verify with
   a live call once OCI access exists).
 - Hindi, Tagalog, Haitian Creole: absent from all three lists.
+
+## 2026-10-17 - Wave 1 decided (Evan)
+- Wave 1: Spanish (es), Chinese (zh-CN + zh-TW), Arabic (ar, RTL), Vietnamese (vi).
+- Hindi: additional option, OCI Generative AI only; mark its output as not
+  back-translation-checked.

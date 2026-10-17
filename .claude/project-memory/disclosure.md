@@ -1,4 +1,4 @@
-# disclosure - TNHacks27
+# disclosure - TNHacks26
 
 What may leave the project (demo, screenshots, submission page, public repo).
 

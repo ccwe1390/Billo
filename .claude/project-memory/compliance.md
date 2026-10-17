@@ -1,4 +1,4 @@
-# compliance - TNHacks27
+# compliance - TNHacks26
 
 Rules from the Track 2 text (Evan's chat message, 2026-10-17). The full event rules
 have NOT been seen; add them when Evan supplies them.

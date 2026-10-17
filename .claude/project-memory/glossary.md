@@ -1,4 +1,4 @@
-# glossary - TNHacks27
+# glossary - TNHacks26
 
 Terms as used in the track text. Add project terms as they appear.
 

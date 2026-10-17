@@ -2,52 +2,72 @@
 
 ## Goal
 
-Build a usable prototype for the TNHacks27 hackathon, Track 2 "Health Access,
-Equity & Experience": a scalable solution to ONE clearly defined friction in
-health access, equity, or experience, for a defined user group, with a
-measurable outcome. It must use OCI Generative AI and privacy technologies in
-a meaningful way, run on synthetic/public/de-identified data only, and never
-make autonomous diagnostic or treatment decisions. The specific problem, user
-group, and outcome are NOT chosen yet (see Open items).
+**Mission (internal north star, decided 2026-10-17; product name is a
+placeholder):** [Name] helps immigrant and low-income patients, and the family
+members who read medical bills for them, understand a hospital bill in their
+own language and spot likely billing errors before they pay. It explains and
+flags; the person decides what to do.
 
-## Current state - Pre-planning: track chosen, problem not chosen
+### Project intent
+
+- **Problem:** hospital bills and insurer EOBs (explanation of benefits) are
+  hard to read, and harder in a second language. Errors and duplicate charges
+  go unchallenged when the patient cannot tell they are errors.
+- **Users:** limited-English and low-income patients, plus the family member
+  (often a grown child) who reads the bill for them.
+- **What it does (committed scope):** reads a bill + EOB (photo or file),
+  explains each line in plain words in the user's language, flags likely
+  errors (duplicates, bill-vs-EOB mismatches) with deterministic rules, and
+  drafts an appeal or itemized-bill request letter in English for the user to
+  review and send themselves.
+- **Add-on if time allows:** flag possible eligibility for a hospital's
+  financial assistance (charity care) policy, modelled on one fictional
+  hospital's policy.
+- **Cut for this event:** No Surprises Act claims, negotiation/payment-plan
+  letters, Discharge Companion, Med nudges.
+- **Languages:** wave 1 = Spanish, Chinese (Simplified + Traditional),
+  Arabic, Vietnamese. Hindi = additional option, OCI Generative AI only (not
+  in OCI Language, so no back-translation check). Goal: top 10 US immigrant
+  languages; ranks 7-10 not yet sourced.
+- **How success is measured:** headline = precision and recall at catching
+  errors we plant in a synthetic bill set (we write the bills, so ground truth
+  is exact). Demo number = dollars of errors flagged on that same set. NO
+  claim of real-world savings: there are no real users.
+- **Must hold:** OCI for every AI part; synthetic data only; no diagnosis or
+  treatment advice; no immigration status, SSN, or ID asked; nothing stored
+  after a session; $500 OCI credits are the whole budget.
+
+## Current state - Planned, not built: mission set, no code
 
 **Last updated: 2026-10-17** - this file is the only live snapshot; history
-lives in the record.
+lives in the record (Phase 0, Appendices A-C).
 
-> **2026-10-17 - Project bootstrapped (record Phase 0).** The folder was empty
-> (no code, no git, no docs). Everything below comes from the track text Evan
-> pasted in chat on 2026-10-17. Anything not in that text is marked MISSING,
-> not guessed.
+> **2026-10-17 - Mission and scope set (record Appendix B).** Bill Decoder is
+> the one module. No code, no PRD yet. Repo: private
+> `github.com/Evan-Daruwalla/TNHacks26`, branch `main`.
 
 ### What is known vs missing
 
 | Item | Status | Source |
 |---|---|---|
-| Track | **Known**: Track 2, Health Access, Equity & Experience | Evan's chat message 2026-10-17 |
-| Project name | **Inferred, unverified**: "TNHacks27" (from the folder name only) | folder name |
+| Track | **Known**: Track 2, Health Access, Equity & Experience | Evan, chat 2026-10-17 |
+| Event name | **Known**: TNHacks26 (the local folder is still named TNHacks27) | Evan, chat 2026-10-17 |
+| Module, users, metric, languages | **Decided** (see Goal) | record Appendices A-B |
 | Event dates / submission deadline | **MISSING** | - |
 | Event rules, judging rubric, submission format | **MISSING** (only the track text exists) | - |
 | Team roster and roles | **MISSING** | - |
-| Chosen problem, user group, measurable outcome | **MISSING** (the track requires all three) | - |
-| OCI access (account, credits, which services) | **Partly known**: $500 OCI credits; account, expiry, and service coverage MISSING | Evan, chat 2026-10-17 |
-| Tech stack, code, git repo | **None yet** | folder was empty |
+| OCI | **Partly known**: mandatory; $500 credits; account, expiry, and service coverage MISSING | Evan, chat 2026-10-17 |
+| Candidate OCI services | Document Understanding, Generative AI, Language - from Oracle docs, untested | services.md |
+| Code, PRD | **None yet** | - |
 
-### Track requirements (from the pasted text)
+### Track requirements (from the pasted text, 2026-10-17)
 
-- Challenge: scalable solution improving health access, equity, experience,
-  coordination, prevention, or operational effectiveness; go deep on a clearly
-  defined problem, user group, and measurable outcome.
-- Oracle opportunity: use OCI Generative AI and privacy technologies to
-  synthesize information, surface insights, personalize experiences, or
-  streamline workflows while respecting health-data sensitivity.
-- Responsible innovation: synthetic, public, or appropriately de-identified
-  data; NO autonomous diagnostic or treatment decisions; privacy, transparency,
-  accessibility, bias mitigation, and human oversight from the outset.
-- Success looks like: compelling problem with clear social value; usable
-  prototype with a credible path to scale; improved access/understanding/
-  coordination/experience; thoughtful responsible AI; meaningful use of
-  Oracle and OCI.
+- Go deep on a clearly defined problem, user group, and measurable outcome.
+- Use OCI Generative AI and privacy technologies; meaningful use of Oracle/OCI
+  is a success criterion.
+- Synthetic, public, or de-identified data only; NO autonomous diagnostic or
+  treatment decisions; privacy, transparency, accessibility, bias mitigation,
+  human oversight from the outset.
 
 ## Documentation
 - `docs/Project Record - Full Chronological History.md` - append-only
@@ -55,18 +75,18 @@ lives in the record.
   `node C:\Users\daruw\.claude\skills\project-memory\append-record-entry.js`.
 - `.claude/project-memory/` - binned memory; `important.md` first, then
   `INDEX.md`. DIRECTORY.md skipped (no source files yet).
-- `.claude/pm-cadence.json` - cadence config (defaults, not yet confirmed by
-  Evan).
-- No `PRD_ROADMAP.md` yet: write it after the problem is chosen.
+- `.claude/pm-cadence.json` - local cadence-hook state, gitignored.
+- No `PRD_ROADMAP.md` yet: next to write.
 
 ## BLOCKED-ON-EVAN
-- Event dates, submission deadline, rules/judging link, team roster.
-- OCI access: $500 credits exist; still need whose account, expiry, and whether GenAI/Document Understanding/Language are covered.
-- The problem decision: which friction, which user group, which measurable
-  outcome. Everything downstream (PRD, stack, data) waits on this.
+- Event dates, submission deadline, rules/judging
+  link, team roster.
+- OCI: whose account holds the $500, expiry, and whether Generative AI,
+  Document Understanding, and Language are covered.
 
 ## Next actions
-1. Evan supplies dates, rules, team, OCI access.
-2. Choose the problem (one friction, one user group, one metric); a grill
-   session or `/llm-council` fits this decision.
-3. Write `PRD_ROADMAP.md` from the decision.
+1. Write `PRD_ROADMAP.md` from the Goal above (grill any open design forks
+   first: stack, hosting, synthetic-bill generator, error types to plant).
+2. Evan supplies event facts and OCI account access.
+3. First build task once OCI works: a tiny paid-call smoke test with a budget
+   alert set first (important.md 5).

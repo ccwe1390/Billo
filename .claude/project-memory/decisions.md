@@ -1,4 +1,4 @@
-# decisions - TNHacks27
+# decisions - TNHacks26
 
 Standing decisions (what is decided NOW). History lives in the record.
 
@@ -19,3 +19,13 @@ Standing decisions (what is decided NOW). History lives in the record.
   question raised: Hindi is not top-ranked for LEP and is not in OCI Language's
   translation list (see languages.md). Ranks 7-10 not yet sourced.
   Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 - Mission and scope set (Evan, answers to 6 questions):
+  (1) mission is the internal north star first; pitch copy derived later.
+  (2) users = limited-English/low-income patients AND the family member who
+  reads the bill. (3) wave-1 languages = Spanish, Chinese, Arabic, Vietnamese;
+  Hindi is an additional option (Generative AI only, no OCI Language check).
+  Supersedes the Hindi-open part of the language entry above. (4) headline
+  metric = precision/recall on planted errors in synthetic bills; demo number
+  = dollars flagged on the same set; no real-world savings claim.
+  (5) financial-assistance check = add-on if time allows. (6) product name =
+  placeholder. Mission text lives in HANDOFF.md Goal.

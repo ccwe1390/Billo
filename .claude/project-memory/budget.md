@@ -1,4 +1,4 @@
-# budget - TNHacks27
+# budget - TNHacks26
 
 - 2026-10-17 - Spend ceiling is $0 beyond the existing Claude Max plan; any
   other spend needs a conversation with Evan first. Owner of this fact:

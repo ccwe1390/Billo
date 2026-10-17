@@ -1,4 +1,4 @@
-# important - TNHacks27
+# important - TNHacks26
 
 > Critical facts: getting one wrong is irreversible or expensive, invalidates
 > results, or breaks a live external constraint. Numbered, dated, newest last.

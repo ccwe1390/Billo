@@ -1,9 +1,9 @@
-# project-memory index - TNHacks27
+# project-memory index - TNHacks26
 
 Read first: important.md - 5 critical entries (updated 2026-10-17)
 
 Knowledge:
-- decisions.md - standing decisions + reason + who decided (updated 2026-10-17)
+- decisions.md - module, users, metric, languages, scope (updated 2026-10-17)
 - gotchas.md - none yet (updated 2026-10-17)
 - people.md - roles, deciders, collaborators, orgs (updated 2026-10-17)
 - timeline.md - dated deadlines, windows, expiries (updated 2026-10-17)

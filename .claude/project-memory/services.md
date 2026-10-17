@@ -1,4 +1,4 @@
-# services - TNHacks27
+# services - TNHacks26
 
 OCI is mandatory (important.md 4). Candidate OCI services for the Bill Decoder,
 from Oracle docs/marketing pages searched 2026-10-17. Not yet tested, not yet

@@ -35,6 +35,8 @@ the dated entry, not the digest.
 
 **Part II - Appendices (chronological)**
 - [A - Planning grill - Bill Decoder chosen, OCI mandatory, languages, credits](#appendix-a---planning-grill---bill-decoder-chosen-oci-mandatory-languages-credits-2026-10-17-1030-1055-cdt) (10-17)
+- [B - Mission statement and intent set; HANDOFF rewritten](#appendix-b---mission-statement-and-intent-set-handoff-rewritten-2026-10-17-1056-cdt) (10-17)
+- [C - Correction - event name is TNHacks26](#appendix-c---correction---event-name-is-tnhacks26-2026-10-17-1057-cdt) (10-17)
 
 ---
 
@@ -102,3 +104,45 @@ button ("Brief:", "change:"), so nothing was assumed from them.
 assistance, name) are unanswered, and there is no mission statement yet.
 Event dates, rules, and team are still MISSING. The repo is named TNHacks26
 while the folder is TNHacks27, so the event name is unresolved.
+
+# Appendix B - Mission statement and intent set; HANDOFF rewritten (2026-10-17, ~10:56 CDT)
+**WHAT:** Evan answered the 6 mission questions from Appendix A, and the
+mission statement and intent summary were written into `HANDOFF.md` (Goal).
+HANDOFF was rewritten to match: state "Planned, not built", event-name
+mismatch added, problem-decision blocker removed.
+
+Answers (Evan, 2026-10-17): (1) audience = internal north star first, as
+recommended; (2) users include the family member who reads the bill, as
+recommended; (3) fourth wave-1 language = Vietnamese, as recommended, with
+Hindi kept as an additional option (this is Evan's change to the
+recommendation); (4) headline = precision/recall on planted errors, demo
+number = dollars flagged, as recommended; (5) financial-assistance check
+phrased as an add-on if time allows (Evan's wording; Claude had recommended
+leaving it out of the mission); (6) placeholder name, as recommended.
+
+**WHY:** the track asks for one clearly defined problem, user group, and
+measurable outcome; these answers fix all three, which unblocks the PRD.
+
+**Process note:** between Appendix A and this entry, the bootstrap commit
+`65be0e2` was pushed to `github.com/Evan-Daruwalla/TNHacks26` (private,
+`main`) at Evan's request. `.claude/pm-cadence.json` is gitignored because it
+is a per-machine prompt counter.
+
+**HONEST OPEN ITEM (not fixed):** event name (TNHacks26 vs TNHacks27), dates,
+rules, team, and OCI account details are still MISSING. Hindi output will
+have no automatic translation check. Language ranks 7-10 are unsourced.
+
+# Appendix C - Correction - event name is TNHacks26 (2026-10-17, ~10:57 CDT)
+**Correction (Evan, 2026-10-17):** the event's real name is **TNHacks26**.
+Phase 0, Appendix A, and Appendix B call it "TNHacks27", which was inferred
+from the local folder name `C:\ClaudeCode\TNHacks27` and is wrong. Those
+entries stay as written (append-only); this entry supersedes them on the name.
+The GitHub repo `Evan-Daruwalla/TNHacks26` already had the right name.
+
+**WHAT changed:** the bin headers, the HANDOFF event-name row and blocker list,
+and the auto-memory file now say TNHacks26.
+
+**HONEST OPEN ITEM (not fixed):** the local folder is still named
+`TNHacks27`, and so is the Claude memory directory keyed to it. Renaming the
+folder changes the session's working path and that memory path, so it was not
+done mid-session.

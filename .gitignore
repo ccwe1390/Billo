@@ -1,3 +1,4 @@
 # local cadence-hook state: per-machine counter, changes every prompt
 .claude/pm-cadence.json
 .claude/*.tmp
+.claude/drift-check.stamp

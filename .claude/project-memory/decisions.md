@@ -95,7 +95,7 @@ Standing decisions (what is decided NOW). History lives in the record.
   that repeats the tier label or deadline text is not flagged. Contacts never
   go through the model; dates in generated text must be YYYY-MM-DD. Decided
   by: Claude (review); open to Evan's override.
-- 2026-10-17 ~13:55 CDT - App-shell review (Agent B build; all 3 test files
+- 2026-10-17 ~13:44 CDT - App-shell review (Agent B build; all 3 test files
   re-run by Opus: ALL PASS; fake-mode server served / with 200). Found and
   fixed: /explain and /packet trusted the engine result sent back by the
   browser (a $999,000 income with a client-sent "10%, free care" result got a
@@ -106,3 +106,11 @@ Standing decisions (what is decided NOW). History lives in the record.
   contact; model failure or number mismatch falls back to English. Open: OCI
   Language translate never run live; TN protections card has no sourced text;
   es/ar UI strings need a human reviewer. Decided by: Claude (review).
+- 2026-10-17 ~13:47 CDT - Team plan rev 2 (mentor additions) adopted WITH
+  FIXES; text saved at docs/2026-10-17_HackTN26_Health_Access_Plan_rev2.txt,
+  fixes in PRD F9. docs/Hackathon Schedule.txt is ground truth for times
+  (1:00 PM finish, 9:00 PM venue close), not rev 2's 12:00/8 PM. Fixes:
+  storage wording, QR as "would print", engine-computed $X estimate,
+  blur-test before claiming "left it blank", synthetic policy page for
+  citations, home page via browser storage after the 5 PM gate, dashboard as
+  slide mockup. Decided by: Evan ("adopt with fixes"), chat 2026-10-17.

@@ -50,6 +50,9 @@ the dated entry, not the digest.
 - [N - Starter-kit apply failed (A1 out of capacity); E5 fallback; synthetic test bill](#appendix-n---starter-kit-apply-failed-a1-out-of-capacity-e5-fallback-synthetic-test-bill-2026-10-17-1314-cdt) (10-17)
 - [O - Gate 1 passed in Playground; contracts drafted; vision extract spike written (not run)](#appendix-o---gate-1-passed-in-playground-contracts-drafted-vision-extract-spike-written-not-run-2026-10-17-1324-cdt) (10-17)
 - [P - Rules engine built and reviewed; revised plan received](#appendix-p---rules-engine-built-and-reviewed-revised-plan-received-2026-10-17-1339-cdt) (10-17)
+- [Q - App shell built, reviewed, tamper flaw fixed, pushed](#appendix-q---app-shell-built-reviewed-tamper-flaw-fixed-pushed-2026-10-17-1346-cdt) (10-17)
+- [R - Team plan rev 2 adopted with fixes (PRD F9)](#appendix-r---team-plan-rev-2-adopted-with-fixes-prd-f9-2026-10-17-1351-cdt) (10-17)
+- [S - Blur test set and synthetic policy page; citations linked](#appendix-s---blur-test-set-and-synthetic-policy-page-citations-linked-2026-10-17-1352-cdt) (10-17)
 
 ---
 
@@ -525,3 +528,94 @@ demo script). Not adopted yet; review of conflicts given in chat.
 **Status:** engine done and verified on synthetic policy only. Nothing
 committed. OCI extraction still not run from code (waiting on Evan's API key
 config and model ID).
+
+# Appendix Q - App shell built, reviewed, tamper flaw fixed, pushed (2026-10-17 13:46 CDT)
+**What happened:** Agent B finished the app shell: `app/main.py` (FastAPI,
+/extract /evaluate /explain /packet, stateless), `app/oci_client.py`
+(Command A Vision, Command A, OCI Language; FAKE_OCI=1 mode),
+`app/numlock.py`, `app/static/` (five screens, en/es/ar, RTL), tests.
+
+**Review (Opus re-ran checks):** `py tests/test_engine.py`,
+`tests/test_numlock.py`, `tests/test_api.py` all printed ALL PASS; a
+FAKE_OCI uvicorn server returned 200 for GET / and normalized bill-01 on
+POST /extract; `node --check app/static/app.js` OK.
+
+**Flaw found and fixed:** /explain and /packet used the engine result sent
+back by the browser. A test request with $999,000 income and a hand-written
+"10%, free care" result got a free-care packet. Both endpoints now recompute
+the result with the engine; the client's result is ignored. Regression test
+added. Lesson: in a stateless design, anything the client echoes back must
+be recomputed, not trusted.
+
+**Accepted from the agent:** confidence is null when the model gives none
+(no invented scores); not-eligible gets the payment-plan contact, no packet;
+model failure or number mismatch falls back to English.
+
+**Still open:** OCI Language translate never run live; the Tennessee
+uninsured-protections card has no sourced text (placeholder); es/ar UI
+strings need a human reviewer; live OCI needs Evan's API key config and
+model ID.
+
+**Correction:** the decisions.md and contracts.md notes for this review were
+first stamped "~13:55 CDT", a guessed time; `date` showed 13:45. Fixed to
+~13:44.
+
+**Commits:** 69755ed (engine, contracts, spike, docs) and 11d7aaf (app
+shell), pushed to origin main at 13:45 CDT on Evan's "push".
+
+# Appendix R - Team plan rev 2 adopted with fixes (PRD F9) (2026-10-17 13:51 CDT)
+**What happened:** Evan pasted rev 2 of the team plan (mentor additions:
+home "Dad's bills", reminders, partner dashboard, QR entry, pitch, demo
+script, judge answers). Claude listed seven issues; Evan ruled
+"docs/Hackathon Schedule.txt is ground truth; adopt with fixes".
+
+**Recorded:** rev 2 text saved verbatim at
+`docs/2026-10-17_HackTN26_Health_Access_Plan_rev2.txt` (with a header saying
+PRD F9 wins on conflict). PRD amended by appending F9 (not a fork: same
+product). important.md entry 3 notes the ruling on times.
+
+**Issues and their resolution (detail in PRD F9):**
+1. Times: rev 2 said 12:00 PM finish / 8 PM close; schedule file says
+   1:00 PM / 9:00 PM. Schedule wins (Evan).
+2. "Nothing stored" vs "Save to Dad's bills": opt-in saves stay in the
+   phone's browser storage; server stays stateless; wording fixed.
+3. "The hospital prints a code" (false today) -> "would print".
+4. "$X could be reduced" vs the plan's own no-dollars rule: kept, but
+   engine-computed, number-locked, labeled.
+5. "Left the blurry date blank" is untested -> bill-02 blur set to test it.
+6. Cited page must open on the synthetic branch -> synthetic policy page.
+7. Five bills + dashboard -> home page after the 5 PM gate; dashboard as a
+   slide mockup.
+
+**Next:** Agent C (Sonnet) dispatched ~13:50 CDT for bill-02 + blur PNGs +
+`app/static/policy-cumberland.html`. Live OCI still blocked on Evan's API key
+config and model ID.
+
+# Appendix S - Blur test set and synthetic policy page; citations linked (2026-10-17 13:52 CDT)
+**What happened:** Agent C (Sonnet) built the blur test set and the
+synthetic policy page per PRD F9.
+- `spikes/synthetic-bill/bill-02.html` + `bill-02-blur{0,1.5,3,5}.png`: date
+  of service printed once; only that value is blurred (CSS filter via URL
+  hash). The statement date (10/05/2026) and due date (11/04/2026) sit right
+  next to it, so a guessing model will likely copy one of them.
+- `app/static/policy-cumberland.html`: labeled SYNTHETIC, `#page-1` tiers,
+  `#page-2` window/documents/contacts, values copied from the policy JSON.
+- `tests/test_policy_page.py`.
+
+**Review (Opus):** `py tests/test_policy_page.py` -> ALL PASS. Opened
+blur3.png: date unreadable, rest sharp (agent: legible at 0, barely at 1.5,
+unreadable at 3 and 5). Page has no script and no external links.
+
+**Wired by Opus:** the 9 citation `url` fields in
+`app/data/policy_cumberland_synthetic.json` now point at
+`/policy-cumberland.html#page-1` / `#page-2`; `cite()` in
+`app/static/app.js` renders a link when a url exists. All 4 test files
+ALL PASS; `node --check` OK; fake-mode server returned 200 for the page.
+
+**Not done:** the blur set has NOT been run against Command A Vision
+(blocked on Evan's `~/.oci/config` + model ID). Pass condition for the 0:14
+demo line: `date_of_service` null at blur 3 and 5.
+
+**Correction to Appendix R:** its heading says 13:51 CDT; `date` showed
+13:49 when it was written, and Agent C was dispatched ~13:48, not ~13:50.
+Both were guessed instead of read. Appendix R stays as written.

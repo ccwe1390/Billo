@@ -11,7 +11,7 @@
       "eligible": true,
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-1",
         "page": 1,
         "effective_date": "2026-01-13"
       }
@@ -24,7 +24,7 @@
       "eligible": true,
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-1",
         "page": 1,
         "effective_date": "2026-01-13"
       }
@@ -37,7 +37,7 @@
       "eligible": true,
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-1",
         "page": 1,
         "effective_date": "2026-01-13"
       }
@@ -50,7 +50,7 @@
       "eligible": false,
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-1",
         "page": 1,
         "effective_date": "2026-01-13"
       }
@@ -61,7 +61,7 @@
     "text_template_en": "Apply by {date}. The application window is 240 days from the first billing statement date.",
     "citation": {
       "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-      "url": "",
+      "url": "/policy-cumberland.html#page-2",
       "page": 2,
       "effective_date": "2026-01-13"
     }
@@ -73,7 +73,7 @@
       "required_if": "always",
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-2",
         "page": 2,
         "effective_date": "2026-01-13"
       }
@@ -84,7 +84,7 @@
       "required_if": "files_tax_return",
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-2",
         "page": 2,
         "effective_date": "2026-01-13"
       }
@@ -95,7 +95,7 @@
       "required_if": "always",
       "citation": {
         "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-        "url": "",
+        "url": "/policy-cumberland.html#page-2",
         "page": 2,
         "effective_date": "2026-01-13"
       }
@@ -107,7 +107,7 @@
     "payment_plan_phone": "(615) 555-0100",
     "citation": {
       "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
-      "url": "",
+      "url": "/policy-cumberland.html#page-2",
       "page": 2,
       "effective_date": "2026-01-13"
     }

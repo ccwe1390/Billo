@@ -1,0 +1,440 @@
+SOURCE: team planning doc "HackTN26 Health Access Plan" (rev 2, with mentor-feedback additions), pasted by Evan into chat 2026-10-17 ~13:38 CDT. Kept verbatim as the source for the pitch, demo script, slides, judge questions and validation tasks.
+ADOPTED 2026-10-17 ~13:47 CDT WITH FIXES - see PRD_ROADMAP.md, "F9. Amendments (2026-10-17)". Where this text and F9 disagree, F9 wins. In particular: docs/Hackathon Schedule.txt is ground truth for times (hacking finishes Sun 1:00 PM, venue closes Sat 9:00 PM), not the 12:00 pm / 8 pm below.
+==========================================================================
+
+HackTN26 Health Access Plan
+Oct 17, 2026 · @Someone
+The decision
+Build [Name] (unnamed for now): a photo of a Nashville hospital bill goes in, and that hospital's financial assistance application comes out, pre-filled, checked against its published policy, with every step explained in Arabic or Spanish for the family member helping a parent.
+The decisive reason: this is the point in the bill journey where help already exists and goes unclaimed. In Dollar For's research, only 29% of patients with hospital bills they can't afford learn about, apply for, and receive charity care, and 52% said their hospital told them nothing about it. Our product doesn't invent a benefit; it gets families to one they are already entitled to apply for.
+What changed from the original idea. The bill explainer and error checker become step one, not the product. Three reasons: error-checking apps are crowded; comparing a bill to an insurance EOB doesn't help uninsured families, who get no EOB; and a general assistant already explains bills well.
+"Can't people just ask Claude?" For explaining a bill, mostly yes, and judges will think that. What a general assistant does not do on its own is the last mile: it answers the question asked, and families who have never heard of hospital financial assistance don't ask about it. It also doesn't hand over one hospital's application, filled in, with the deadline and the documents that hospital requires. That is a hypothesis until we test it (see Validation, task 1). If a general assistant does all of it reliably, our pitch has to narrow to Arabic access and the family workflow.
+Languages: Spanish and Arabic only for the demo. These are Nashville's top two non-English languages and both are supported by Oracle's translation service. Kurdish is third in Metro schools and is not supported, which we state as a known gap.
+Constraints
+Hacking ends Sunday at 12:00 pm, about 23 hours from now. Presentations are 4 minutes per team, and the showcase runs 1 to 5 pm Sunday. Everything below is planned backward from noon.
+Item
+What the organizers say
+Status
+Schedule
+Saturday 9 am to 8 pm; Sunday 9 am to 5 pm; hacking finishes 12 pm Sunday
+Confirmed (event page)
+Presentation
+2 min pitch (pain point, why this solution, how you'll approach customers) + 2 min demo of at least one working feature
+Confirmed
+Judging
+Communication, Social Impact, Credibility, Problem Validation, User Experience, Technicality. No weights published
+Confirmed; don't invent weights
+Problem Validation wording
+"Have real customers provided input?"
+Confirmed; this is why validation is scheduled, not optional
+Technicality wording
+"Does the prototype actually work and leverage Oracle Cloud Infrastructure capabilities?"
+Confirmed
+Oracle
+OCI must be part of the solution; $500 credits for teams registered before Oct 12; a starter kit deploys an always free compute VM plus a MySQL HeatWave database in one click (starter kit)
+Confirmed
+Team size
+Event page says 4 to 6; FAQ says 3 to 6
+Conflicting; assume 4
+Judges
+Oracle executives (including OCI networking and engineering leaders), Vanderbilt faculty, an HCA Healthcare director of application services, an internal medicine physician, Miss Grand Tennessee 2026
+Confirmed
+Prizes
+$1,000 / $750 / $250
+Confirmed
+Submission form, repo, video
+Not stated publicly. The page mentions judges "evaluating the video presentations"
+Unknown: ask organizers in Slack today
+Challenge #2 slide
+Supplied by you, not online
+Treat as authoritative
+Assumptions we're making, and what they change:
+• Team of 4, two people who can code. With only one coder, drop the database and the Arabic layout polish first.
+• OCI Generative AI works in your tenancy (US Midwest, Chicago). Verify in the first 30 minutes by calling one model. If it fails, see failure mode 1.
+• Budget is not a constraint. A weekend of model calls on synthetic bills costs far less than $500.
+• The only reachable users are people at the event. Hospital offices and community organizations are closed this weekend, so validation is designed around attendees and mentors.
+The problem
+Families pay or ignore hospital bills that the hospital's own financial assistance policy would reduce or erase, because nobody connects the bill to the program.
+The moment (illustrative persona, not an interview): Leila, 24, reads mail for her father, who speaks Arabic, has no insurance, and works for cash. He went to a Nashville emergency department and a statement for several thousand dollars arrives. He wants to set up a payment plan. Neither of them knows the hospital has a program for people at his income, or that there is an application window.
+Documented evidence
+• Help goes unclaimed nationally. A Dollar For study estimated nonprofit hospitals fail to deliver at least $14 billion a year in charity care to eligible patients. In its survey of over 1,600 patients, only 29% with unaffordable bills learned about, applied for, and received it; 52% got no information from their hospital; 45% of applicants got no help applying. The most common denial reasons were an old bill or paperwork problems. (ClearHealthCosts summary)
+• Help works when someone assists. The same study found approval rates were highest, 67%, when patients got help from Dollar For or the hospital directly.
+• Tennessee has more people who depend on it. Tennessee has not adopted Medicaid expansion as of May 2026 (KFF), and about 95,000 uninsured adults sit in the coverage gap (CBPP).
+• Tennessee law gives uninsured patients specific protections. All hospitals must post a statement of their charity care policies, and may not charge an uninsured patient more than 175% of cost (Hilltop Institute).
+• The rules are real and specific. VUMC bases assistance on adjusted gross income for the current or prior year against the Federal Poverty Guidelines, on a sliding scale, and decides within 30 days of an application (VUMC summary). VUMC's billed charges for assistance-eligible patients are capped at the amount generally billed, 24% of charges as of April 30, 2026 (VUMC).
+• Nashville's language mix points to Spanish and Arabic. Metro's Office of New Americans named Spanish, Arabic, Kurdish, Somali, Swahili, Burmese, Amharic, Vietnamese, Nepali and Farsi as the top 10 languages (Nashville Scene); the top three in Metro schools are Spanish, Arabic and Kurdish (WKRN).
+• Even the published summaries disagree. Today, one CareRoute page lists VUMC free care up to 300% of poverty, while CareRoute's own VUMC guide and HealthBillCentral say 200%. Someone has to own the source of truth; that becomes part of our pitch.
+Hypotheses we have not shown yet (validation tests these)
+• Adult children are often the ones handling a parent's bills.
+• These families don't know the program exists when the bill arrives.
+• Paperwork is a bigger barrier than eligibility, especially proof of income for people paid in cash.
+• VUMC already publishes its policy in Arabic (PDF), so translation alone is not the gap. Connecting a specific bill to a specific action is.
+Three candidate concepts
+A is the strongest; B is your original idea; C is a real Tennessee problem we can't validate or demo honestly by tomorrow.
+
+A. Bill to help (recommended)
+B. Bill and EOB error checker (original)
+C. TennCare renewal helper
+User and moment
+Family reader of an uninsured or underinsured parent, the day a hospital statement arrives
+Patient or family reader with insurance, comparing a bill to the EOB before paying
+TennCare member (or family reader) holding a renewal packet with a return deadline
+Current workaround and its failure
+Pay, set up a payment plan, or ignore it until collections; nobody mentions financial assistance
+Pay it; or upload to one of many error-finding apps, mostly in English
+Ignore the mail or miss a document; coverage ends for paperwork reasons
+Action completed
+A pre-filled financial assistance application, document checklist and deadline, ready to submit
+A letter asking for an itemized bill or correction
+A completed renewal checklist and a reminder before the deadline
+Core mechanism
+Vision model reads the bill; rules engine applies the hospital's published policy and the 2026 poverty guidelines; plain-language explanation in Arabic or Spanish
+Vision model reads bill and EOB; fixed rules catch duplicates and amount mismatches
+Vision model reads the notice; rules map it to required documents and dates
+One measure
+Share of test users who identify the program, their likely tier, the deadline and the required documents within 5 minutes
+Planted errors found and flags that were correct, on synthetic bills
+Share of renewal packets returned on time
+Strongest reason it might fail
+CareRoute already ranks Nashville hospitals and applies for patients (for a fee); judges may see us as a copy
+Crowded, judges ask "why not ChatGPT", and uninsured families get no EOB
+Tennessee data shows the problem was large (282,294 renewals closed for an unreturned packet in the unwinding through Jan 2024, TennCare) but notices vary, the state portal can't be simulated, and we have no enrollees to test with this weekend
+Does it deserve to exist?
+Only as a free front door that starts from the bill, works in Arabic, and hands off to people who already process applications. It is not a replacement for the hospital, CareRoute, or Dollar For, and we should say so.
+Alternative for concept A
+What it already does well
+Where it leaves a gap
+What we would improve
+VUMC's own process
+Staff help fill out applications; plain language summary; policy published in Arabic; some patients qualify through a screening that needs no application
+The patient has to know to ask. Nationally, 52% of patients with unaffordable bills say they got no information
+The trigger is the bill itself, in the family's language, with the exact phone line, email and documents
+CareRoute
+Nashville eligibility calculator by income and household size; English and Spanish; a paid service that applies for you (a share of savings, capped at $1,000, nothing if no savings)
+No Arabic that we found; its own pages disagree on VUMC's free care limit; you have to find it first
+Free; Arabic; starts from a photo; every rule cites its source and effective date
+Dollar For
+Free, donor funded; prepares and submits applications and works with hospitals
+Human capacity; the family still has to find it
+Complementary: we prepare the packet, Dollar For or a hospital counselor submits and follows up
+General AI assistant
+Explains a bill line by line in Arabic or Spanish, free, instantly
+Untested: whether it raises financial assistance unprompted, gets VUMC's limits right, gives a deadline, or produces the form
+Deterministic, cited rules; a finished packet; nothing guessed. Validation task 1 tests this claim before we pitch it
+Concept B's alternatives are apps such as Billscope, MedBillAI and Bill Decoder, which already scan bills, flag duplicates and write dispute letters. We could not show a concrete advantage beyond language.
+Concept C's alternatives are the state's own renewal process and legal aid groups. We could not observe the failure point or test with enrollees this weekend.
+What we will not claim: first, unique, no competitors, money saved, or that we "apply" for anyone. The family submits; the hospital decides.
+Comparison and choice
+A scores highest on our own 1 to 5 decision aid (42 of 50, against 36 and 26). These are our scores, not official judging scores or odds of winning.
+Criterion
+A. Bill to help
+B. Error checker
+C. TennCare renewal
+Communication
+5: one bill, one packet, one sentence
+4
+4
+Social Impact
+5: unclaimed help, Tennessee coverage gap
+3: crowded, insured users
+4
+Credibility
+4: narrow scope we can finish
+3
+3
+Problem Validation
+4: attendees who handled a parent's bill are reachable today
+3
+2
+User Experience
+4: one flow, family reader in mind
+4
+3
+Technicality (OCI)
+4: vision model, rules, translation, database
+4
+3
+Fits 23 hours
+4
+4
+2
+External dependencies (5 = few)
+4: one public policy PDF
+4
+2: state notices, portal
+Validation access
+4
+3
+1
+Demo reliability
+4
+4
+2
+Total
+42
+36
+26
+Product definition: [Name] turns a photo of a Nashville hospital bill into that hospital's financial assistance packet (eligibility estimate, pre-filled application fields, document checklist, deadline and a short cover letter), explained in Arabic or Spanish, for the family member helping a parent.
+Why it's the strongest choice under our constraints: it ends in a completed action rather than an explanation; its rules come from one public document we can verify today; and it can be shown end to end in under two minutes with synthetic data.
+Most important untested assumption: that families who would qualify don't find out about the program when the bill arrives, and that a packet triggered by the bill gets them further than what they do today, including asking a general AI assistant.
+Evidence that would make us narrow or abandon it:
+• If general assistants, given only the bill, reliably raise financial assistance, state VUMC's limits correctly and list the documents (validation task 1), drop the eligibility claim and pitch only the Arabic packet and the family workflow.
+• If interviewees say the hospital already screened them automatically or they all knew about the program, narrow to the real blocker they name, most likely proof of income for cash workers.
+Fallback if we can't confirm VUMC's thresholds from VUMC's own PDF by 3 pm: encode a clearly labeled synthetic hospital ("Cumberland General, synthetic") with rules modeled on the same structure. The flow, the packet and the demo stay identical.
+Critique and revision. The first version of this plan was: explain the bill in five languages, check for errors, compare the bill to the EOB, check eligibility at three Nashville hospitals, and write a letter. Critique: four features means none works convincingly in a two minute demo; the EOB comparison doesn't apply to uninsured families; three hospitals triples the policy checking, and today's aggregator data already disagrees; Chinese, Vietnamese and Hindi aren't Nashville's main needs; and "we apply for you" would overclaim and copy CareRoute. Revised: one hospital verified from its own document, two languages, one action, every rule shown with its source and date, error checking deferred, and a hand-off to the hospital's counselors or Dollar For instead of applying on anyone's behalf.
+The smallest impressive product
+One journey must work live: synthetic bill photo, confirmed fields, a cited policy result, and a finished packet, in under 90 seconds.
+The five screens
+1. Start. Opened by scanning a QR code printed on the hospital's statement, so the hospital is already selected (or from a community group's link). Pick a language (العربية, Español, English) and "This bill is for: me / a family member." One line: "Nothing is saved unless you choose to. Demo uses synthetic bills only."
+2. Bill. Upload or photograph the bill. The extracted fields appear beside the image: hospital, statement date, account number, amount due, date of service, insurance status. Each field is editable and must be confirmed. Anything unreadable is left blank and asked for, never guessed.
+3. Three questions. Household size; yearly household income; "Do you file a tax return?" (changes the document list). No questions about immigration status, Social Security number or ID.
+4. Result, in the chosen language with an English toggle. Example: "A household of 4 with $38,000 a year is at 115% of the 2026 federal poverty guideline. VUMC's policy (effective date, page number, link) lists this income range as [tier from Appendix B]. The hospital makes the final decision." Below it: the application deadline, three lines on what the bill is, and a card on Tennessee's protections for uninsured patients.
+5. Packet. The application fields pre-filled from the bill and the answers; the document checklist from the policy; a short English cover letter asking VUMC to review the account for financial assistance, with an Arabic or Spanish translation beside it; and where to send it (VUMC lists financial.assistance@vumc.org). Buttons: Download PDF, and "Share with a hospital counselor or Dollar For."
+Added after mentor feedback: home, reminders and the partner dashboard
+• Home, "Dad's bills." The family opts in to save, inside the partner's login (a seeded synthetic user for the demo; we don't build login). Five synthetic bills from one emergency visit, each with its amount and deadline. At the top: "Up to $X could be reduced if the hospital approves," calculated from the policy tier and labeled "Estimate. Synthetic bills. The hospital decides." Never the word "saved."
+• One approval, several bills (verify first). VUMC's policy defines a Period of Eligibility that starts on the earliest date of service and runs until a set number of months after approval. Open the policy PDF and confirm the number of months before the demo says one approval covers all five bills.
+• Reminders, in the family's language: the application deadline, a follow up at day 30 (VUMC typically decides within 30 days), and a new bill alert that reuses the household answers. The demo shows a preview. Ask interviewees whether they'd want email, text, or something else.
+• Partner dashboard (the navigator or counselor is the repeat user): a funnel of scans, confirmed bills, results and packets; languages used; result tiers; rules health showing each rule's source, effective date, verifier and review date, with stale rules in red; and packet codes so hospital staff can see an application came through [Name]. Counts only, no personal fields, and any count under 10 hidden.
+• Build these last: home and reminders after the packet works; the dashboard only if the full journey works by 8 pm, otherwise a labeled mockup on the slide.
+Inputs, outputs and data
+• Inputs: one bill image, three answers.
+• Outputs: the result screen and a packet PDF.
+• Data: VUMC's financial assistance policy, Appendix B charity guidelines, plain language summary and application (public); the 2026 HHS poverty guidelines ($15,960 for one person, $33,000 for four, plus $5,680 per extra person); 10 synthetic bills we generate. Synthea is optional, only to make line items look realistic.
+• Synthetic bills: watermarked SYNTHETIC, no hospital logos, fake names and account numbers, and a QR code that opens the app with the hospital selected.
+What must actually work: extraction, confirmation, the rules engine with citations, and the packet. The technically interesting part: the AI never decides anything. A vision model reads; a deterministic engine applies the hospital's published rules; the language model only phrases what the engine decided, with every number, date and dollar amount locked so translation can't change it.
+Part
+Status
+Bill extraction with confidence and human confirmation
+Implemented
+Poverty guideline math, tier lookup, deadline
+Implemented
+Arabic and Spanish explanations; translated letter; number lock check
+Implemented
+Packet PDF; deployed on OCI
+Implemented
+VUMC rules (thresholds, documents, window, contacts)
+Seeded by hand from VUMC's PDF, each with page reference
+Synthetic bills; Tennessee uninsured protections card
+Seeded
+Sending the application
+Simulated: download and print only; nothing is sent
+Other hospitals, error checks, Kurdish, read aloud, navigator dashboard
+Deferred
+Acceptance criteria
+[ ] On 10 synthetic bills, the four key fields (hospital, statement date, amount due, account number) are read correctly; report the actual count, whatever it is.
+[ ] No field is used until the user confirms it; edits override the model.
+[ ] Tier results match a hand-computed answer key on 20 test households.
+[ ] Every rule on screen shows its source document, page and effective date.
+[ ] Arabic renders right to left, and every number and date in the Arabic and Spanish text matches the English exactly.
+[ ] Income above the policy's limits produces an honest "not eligible under this policy" with the hospital's payment plan contact, not a false promise.
+[ ] No screen asks for immigration status, SSN or ID, no personal data is written unless the family opts in, and dashboard events contain no personal fields.
+[ ] The full journey runs in under 90 seconds on the deployed OCI address.
+Cut in this order if time runs short
+1. The partner dashboard and reminders (show labeled mockups instead), then PDF generation (use a printable page instead).
+2. The database (keep the rules in a JSON file on the server).
+3. Spanish (keep Arabic: it's the gap no Nashville tool we found covers).
+4. The back translation check (keep the number lock).
+5. Camera capture (keep upload).
+Never cut: extraction, confirmation, the cited rule result, the packet.
+Architecture and OCI
+Everything runs on Oracle Cloud, and the AI never makes the decision: one vision model reads, a plain Python rules engine decides, a language model only phrases.
+The phone talks only to our web app; the app calls four Oracle services and keeps nothing after the response.
+OCI piece
+What it does for the product
+Why it earns its place
+Compute VM from the starter kit
+Hosts the web app and rules engine
+One click deploy, always free shape; no networking to hand build
+Generative AI, Cohere Command A Vision
+Turns a phone photo of the bill into structured fields
+Removes the typing that stops people. Available on demand in US Midwest (Chicago) (OCI regions)
+Generative AI, Cohere Command A
+Writes the explanation in Arabic or Spanish from the engine's output
+Trained on 23 languages including Arabic and Spanish (Oracle)
+OCI Language, Translate
+Translates the cover letter; translates our Arabic and Spanish text back to English to confirm no number changed
+Supports Arabic and Spanish (Oracle Translate); can mark text not to translate
+MySQL HeatWave (from the starter kit)
+Stores the policy registry (hospital, rule, value, source link, page, effective date, who verified it and when), anonymous usage counts for the dashboard, and, only if a family opts in, saved bills inside the partner's login
+The registry is what a hospital or navigator maintains; usage counts hold no personal fields
+Why not other models on OCI: Gemini calls made through OCI in US regions are hosted by Google (OCI). We use the Cohere models so bill data stays with Oracle. Confirm exact model IDs in the console before writing code.
+Grounding and safety rules in code
+• Extraction returns strict JSON with a confidence per field; a missing field is null and the screen asks for it.
+• The engine's output (numbers, tier, deadline, documents, citations) is the only thing the language model sees. After generation, every number in the text is checked against the engine's numbers; any mismatch falls back to a fixed template.
+• The user confirms every field; the packet is a draft they choose to send; the result always says the hospital decides.
+• The Tennessee protections card is fixed text with its source and a line saying it is information, not legal advice.
+Endpoints (all stateless): POST /extract (image to fields), POST /evaluate (fields and answers to result with citations), POST /explain (result and language to text), POST /packet (everything to PDF).
+Tables: policy_rules (hospital, rule, value, source link, page, effective date, verified by, review date); events (date, hospital, language, step reached, result tier, packet made; no personal fields); saved_bills (opt in only, inside the partner's login; seeded for the demo). Two more endpoints: GET /dashboard (counts) and POST /reminders (computed dates; preview only this weekend).
+Privacy and HIPAA
+• In a pilot, the tool runs inside the partner's existing login (the hospital's patient portal or the community group's account). We don't build accounts.
+• If a hospital deploys it, we act as its vendor under a HIPAA business associate agreement. Before a pilot, confirm which Oracle services are covered by Oracle's HIPAA program; don't claim any until checked.
+• Nothing is saved unless the family opts in, and partners see only anonymous counts. No data passes between patients: each request carries only one family's data, with no shared chat history, no saved records, no cache, and no logging of bill contents.
+• Test it: run two synthetic families back to back and confirm nothing from the first appears in the second's screens, model prompts or logs.
+Validation we can actually do this weekend
+Three pieces of evidence, all collectable before noon Sunday: a test of general AI assistants, interviews with people who have handled a family member's bill, and a timed task comparison. Report every number with its sample size, and never turn any of it into dollars saved.
+Task 1: Does a general assistant already solve this? (today, first hour, no people needed)
+Give the synthetic bill image to Claude, ChatGPT and Gemini (free versions, as a family would use them), three runs each, in English and in Arabic, with this exact prompt: "My dad got this bill from the hospital. He doesn't have insurance. What should we do?" Score each answer yes or no on five points:
+1. Mentions hospital financial assistance without being asked.
+2. States VUMC's income limits correctly.
+3. Gives an application deadline or window.
+4. Lists the documents VUMC actually asks for.
+5. Produces a filled application or ready to send letter.
+This decides the pitch. If the assistants score well on 1 to 4, we say so and narrow to what they don't do. Limits: models change week to week, and different wording changes answers.
+Task 2: Interviews (Saturday afternoon and evening, 6 to 10 people)
+Find people by asking in the event Slack and at meals: "Have you helped a family member deal with a medical bill in the last three years?" Talk only to people who say yes. Don't describe the product until the end. Take no names, amounts or real documents; write down quotes only with permission.
+Question
+Assumption it tests
+Tell me about the last time you helped someone with a medical bill. What happened from when it arrived?
+Family readers exist and act at the bill moment
+What did you do first? What did you look at, or who did you ask?
+The current workaround
+Did you or they try an AI chatbot or a search? What did it tell you?
+Whether general assistants already solve it
+How did it end: paid, payment plan, still open, or something else?
+The consequence
+At any point, did anyone mention a program that reduces a bill based on income? How did you hear about it?
+The awareness gap (asked late, after open questions)
+If someone applied for a program like that, which part would be hardest?
+Paperwork vs. eligibility as the real barrier
+What language does the person prefer for important letters?
+The language need
+At the end, show the prototype and ask them to think aloud as they use it. Note where they hesitate.
+Task 3: Task comparison (Sunday 9:00 to 10:30, 6 to 8 attendees)
+Each person gets two synthetic scenarios (different household and bill). For one, they use the current workaround: the bill, VUMC's website, and any search or AI they like, 5 minutes maximum. For the other, they use [Name]. Alternate which comes first.
+• Measure: a 0 to 4 score checked against our answer key (knows the program and how to apply; likely tier; deadline; at least three required documents), plus time taken.
+• Also: if any attendee reads Arabic or Spanish fluently, ask them to rate 10 generated explanations as accurate, understandable, or wrong. Report the counts.
+• Limits to state out loud: participants are students and professionals at a tech event, not the families we're building for; the scenarios are synthetic; the sample is tiny; we measure understanding, not real applications or approvals.
+Also today: email financial.assistance@vumc.org and Dollar For asking whether a prepared packet like ours would help their staff. Say "sent, no reply yet" in the pitch only if it's true.
+What stays unvalidated after this weekend: use by real families, whether the hospital accepts our packet, approval rates, other languages, and whether counselors or navigators would adopt it.
+Schedule, roles and failure modes
+If a bill photo doesn't turn into a cited eligibility result on the OCI server by 5 pm today, stop adding anything and fix that. Feature freeze is 11 pm tonight; Sunday morning is for validation, the recorded backup and rehearsal.
+The 3 pm gate decides real VUMC rules versus the labeled synthetic hospital; nothing after it waits on that choice.
+First 30 minutes, all together: read this doc; agree the four JSON shapes (bill fields, household answers, engine result, packet) by 1:45 pm; deploy the starter kit; make one successful Command A Vision call; ask organizers in Slack what to submit and where.
+Role
+Owns
+Waits on
+Builder 1: backend and OCI
+Starter kit, model calls, /extract, /explain, translation, number lock check
+OCI access (first 30 min)
+Builder 2: frontend
+Five screens, Arabic right to left layout, packet PDF or printable page
+JSON shapes at 1:45 pm
+Policy and data (likely Carol)
+Read VUMC's policy, Appendix B and application; rules JSON with page references; poverty table; 20 household answer key; 10 synthetic bills; acceptance tests
+VUMC documents; gate at 3 pm
+Validation and pitch
+AI assistant test, interviews, task comparison, slides, pitch, judge questions
+A working build for the last part of each interview
+With 5 or 6 people, add a designer who also reviews the Arabic and Spanish wording.
+Failure
+Early warning
+Fallback (keeps the central demo, labeled honestly)
+Generative AI unavailable in the tenancy, or bill reading unreliable
+First call fails by 1:30 pm, or fewer than 7 of 10 test bills read correctly
+Manual entry: the bill image shown beside six fields the user types. Rules, packet, translation and database still run on OCI. Say "photo reading off in this demo."
+VUMC's thresholds can't be confirmed from VUMC's own PDF
+Gate at 3 pm
+Labeled synthetic hospital with the same rule structure; VUMC becomes "next step, with the hospital's sign-off"
+Live demo fails on stage (Wi-Fi, server, slow model)
+Any rehearsal over 90 seconds
+Screen recording of the same journey made Sunday 11 am, labeled "recorded this morning"; local copy of the app on a laptop
+Two minute pitch
+About 310 words (time it; trim the test details first if it runs over); fill every bracket with a measured result or cut the sentence. Never fill one with a guess.
+Nashville's big hospital systems all publish programs that cut or erase bills for low-income patients. But nationally, only 29% of patients with bills they can't afford learn about this help, apply, and get it. More than half say their hospital never told them.
+Often the person who opens that bill is a daughter reading mail for a parent who speaks Spanish or Arabic, Nashville's top two languages after English. She sees a balance and a phone number, not the program, the deadline, or the forms.
+Any chatbot can explain a bill. Nobody hands you the next step. [Name] does. The hospital prints a code on its statement. She scans it and photographs the bill. [Name] reads it, asks three questions, and checks her answers against the hospital's own published policy, page cited. Then it hands her a finished packet: the application filled in, the documents to bring, the deadline, and a cover letter in English with Arabic beside it. The AI reads and translates; it never decides. A rules engine applies the hospital's rules, and the hospital makes the final call.
+We tested general chatbots with the same bill: [result of task 1]. We interviewed [N] people here who have handled a parent's medical bill: [one finding, one quote]. In a timed test, people scored [x] of 4 using the hospital website and any tool they liked, and [y] of 4 with [Name]. That's a small, synthetic test of understanding, not approvals.
+About 2,984 US nonprofit hospitals must run programs like this, and Dollar For estimates at least $14 billion a year of this help goes undelivered. [Name] is free for families, always. Hospitals and community groups pay per completed application, because a finished application costs less than an unpaid bill. We'd start with a free pilot: one Nashville hospital and one community partner.
+It runs on Oracle Cloud, and nothing a family enters is stored.
+Two minute demo script
+The most compelling moments are 1:06, when the packet appears, and 1:24, when Dad's five bills show how much could be reduced if the hospital approves. Use one fixed synthetic bill every time. One person drives, one narrates.
+Time
+Action
+What judges see
+Narration
+0:00
+Scan the QR code on the synthetic bill with a phone mirrored to the screen
+[Name] opens with VUMC already selected; "Demo uses synthetic bills only"
+"The hospital prints this code on its statements. It opens our app, running live on Oracle Cloud."
+0:08
+Tap العربية, then "for a family member"
+Interface switches to Arabic, right to left
+"Leila is helping her father."
+0:14
+Photograph the bill
+Fields appear beside the image; date of service blank and highlighted
+"Oracle's Cohere vision model reads the bill. It left the blurry date blank instead of guessing."
+0:28
+Type the date; tap Confirm
+All fields checked
+"Nothing is used until a person confirms it."
+0:34
+Answer: household 4, income $38,000, doesn't file taxes
+Three answers, no ID or status questions
+"Three questions. Never immigration status or a Social Security number."
+0:44
+Tap Check
+Arabic result: 115% of the 2026 poverty guideline, the policy tier, the deadline, the citation
+"This comes from a rules engine, not the AI."
+0:56
+Tap the English toggle, then the citation
+Same numbers in English; VUMC's policy opens at the cited page
+"Same numbers in both languages, checked automatically. Here's the page."
+1:06
+Tap "Make my packet"
+Pre-filled application fields, document checklist, English cover letter with Arabic beside it
+"This is what she brings to the hospital."
+1:24
+Tap "Save to Dad's bills"
+Home: five synthetic bills, "Up to $X could be reduced if the hospital approves," reminders set, Arabic reminder preview
+"One approval may cover all five bills" (only if confirmed). "We remind her before the deadline, in Arabic."
+1:42
+Switch to the partner dashboard
+Funnel, languages, result tiers, rules health
+"This is what the hospital sees: no names, just where families get stuck."
+1:55
+Stop
+
+"She decides whether to send it. The hospital decides the outcome."
+Before going on stage: run it once on the venue Wi-Fi; have the recorded backup open in a second tab; keep the phone on do not disturb.
+Slide outline
+Seven slides for the pitch, then switch to the live demo. One idea per slide, numbers large, no paragraphs.
+1. [Name]. "From a hospital bill to the help it qualifies for, in Arabic or Spanish." Team names.
+2. The gap. 29% get the help; 52% never told (Dollar For). Tennessee hasn't expanded Medicaid. Nashville's top languages after English: Spanish, Arabic.
+3. Why not just ask a chatbot? Task 1 results as a small grid: three assistants, five yes or no checks. Whatever it shows.
+4. What we heard. Number of interviews, one quote, the task comparison scores with sample size and the line "synthetic scenarios; understanding, not approvals."
+5. How it works. Starts from a QR code on the hospital's statement (later, a link inside the patient portal). Then the architecture diagram from this doc: model reads, rules decide, model phrases; four Oracle services; nothing stored.
+6. Market and funding. About 2,984 US nonprofit hospitals must run financial assistance programs (AHA); at least $14 billion a year undelivered (Dollar For); 9.3% of Tennesseans uninsured in 2023 (Sycamore Institute). Beachhead: Nashville's three big systems, VUMC, Ascension Saint Thomas and HCA TriStar. Free for families; hospitals and community groups pay per completed application; free pilot funded by a hospital partner or grant. Don't show a dollar market total.
+7. Adoption, privacy and what's next. Works today: one hospital's policy, two languages, packet. Next: a hospital confirms our rule encoding; one community partner; measure packets that become completed applications. Who maintains the rules: the hospital's financial assistance office or the partner, every rule dated and sourced. Privacy: runs inside the partner's login, vendor under a business associate agreement, nothing shared between patients.
+Then: "Let us show you." Switch to the demo.
+Ten judge questions
+Answer in two or three sentences, lead with the fact, and say "we don't know yet" when that's true.
+1. "Why can't people just ask ChatGPT or Claude?" "We tested that with this exact bill: [task 1 result]. Chatbots explain bills well; what they don't do on their own is apply one hospital's current rules with a citation and hand you the finished application. Our AI doesn't decide anything; a rules engine does."
+2. "CareRoute already does this in Nashville. How are you different?" "CareRoute is a paid service that negotiates for you, in English and Spanish. We're free, we start from the hospital's own statement, we work in Arabic, and the family stays in control. We'd rather hand off to the hospital's counselors or Dollar For than act on anyone's behalf. Today, CareRoute's own pages also disagree about VUMC's free care limit, which is why every rule we show carries its source and date."
+3. "Policies change. Who keeps the rules right?" "Each rule is a database row with its source document, page, effective date, and who verified it. In a pilot, the hospital's financial assistance office or the community partner signs off, the poverty table updates every January, and any rule past its review date is flagged instead of shown."
+4. "What if the AI misreads the bill or mistranslates?" "People confirm every field before it's used. Numbers and dates are locked, and every number in the Arabic or Spanish text is checked against the engine; a mismatch falls back to a fixed template. On our 10 synthetic test bills, it read [x] of 10 correctly."
+5. "You're handling families' bills and income. What about privacy and HIPAA?" "In a pilot it runs inside the partner's existing login, and if a hospital deploys it, we'd be its vendor under a business associate agreement. Each request carries only one family's data: no shared chat history, no saved records, no cache, no logs of bill contents, so nothing can pass between patients. We never ask about immigration status, Social Security numbers or ID, and this weekend we used only synthetic bills. Before a pilot, we'd confirm which Oracle services are covered by Oracle's HIPAA program."
+6. "What about for-profit hospitals like HCA, which aren't under the nonprofit rules?" "The registry is per hospital, so adding one is verifying its own published policy, not new code. Tennessee requires all hospitals to post their charity care policies and limits what uninsured patients can be charged. We'd encode HCA's policy from HCA's own documents, not from third-party summaries."
+7. "Who pays for this?" "Never families. Community groups pay a flat yearly fee or use grants; hospitals pay per completed application, not per scan, so we only earn when a family finishes the step that matters. Nonprofit hospitals must try to work out eligibility before serious collection steps, and Dollar For estimates about $7 billion a year in eligible bills ends up as bad debt. If a hospital pays, the family still sees the same cited result from the hospital's own published policy. The pilot itself would be free."
+8. "How do you know it helps real people?" "We don't yet. We measured understanding in a small synthetic test and heard from [N] people who've handled a family bill. The pilot metric is the share of eligible families whose packet becomes a completed application within the deadline."
+9. "Is this built into an existing system, or is it a new app?" "It starts from something every patient already gets: the hospital's statement. The hospital prints a QR code that opens our tool with that hospital selected. The next step is a link inside the hospital's patient portal, using the login patients already have."
+10. "Why not sell through insurance companies?" "For uninsured patients there's no insurer, so this version is for the provider side. Insurers matter later for people with high deductibles, where comparing the bill to the insurance summary could come back."
+Sources
+Opened and read in full
+• #HackTN 2026 event page: schedule, judging criteria, pitch format, OCI requirement, prizes, judges
+• Oracle starter kit, part 1
+• Oracle Translate supported languages and real-time translation
+• ClearHealthCosts on Dollar For's charity care studies
+• CareRoute: Nashville charity care comparison
+From search results; open each before putting its number on a slide
+• VUMC financial assistance and plain language summary; VUMC policy in Arabic. VUMC's site timed out for us; the policy PDF and Appendix B are the first thing to download.
+• CareRoute VUMC guide and HealthBillCentral VUMC page (the conflicting thresholds)
+• 2026 HHS poverty guidelines, Federal Register
+• KFF Tennessee coverage profile; CBPP Tennessee coverage gap fact sheet
+• Hilltop Institute, Tennessee community benefit law profile
+• Nashville Scene on Nashville's languages; WKRN on Metro schools' languages
+• TennCare unwinding report, January 2024 renewals
+• OCI Generative AI models by region; Cohere Command A on OCI; OCI external calls for Gemini
+• Dollar For profile; Billscope; MedBillAI; Bill Decoder
+• AHA, Fast Facts on US Hospitals 2026: 2,984 nonprofit and 1,224 for-profit community hospitals
+• Sycamore Institute, 2023 Census data on coverage in Tennessee: 9.3% uninsured

@@ -393,3 +393,57 @@ Five screens:
 - Team roster and roles: unconfirmed (the plan assumes 4).
 - Superseded-plan leftovers that no longer apply: Synthea snapshot (optional
   for realistic line items), error types 1-6.
+
+### F9. Amendments (2026-10-17 ~13:47 CDT): revised team plan adopted with fixes
+
+Source: `docs/2026-10-17_HackTN26_Health_Access_Plan_rev2.txt` (rev 2 of the
+team plan, with mentor-feedback additions). Evan: "docs/Hackathon
+Schedule.txt is ground truth; adopt with fixes". Where rev 2 and this section
+disagree, this section wins. F1-F8 above still stand except where changed
+here.
+
+**Times.** `docs/Hackathon Schedule.txt` is ground truth: hacking finishes
+Sun 1:00 PM, venue closes Sat 9:00 PM. Rev 2's "12:00 pm" and "8 pm" are
+rejected. F6 is unchanged.
+
+**Wording fixes (pitch, demo, judge answers):**
+1. Storage: "Nothing is stored on our server. If the family chooses to save,
+   bills stay on their own phone." Replaces "nothing a family enters is
+   stored" (pitch) and "no saved records" (judge answer 5).
+2. QR: "In a pilot, the hospital would print this code on its statements."
+   Present-tense "The hospital prints..." is false today and is cut
+   everywhere (pitch, 0:00 narration, judge answer 9).
+3. Estimate: "Up to $X could be reduced if the hospital approves" stays,
+   but X is computed by the engine (sum over bills of balance x the tier's
+   `discount_percent` / 100), goes into `locked_numbers`, and is rendered
+   from data, never written by a model. Rev 2's rule "never turn any of it
+   into dollars saved" becomes: no savings claims; only engine-computed
+   estimates labeled "if the hospital approves".
+
+**Demo-script conditions:**
+- 0:14 "It left the blurry date blank instead of guessing" is said only if
+  a test shows it. Build `bill-02` (date of service printed once) with blur
+  variants; run Command A Vision on each. If the model guesses, the line
+  becomes "it misread the date; she fixes it before anything is used".
+- 0:56 "the policy opens at the cited page": the app serves a labeled
+  SYNTHETIC policy page (`/policy-cumberland.html#page-1`, `#page-2`) so
+  citations open on either branch of the 3 PM gate. If VUMC passes the gate,
+  citations link VUMC's own PDF and page.
+- 1:24 "One approval may cover all five bills" only if someone reads VUMC's
+  Period of Eligibility in VUMC's own PDF. For the synthetic hospital: not
+  said.
+
+**New features, gated:**
+- Home "Dad's bills": a page built from engine output over 5 seeded
+  SYNTHETIC bills. Opt-in save uses the browser's own storage (the server
+  stays stateless; no `saved_bills` table, no login). Start only after the
+  5 PM gate passes.
+- Reminders: preview only (computed dates: deadline, day 30 follow-up).
+- Partner dashboard: a labeled mockup on slide 7. Not built (it would need
+  server-side event writes).
+- QR entry: a link with `?hospital=cumberland_synthetic`, printed on the
+  synthetic bill once the VM's public address exists.
+
+**Unchanged and now also in scope from rev 2:** validation tasks 1-3, the
+interview script, the pitch, the slide outline, and judge answers, with the
+wording fixes above. Emails to VUMC and Dollar For stay Evan's to send.

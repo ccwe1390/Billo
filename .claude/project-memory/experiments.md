@@ -15,3 +15,9 @@
   Limits: one clean rendered image, not a phone photo; the acceptance test
   needs 10 bills. This proves the tenancy has the model and that it follows
   the null/no-guess JSON prompt on an easy input.
+- 2026-10-17 13:51 CDT - Blur test set ready, NOT yet run against the
+  model: spikes/synthetic-bill/bill-02-blur{0,1.5,3,5}.png (date of service
+  printed once; statement 10/05/2026 and due 11/04/2026 sit next to it, so
+  a guessing model will likely copy one of those). Human read (agent +
+  Opus check of blur3): legible at 0, barely at 1.5, unreadable at 3 and 5.
+  Pass condition for the 0:14 demo line: date_of_service null at 3 and 5.

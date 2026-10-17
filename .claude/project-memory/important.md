@@ -29,6 +29,7 @@ compliance.md and disclosure.md.
 
 ## 3. Hacking finishes Sun 2026-10-18 1:00 PM CDT; venue closes Sat 9:00 PM (updated 2026-10-17 ~13:00)
 **Update (supersedes the MISSING text below):** per `docs/Hackathon Schedule.txt`, hacking finishes Sun 2026-10-18 1:00 PM, showcase 1:05 PM, final pitches 3:30 PM; Saturday bump-out (venue closes) 9:00 PM, Sunday doors 9:00 AM. Judging criteria in `docs/rubric.txt`. Submission requirements still UNKNOWN. Full agenda in timeline.md.
+**Update 2026-10-17 ~13:47:** team plan rev 2 says 12:00 PM / 8 PM; Evan ruled `docs/Hackathon Schedule.txt` is ground truth, so 1:00 PM finish and 9:00 PM venue close stand.
 **Original entry (2026-10-17), kept for history:**
 **What:** MISSING - the submission deadline, event dates, judging rubric, and
 submission format were not provided; only the track text exists.

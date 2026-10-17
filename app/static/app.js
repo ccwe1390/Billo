@@ -141,6 +141,7 @@ function cite(c) {
   let s = t("src") + ": " + c.source;
   if (c.page !== null && c.page !== undefined && c.page !== "") s += ", " + t("page") + " " + c.page;
   if (c.effective_date) s += ", " + t("effective") + " " + c.effective_date;
+  if (c.url) return englishOnly("a", {class: "cite", href: c.url, target: "_blank", rel: "noopener"}, s);
   return englishOnly("span", {class: "cite"}, s);
 }
 function blankBill() {

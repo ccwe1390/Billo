@@ -38,6 +38,8 @@ the dated entry, not the digest.
 - [B - Mission statement and intent set; HANDOFF rewritten](#appendix-b---mission-statement-and-intent-set-handoff-rewritten-2026-10-17-1056-cdt) (10-17)
 - [C - Correction - event name is TNHacks26](#appendix-c---correction---event-name-is-tnhacks26-2026-10-17-1057-cdt) (10-17)
 - [D - Two-step flow (request itemized bill first); user sends letters, demo-only send](#appendix-d---two-step-flow-request-itemized-bill-first-user-sends-letters-demo-only-send-2026-10-17-1105-cdt) (10-17)
+- [E - Website hosted on OCI, OCI Language translates; website profile applied](#appendix-e---website-hosted-on-oci-oci-language-translates-website-profile-applied-2026-10-17-1113-cdt) (10-17)
+- [F - Hindi fallback to OCI Generative AI confirmed](#appendix-f---hindi-fallback-to-oci-generative-ai-confirmed-2026-10-17-1114-cdt) (10-17)
 
 ---
 
@@ -172,3 +174,37 @@ contacts.
 
 **HONEST OPEN ITEM (not fixed):** the demo inbox for C (address, OCI service
 or not) is undesigned. That belongs in the PRD.
+
+# Appendix E - Website hosted on OCI, OCI Language translates; website profile applied (2026-10-17, ~11:13 CDT)
+**WHAT:** Evan decided that the website is hosted on OCI and that
+translation uses OCI. Logged in `decisions.md`, `services.md`, and
+`operations.md`, and in HANDOFF (Goal: "Must hold", "Languages").
+
+**Interpretation, stated rather than assumed silently:** OCI Language
+translates every language it supports, which covers all of wave 1. Hindi,
+which OCI Language lacks, falls back to OCI Generative AI, which is still
+OCI. Evan has not confirmed this reading. Consequence for the pipeline:
+Generative AI writes the plain-language explanation in English, and OCI
+Language translates it, so the back-translation check runs on the same
+service.
+
+**Website profile applied:** the project now ships a website, so
+project-memory `profiles/website.md` was read and its rows filed. Applicable:
+dated wireframes/mockups and a licensed asset inventory in `docs/design/`, a
+dated accessibility audit output at demo time, and dated snapshots of any
+privacy notice (`ui.md`, `disclosure.md`). N/A: redirect map, maintenance
+evidence, consent capture (`operations.md`, `disclosure.md`).
+
+**Correction to Appendix D:** its heading says "~11:05 CDT". The `date` call
+made in the same command printed 11:11:05 CDT, so the time was guessed before
+the clock was read. Appendix D stays as written (append-only); the true write
+time was ~11:11 CDT.
+
+**HONEST OPEN ITEM (not fixed):** the specific OCI hosting service is not
+chosen. The Hindi fallback reading is unconfirmed.
+
+# Appendix F - Hindi fallback to OCI Generative AI confirmed (2026-10-17, ~11:14 CDT)
+Evan confirmed the Hindi reading from Appendix E: Hindi falls back to OCI
+Generative AI. Every other language goes through OCI Language. This closes the
+Appendix E open item "Hindi fallback reading is unconfirmed". The choice of
+hosting service is still open.

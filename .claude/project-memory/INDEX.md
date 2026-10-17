@@ -13,7 +13,7 @@ Knowledge:
 - disclosure.md - what may leave the project (updated 2026-10-17)
 
 Running systems:
-- operations.md - scheduled jobs, deploy/hosting, backups, monitoring, runbooks (updated 2026-10-17)
+- operations.md - website hosted on OCI (service TBD); no jobs/backups by design (updated 2026-10-17)
 - services.md - candidate OCI services (Document Understanding, Generative AI, Language), unverified in use (updated 2026-10-17)
 
 Output:
@@ -33,12 +33,12 @@ Code:
 - security.md - none yet (updated 2026-10-17)
 - features.md - none yet (updated 2026-10-17)
 - performance.md - none yet (updated 2026-10-17)
-- ui.md - UI + UX (updated 2026-10-17)
+- ui.md - accessibility, RTL, design/asset/a11y evidence rules (updated 2026-10-17)
 
 Project-specific bins:
 - languages.md - language ranking evidence + OCI Language support per language (updated 2026-10-17)
 
-Stubs (first line STATUS: N/A or empty): gotchas, people, timeline, operations, experiments, writing, hardware, architecture, conventions, dependencies, testing, tooling, data, security, features, performance, ui
+Stubs (first line STATUS: N/A or empty): gotchas, people, timeline, experiments, writing, hardware, architecture, conventions, dependencies, testing, tooling, data, security, features, performance
 
 Map (not a bin - see SKILL section 5.1):
 - DIRECTORY.md - skipped: no source files yet (needs >15)

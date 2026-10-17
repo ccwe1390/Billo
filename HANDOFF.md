@@ -33,21 +33,23 @@ flags; the person decides what to do.
 - **Cut for this event:** No Surprises Act claims, negotiation/payment-plan
   letters, Discharge Companion, Med nudges.
 - **Languages:** wave 1 = Spanish, Chinese (Simplified + Traditional),
-  Arabic, Vietnamese. Hindi = additional option, OCI Generative AI only (not
+  Arabic, Vietnamese, all translated by OCI Language. Hindi = additional
+  option, OCI Generative AI only (not
   in OCI Language, so no back-translation check). Goal: top 10 US immigrant
   languages; ranks 7-10 not yet sourced.
 - **How success is measured:** headline = precision and recall at catching
   errors we plant in a synthetic bill set (we write the bills, so ground truth
   is exact). Demo number = dollars of errors flagged on that same set. NO
   claim of real-world savings: there are no real users.
-- **Must hold:** OCI for every AI part; synthetic data only; no diagnosis or
+- **Must hold:** OCI for every AI part, for translation (OCI Language), and for
+  hosting the website; synthetic data only; no diagnosis or
   treatment advice; no immigration status, SSN, or ID asked; nothing stored
   after a session; $500 OCI credits are the whole budget.
 
 ## Current state - Planned, not built: mission set, no code
 
 **Last updated: 2026-10-17** - this file is the only live snapshot; history
-lives in the record (Phase 0, Appendices A-D).
+lives in the record (Phase 0, Appendices A-F).
 
 > **2026-10-17 - Mission and scope set (record Appendix B).** Bill Decoder is
 > the one module. No code, no PRD yet. Repo: private

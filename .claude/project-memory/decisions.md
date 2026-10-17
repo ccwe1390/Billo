@@ -38,3 +38,11 @@ Standing decisions (what is decided NOW). History lives in the record.
   sends by email via OCI (would route patient details through our servers,
   breaking "nothing stored"; no public hospital billing-contact directory
   known). Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 - The website is hosted on OCI, and translation uses OCI
+  (Evan). Read as: OCI Language translates every language it supports (31,
+  incl. all of wave 1); Hindi, which OCI Language lacks, falls back to OCI
+  Generative AI, which is still OCI (Claude's reading, confirmed by Evan
+  2026-10-17). Pipeline consequence: Generative AI writes the plain explanation
+  in English, then OCI Language translates it, so the back-translation check
+  uses the same service. Specific hosting service not chosen (PRD).
+  Decided by: Evan, chat 2026-10-17.

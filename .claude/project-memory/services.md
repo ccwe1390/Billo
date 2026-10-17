@@ -16,3 +16,5 @@ never values.
   check current docs). https://www.oracle.com/artificial-intelligence/text-translation/
 - Not checked yet: free-tier/credit coverage of these services, hosting choice
   (Compute vs Functions), OCI Vault for secrets.
+- 2026-10-17 - Decided (Evan): OCI Language is the translator; the website is
+  hosted on OCI. See decisions.md.

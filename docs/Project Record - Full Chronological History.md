@@ -59,6 +59,7 @@ the dated entry, not the digest.
 - [W - Paper Trail design built and deployed (GO at 15:40)](#appendix-w---paper-trail-design-built-and-deployed-go-at-1540-2026-10-17-1541-cdt) (10-17)
 - [X - MySQL deleted; reviewer screenshots; axe audit; 6 bugs found](#appendix-x---mysql-deleted-reviewer-screenshots-axe-audit-6-bugs-found-2026-10-17-1602-cdt) (10-17)
 - [Y - Six reviewer-screenshot bugs fixed and deployed](#appendix-y---six-reviewer-screenshot-bugs-fixed-and-deployed-2026-10-17-1609-cdt) (10-17)
+- [Z - Full audit: 5 highs, mostly claims that outlived the code](#appendix-z---full-audit-5-highs-mostly-claims-that-outlived-the-code-2026-10-17-1643-cdt) (10-17)
 
 ---
 
@@ -878,3 +879,48 @@ UI asserts, and ran the live checks. Commit 116d631, deployed from HEAD.
 placeholders on the Command A path); the double-upload race (a late
 /extract response overwriting confirmations) is unchanged; real phone not
 tested.
+
+# Appendix Z - Full audit: 5 highs, mostly claims that outlived the code (2026-10-17, 16:43 CDT)
+**What happened:** Evan ran /audit (whole project, code + docs + cross-domain)
+at 16:14 CDT on HEAD 4a89076. Four cold Sonnet workers (code core, code
+surface, live docs, history docs) swept all 103 tracked files; Opus re-ran
+every high and ran the cross-domain pass. The findings pass changed nothing.
+Full report: docs/2026-10-17_full-audit.md.
+
+**Headline:** the code is healthier than the story told about it. Most highs
+are claims that outlived the code.
+
+| # | High finding | Evidence (re-run by Opus) |
+|---|---|---|
+| 1 | /extract is `async def` and calls the blocking OCI SDK, so one bill read freezes the whole site | stubbed 1 s call: 3 uploads done at 1.06/2.06/3.06 s; an unrelated 0.05 s task done at 3.06 s |
+| 2 | Not-eligible + any non-English language always falls back to English | engine locks "0" (the 0% discount) which the text never contains: numbers_match False for es and ar |
+| 3 | "translate + back-translate check" (HANDOFF, PRD F2) is false; the `back_checked` flag measures nothing | no back-translation code (grep and Grep tool) |
+| 4 | HANDOFF, PRD F2 and the rev2 pitch say MySQL HeatWave holds the rules | rules are a JSON file; the DB was deleted 16:01 (Appendix X) |
+| 5 | The rev2 pitch / demo / judge text still says what F9 and the build reject (hospital prints a code, VUMC selected, PDF, Dad's bills, database rows, four Oracle services; no B.A.R.S. answer) | grep of rev2 |
+
+Also notable: the app applies Cumberland's synthetic policy to ANY hospital
+name (a Vanderbilt bill got a Cumberland result and a letter to Vanderbilt);
+uploads over 1 MiB are spooled to a temp file on disk, so "nothing written to
+disk" is false for phone photos; the paid endpoints have no rate limit or
+field length cap. 30 numbered findings plus 14 edge cases in total.
+
+**Verified true:** no secrets (history and worktree); live app.js equals
+`git archive HEAD`; 4/4 test files exit 0; the packet escapes injected HTML;
+the client-sent result is ignored; money comparisons are exact at the cent
+boundary; the record is clean at rest (A-Y, 26/26 TOC anchors, 0 fences).
+
+**Corrections to earlier entries (forward, not in place):** HANDOFF said
+"deployed from c689291" (live is 116d631); the "11.8 s blurred photo" claim
+mixes the 9.7 s gate run with the 14:55 re-run and the input was a rendered
+PNG; pre-mortem P1's "4 services ran live with no errors" is 3 services with
+2 bugs found; the accessibility audit's "`<main>` not applied yet" was fixed
+in 116d631; gotchas' "six callers of fill()" is 7.
+
+**Incident:** the code-core worker ran `taskkill /F /FI "IMAGENAME eq
+py.exe"` to stop its own test server, which force-kills every py.exe on the
+laptop. No Python process was running at 16:35.
+
+**Cost:** 4 workers, 0 delegates, 261 worker tool calls, about 1.03M
+subagent tokens, about 20 minutes (16:14-16:35 CDT).
+
+**Next:** Evan said "fix all" (16:3x). Fixes follow in the next entry.

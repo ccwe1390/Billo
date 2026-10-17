@@ -15,6 +15,7 @@
   td.n, th.n { text-align: right; }
   .box { border: 2px solid #222; padding: 10px 14px; font-size: 14px; }
   .total td { font-weight: bold; border-top: 2px solid #222; }
+  .qr { text-align: right; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -49,10 +50,17 @@
     <tr class="total"><td>Amount due</td><td></td><td class="n">$1,858.50</td></tr>
   </table>
 
+  <div class="qr"><img id="qr" alt="QR code" width="120" height="120"><div class="small">Scan to check for financial assistance - SYNTHETIC demo</div></div>
+
   <p class="small" style="margin-top:22px">Financial assistance may be available. Call (615) 555-0100 or visit the
   billing office. This statement is synthetic test data generated for a hackathon demo; all names, numbers and
   the hospital are fictional.</p>
 </div>
+<script src="../../app/static/vendor/qrcode-generator/qrcode.js"></script>
+<script>
+  var q = qrcode(0, 'M'); q.addData('http://207.211.181.174/?hospital=cumberland_synthetic'); q.make();
+  document.getElementById('qr').src = q.createDataURL(4, 2);
+</script>
 <script>
   var m = /blur=([0-9.]+)/.exec(location.hash);
   if (m) { document.getElementById('dos').style.filter = 'blur(' + m[1] + 'px)'; }

@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - App runs in fake mode; live OCI not yet wired
 
-**Last updated: 2026-10-17 13:52 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-S).
+**Last updated: 2026-10-17 14:06 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-T).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -41,7 +41,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-S).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS** in Playground: 6/6 fields on bill-01.png (n=1, clean image) | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine + FastAPI app + 5-screen UI (11d7aaf) + synthetic policy page and blur test bills (bill-02); 4 test files ALL PASS in FAKE_OCI mode; **no live OCI call from code yet** | record P, Q, S |
+| Code | Engine + FastAPI app + 5-screen UI + synthetic policy page + blur test bills + language tiers (tier 1 en/es/ar/zh-CN/zh-TW; tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS in FAKE_OCI mode; **no live OCI call from code yet** | record P, Q, S, T |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)

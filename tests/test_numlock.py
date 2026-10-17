@@ -18,6 +18,11 @@ assert numlock.extract_numbers("١١٥") == ["115"]
 assert numlock.extract_numbers("٣٣٬٠٠٠") == ["33,000"]
 assert numlock.extract_numbers("۴۸۱۲٫۴۰") == ["4812.40"]
 
+# Devanagari digits normalize to ASCII
+dev = "४,८१२.४०"  # 4,812.40
+assert numlock.extract_numbers(dev) == ["4,812.40"]
+assert numlock.check(dev, ["4,812.40"])[0]
+
 # check: all match
 ok, missing, unexpected = numlock.check("Your income is 115% of the limit; 4 people; $38,000.", ["115", "4", "38,000"])
 assert ok and missing == [] and unexpected == []

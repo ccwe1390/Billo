@@ -1,75 +1,82 @@
 "use strict";
 // Bill to Help UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
 
-// UI strings. Every es and ar string is a draft for a human translator.
-// TODO-REVIEW: all es/ar strings below (one marker per line).
+// UI strings. Every es, ar, zh-CN and zh-TW string is a draft for a human translator.
+// TODO-REVIEW: all es/ar/zh strings below (one marker per line).
+// Tier 1 (en, es, ar, zh-CN, zh-TW) has a translated interface. Tier 2 (vi, fr, ko, ru, de, hi) keeps the
+// English interface (t() falls back to en): only the explanation and the packet letter are translated.
 const T = {
-  app_title:   {en: "Bill to Help", es: "Factura a Ayuda", ar: "من الفاتورة إلى المساعدة"}, // TODO-REVIEW es+ar
-  notice:      {en: "Nothing you enter is saved. Demo uses synthetic bills only.", es: "Nada de lo que escribe se guarda. La demostración usa solo facturas sintéticas.", ar: "لا يتم حفظ أي شيء تدخله. العرض التجريبي يستخدم فواتير اصطناعية فقط."}, // TODO-REVIEW es+ar
-  no_id:       {en: "We do not ask for your name, immigration status, Social Security number, or ID.", es: "No pedimos su nombre, su estatus migratorio, su número de Seguro Social ni su identificación.", ar: "لا نطلب اسمك أو وضعك في الهجرة أو رقم الضمان الاجتماعي أو أي هوية."}, // TODO-REVIEW es+ar
-  pick_lang:   {en: "Choose a language", es: "Elija un idioma", ar: "اختر اللغة"}, // TODO-REVIEW es+ar
-  for_whom:    {en: "This bill is for:", es: "Esta factura es para:", ar: "هذه الفاتورة لـ:"}, // TODO-REVIEW es+ar
-  me:          {en: "Me", es: "Yo", ar: "أنا"}, // TODO-REVIEW es+ar
-  family:      {en: "A family member", es: "Un familiar", ar: "أحد أفراد عائلتي"}, // TODO-REVIEW es+ar
-  start:       {en: "Start", es: "Comenzar", ar: "ابدأ"}, // TODO-REVIEW es+ar
-  bill_title:  {en: "Your bill", es: "Su factura", ar: "فاتورتك"}, // TODO-REVIEW es+ar
-  upload:      {en: "Upload or take a photo of the bill", es: "Suba o tome una foto de la factura", ar: "ارفع صورة الفاتورة أو التقطها"}, // TODO-REVIEW es+ar
-  reading:     {en: "Reading the bill...", es: "Leyendo la factura...", ar: "جارٍ قراءة الفاتورة..."}, // TODO-REVIEW es+ar
-  read_failed: {en: "Photo reading is not available right now. Type the fields in by hand.", es: "La lectura de fotos no está disponible ahora. Escriba los campos a mano.", ar: "قراءة الصورة غير متاحة الآن. اكتب الحقول يدويًا."}, // TODO-REVIEW es+ar
-  bill_hint:   {en: "Check each field against your bill, fix mistakes, then confirm each one. A blank field means we could not read it: type it in.", es: "Compare cada campo con su factura, corrija los errores y confirme cada uno. Un campo en blanco significa que no pudimos leerlo: escríbalo.", ar: "قارن كل حقل بفاتورتك وصحح الأخطاء ثم أكّد كل حقل. الحقل الفارغ يعني أننا لم نستطع قراءته: اكتبه."}, // TODO-REVIEW es+ar
-  f_hospital:  {en: "Hospital", es: "Hospital", ar: "المستشفى"}, // TODO-REVIEW es+ar
-  f_statement: {en: "Statement date", es: "Fecha del estado de cuenta", ar: "تاريخ الكشف"}, // TODO-REVIEW es+ar
-  f_account:   {en: "Account number", es: "Número de cuenta", ar: "رقم الحساب"}, // TODO-REVIEW es+ar
-  f_amount:    {en: "Amount due (US dollars)", es: "Monto adeudado (dólares)", ar: "المبلغ المستحق (بالدولار)"}, // TODO-REVIEW es+ar
-  f_service:   {en: "Date of service", es: "Fecha del servicio", ar: "تاريخ الخدمة"}, // TODO-REVIEW es+ar
-  f_insurance: {en: "Insurance", es: "Seguro médico", ar: "التأمين"}, // TODO-REVIEW es+ar
-  ins_blank:   {en: "(not set)", es: "(sin definir)", ar: "(غير محدد)"}, // TODO-REVIEW es+ar
-  ins_self_pay:{en: "Self-pay (no insurance)", es: "Pago propio (sin seguro)", ar: "دفع شخصي (بدون تأمين)"}, // TODO-REVIEW es+ar
-  ins_insured: {en: "Insured", es: "Con seguro", ar: "مؤمَّن"}, // TODO-REVIEW es+ar
-  ins_unknown: {en: "Unknown", es: "Desconocido", ar: "غير معروف"}, // TODO-REVIEW es+ar
-  unreadable:  {en: "Could not read this. Please type it.", es: "No se pudo leer. Escríbalo, por favor.", ar: "تعذّرت قراءة هذا الحقل. الرجاء كتابته."}, // TODO-REVIEW es+ar
-  required:    {en: "Required", es: "Obligatorio", ar: "مطلوب"}, // TODO-REVIEW es+ar
-  confirm:     {en: "This is correct", es: "Esto es correcto", ar: "هذا صحيح"}, // TODO-REVIEW es+ar
-  continue_:   {en: "Continue", es: "Continuar", ar: "متابعة"}, // TODO-REVIEW es+ar
-  back:        {en: "Back", es: "Atrás", ar: "رجوع"}, // TODO-REVIEW es+ar
-  q_title:     {en: "Three questions", es: "Tres preguntas", ar: "ثلاثة أسئلة"}, // TODO-REVIEW es+ar
-  q_size:      {en: "How many people live in your household (1 to 12)?", es: "¿Cuántas personas viven en su hogar (de 1 a 12)?", ar: "كم عدد الأشخاص في أسرتك (من 1 إلى 12)؟"}, // TODO-REVIEW es+ar
-  q_income:    {en: "Total yearly household income before taxes, in US dollars", es: "Ingreso anual total del hogar antes de impuestos, en dólares", ar: "إجمالي دخل الأسرة السنوي قبل الضرائب بالدولار"}, // TODO-REVIEW es+ar
-  q_tax:       {en: "Do you file a tax return?", es: "¿Presenta una declaración de impuestos?", ar: "هل تقدّم إقرارًا ضريبيًا؟"}, // TODO-REVIEW es+ar
-  yes:         {en: "Yes", es: "Sí", ar: "نعم"}, // TODO-REVIEW es+ar
-  no:          {en: "No", es: "No", ar: "لا"}, // TODO-REVIEW es+ar
-  see_result:  {en: "See my result", es: "Ver mi resultado", ar: "اعرض نتيجتي"}, // TODO-REVIEW es+ar
-  working:     {en: "Working...", es: "Procesando...", ar: "جارٍ المعالجة..."}, // TODO-REVIEW es+ar
-  r_title:     {en: "Your result", es: "Su resultado", ar: "نتيجتك"}, // TODO-REVIEW es+ar
-  r_percent:   {en: "Your income is about {pct}% of the {year} federal poverty guideline", es: "Su ingreso es aproximadamente el {pct}% de la guía federal de pobreza de {year}", ar: "دخلك يعادل تقريبًا {pct}% من الحد الفيدرالي للفقر لعام {year}"}, // TODO-REVIEW es+ar
-  r_tier:      {en: "Under this hospital's policy", es: "Según la política de este hospital", ar: "بحسب سياسة هذا المستشفى"}, // TODO-REVIEW es+ar
-  r_deadline:  {en: "Deadline", es: "Fecha límite", ar: "الموعد النهائي"}, // TODO-REVIEW es+ar
-  r_about:     {en: "About this bill", es: "Sobre esta factura", ar: "عن هذه الفاتورة"}, // TODO-REVIEW es+ar
-  r_docs:      {en: "Documents the hospital asks for", es: "Documentos que pide el hospital", ar: "المستندات التي يطلبها المستشفى"}, // TODO-REVIEW es+ar
-  r_contact:   {en: "Where to send the application", es: "Dónde enviar la solicitud", ar: "أين ترسل الطلب"}, // TODO-REVIEW es+ar
-  r_payplan:   {en: "Payment plan contact", es: "Contacto para plan de pagos", ar: "جهة الاتصال لخطة السداد"}, // TODO-REVIEW es+ar
-  r_phone:     {en: "Phone", es: "Teléfono", ar: "الهاتف"}, // TODO-REVIEW es+ar
-  r_email:     {en: "Email", es: "Correo electrónico", ar: "البريد الإلكتروني"}, // TODO-REVIEW es+ar
-  r_tn_title:  {en: "Tennessee protections for uninsured patients", es: "Protecciones de Tennessee para pacientes sin seguro", ar: "حمايات ولاية تينيسي للمرضى غير المؤمَّنين"}, // TODO-REVIEW es+ar
+  app_title:   {en: "Bill to Help", es: "Factura a Ayuda", ar: "من الفاتورة إلى المساعدة", "zh-CN": "从账单到帮助", "zh-TW": "從帳單到幫助"}, // TODO-REVIEW es+ar+zh
+  notice:      {en: "Nothing you enter is saved. Demo uses synthetic bills only.", es: "Nada de lo que escribe se guarda. La demostración usa solo facturas sintéticas.", ar: "لا يتم حفظ أي شيء تدخله. العرض التجريبي يستخدم فواتير اصطناعية فقط.", "zh-CN": "您输入的任何内容都不会被保存。演示仅使用合成账单。", "zh-TW": "您輸入的任何內容都不會被儲存。示範僅使用合成帳單。"}, // TODO-REVIEW es+ar+zh
+  no_id:       {en: "We do not ask for your name, immigration status, Social Security number, or ID.", es: "No pedimos su nombre, su estatus migratorio, su número de Seguro Social ni su identificación.", ar: "لا نطلب اسمك أو وضعك في الهجرة أو رقم الضمان الاجتماعي أو أي هوية.", "zh-CN": "我们不会询问您的姓名、移民身份、社会安全号码或身份证件。", "zh-TW": "我們不會詢問您的姓名、移民身分、社會安全號碼或身分證件。"}, // TODO-REVIEW es+ar+zh
+  pick_lang:   {en: "Choose a language", es: "Elija un idioma", ar: "اختر اللغة", "zh-CN": "选择语言", "zh-TW": "選擇語言"}, // TODO-REVIEW es+ar+zh
+  for_whom:    {en: "This bill is for:", es: "Esta factura es para:", ar: "هذه الفاتورة لـ:", "zh-CN": "这份账单是给：", "zh-TW": "這份帳單是給："}, // TODO-REVIEW es+ar+zh
+  me:          {en: "Me", es: "Yo", ar: "أنا", "zh-CN": "我", "zh-TW": "我"}, // TODO-REVIEW es+ar+zh
+  family:      {en: "A family member", es: "Un familiar", ar: "أحد أفراد عائلتي", "zh-CN": "家人", "zh-TW": "家人"}, // TODO-REVIEW es+ar+zh
+  start:       {en: "Start", es: "Comenzar", ar: "ابدأ", "zh-CN": "开始", "zh-TW": "開始"}, // TODO-REVIEW es+ar+zh
+  bill_title:  {en: "Your bill", es: "Su factura", ar: "فاتورتك", "zh-CN": "您的账单", "zh-TW": "您的帳單"}, // TODO-REVIEW es+ar+zh
+  upload:      {en: "Upload or take a photo of the bill", es: "Suba o tome una foto de la factura", ar: "ارفع صورة الفاتورة أو التقطها", "zh-CN": "上传或拍摄账单照片", "zh-TW": "上傳或拍攝帳單照片"}, // TODO-REVIEW es+ar+zh
+  reading:     {en: "Reading the bill...", es: "Leyendo la factura...", ar: "جارٍ قراءة الفاتورة...", "zh-CN": "正在读取账单...", "zh-TW": "正在讀取帳單..."}, // TODO-REVIEW es+ar+zh
+  read_failed: {en: "Photo reading is not available right now. Type the fields in by hand.", es: "La lectura de fotos no está disponible ahora. Escriba los campos a mano.", ar: "قراءة الصورة غير متاحة الآن. اكتب الحقول يدويًا.", "zh-CN": "目前无法读取照片。请手动填写各字段。", "zh-TW": "目前無法讀取照片。請手動填寫各欄位。"}, // TODO-REVIEW es+ar+zh
+  bill_hint:   {en: "Check each field against your bill, fix mistakes, then confirm each one. A blank field means we could not read it: type it in.", es: "Compare cada campo con su factura, corrija los errores y confirme cada uno. Un campo en blanco significa que no pudimos leerlo: escríbalo.", ar: "قارن كل حقل بفاتورتك وصحح الأخطاء ثم أكّد كل حقل. الحقل الفارغ يعني أننا لم نستطع قراءته: اكتبه.", "zh-CN": "请对照账单检查每个字段，修正错误，然后逐一确认。字段为空表示我们无法读取：请自行填写。", "zh-TW": "請對照帳單檢查每個欄位，修正錯誤，然後逐一確認。欄位空白表示我們無法讀取：請自行填寫。"}, // TODO-REVIEW es+ar+zh
+  f_hospital:  {en: "Hospital", es: "Hospital", ar: "المستشفى", "zh-CN": "医院", "zh-TW": "醫院"}, // TODO-REVIEW es+ar+zh
+  f_statement: {en: "Statement date", es: "Fecha del estado de cuenta", ar: "تاريخ الكشف", "zh-CN": "账单日期", "zh-TW": "帳單日期"}, // TODO-REVIEW es+ar+zh
+  f_account:   {en: "Account number", es: "Número de cuenta", ar: "رقم الحساب", "zh-CN": "账号", "zh-TW": "帳號"}, // TODO-REVIEW es+ar+zh
+  f_amount:    {en: "Amount due (US dollars)", es: "Monto adeudado (dólares)", ar: "المبلغ المستحق (بالدولار)", "zh-CN": "应付金额（美元）", "zh-TW": "應付金額（美元）"}, // TODO-REVIEW es+ar+zh
+  f_service:   {en: "Date of service", es: "Fecha del servicio", ar: "تاريخ الخدمة", "zh-CN": "服务日期", "zh-TW": "服務日期"}, // TODO-REVIEW es+ar+zh
+  f_insurance: {en: "Insurance", es: "Seguro médico", ar: "التأمين", "zh-CN": "保险", "zh-TW": "保險"}, // TODO-REVIEW es+ar+zh
+  ins_blank:   {en: "(not set)", es: "(sin definir)", ar: "(غير محدد)", "zh-CN": "（未设置）", "zh-TW": "（未設定）"}, // TODO-REVIEW es+ar+zh
+  ins_self_pay:{en: "Self-pay (no insurance)", es: "Pago propio (sin seguro)", ar: "دفع شخصي (بدون تأمين)", "zh-CN": "自费（无保险）", "zh-TW": "自費（無保險）"}, // TODO-REVIEW es+ar+zh
+  ins_insured: {en: "Insured", es: "Con seguro", ar: "مؤمَّن", "zh-CN": "已投保", "zh-TW": "已投保"}, // TODO-REVIEW es+ar+zh
+  ins_unknown: {en: "Unknown", es: "Desconocido", ar: "غير معروف", "zh-CN": "未知", "zh-TW": "未知"}, // TODO-REVIEW es+ar+zh
+  unreadable:  {en: "Could not read this. Please type it.", es: "No se pudo leer. Escríbalo, por favor.", ar: "تعذّرت قراءة هذا الحقل. الرجاء كتابته.", "zh-CN": "无法读取此项。请手动填写。", "zh-TW": "無法讀取此項。請手動填寫。"}, // TODO-REVIEW es+ar+zh
+  required:    {en: "Required", es: "Obligatorio", ar: "مطلوب", "zh-CN": "必填", "zh-TW": "必填"}, // TODO-REVIEW es+ar+zh
+  confirm:     {en: "This is correct", es: "Esto es correcto", ar: "هذا صحيح", "zh-CN": "此项正确", "zh-TW": "此項正確"}, // TODO-REVIEW es+ar+zh
+  continue_:   {en: "Continue", es: "Continuar", ar: "متابعة", "zh-CN": "继续", "zh-TW": "繼續"}, // TODO-REVIEW es+ar+zh
+  back:        {en: "Back", es: "Atrás", ar: "رجوع", "zh-CN": "返回", "zh-TW": "返回"}, // TODO-REVIEW es+ar+zh
+  q_title:     {en: "Three questions", es: "Tres preguntas", ar: "ثلاثة أسئلة", "zh-CN": "三个问题", "zh-TW": "三個問題"}, // TODO-REVIEW es+ar+zh
+  q_size:      {en: "How many people live in your household (1 to 12)?", es: "¿Cuántas personas viven en su hogar (de 1 a 12)?", ar: "كم عدد الأشخاص في أسرتك (من 1 إلى 12)؟", "zh-CN": "您家有几口人（1 到 12）？", "zh-TW": "您家有幾口人（1 到 12）？"}, // TODO-REVIEW es+ar+zh
+  q_income:    {en: "Total yearly household income before taxes, in US dollars", es: "Ingreso anual total del hogar antes de impuestos, en dólares", ar: "إجمالي دخل الأسرة السنوي قبل الضرائب بالدولار", "zh-CN": "家庭税前年总收入（美元）", "zh-TW": "家庭稅前年總收入（美元）"}, // TODO-REVIEW es+ar+zh
+  q_tax:       {en: "Do you file a tax return?", es: "¿Presenta una declaración de impuestos?", ar: "هل تقدّم إقرارًا ضريبيًا؟", "zh-CN": "您是否报税？", "zh-TW": "您是否報稅？"}, // TODO-REVIEW es+ar+zh
+  yes:         {en: "Yes", es: "Sí", ar: "نعم", "zh-CN": "是", "zh-TW": "是"}, // TODO-REVIEW es+ar+zh
+  no:          {en: "No", es: "No", ar: "لا", "zh-CN": "否", "zh-TW": "否"}, // TODO-REVIEW es+ar+zh
+  see_result:  {en: "See my result", es: "Ver mi resultado", ar: "اعرض نتيجتي", "zh-CN": "查看我的结果", "zh-TW": "查看我的結果"}, // TODO-REVIEW es+ar+zh
+  working:     {en: "Working...", es: "Procesando...", ar: "جارٍ المعالجة...", "zh-CN": "处理中...", "zh-TW": "處理中..."}, // TODO-REVIEW es+ar+zh
+  r_title:     {en: "Your result", es: "Su resultado", ar: "نتيجتك", "zh-CN": "您的结果", "zh-TW": "您的結果"}, // TODO-REVIEW es+ar+zh
+  r_percent:   {en: "Your income is about {pct}% of the {year} federal poverty guideline", es: "Su ingreso es aproximadamente el {pct}% de la guía federal de pobreza de {year}", ar: "دخلك يعادل تقريبًا {pct}% من الحد الفيدرالي للفقر لعام {year}", "zh-CN": "您的收入约为 {year} 年联邦贫困线的 {pct}%", "zh-TW": "您的收入約為 {year} 年聯邦貧困線的 {pct}%"}, // TODO-REVIEW es+ar+zh
+  r_tier:      {en: "Under this hospital's policy", es: "Según la política de este hospital", ar: "بحسب سياسة هذا المستشفى", "zh-CN": "根据本医院的政策", "zh-TW": "根據本醫院的政策"}, // TODO-REVIEW es+ar+zh
+  r_deadline:  {en: "Deadline", es: "Fecha límite", ar: "الموعد النهائي", "zh-CN": "截止日期", "zh-TW": "截止日期"}, // TODO-REVIEW es+ar+zh
+  r_about:     {en: "About this bill", es: "Sobre esta factura", ar: "عن هذه الفاتورة", "zh-CN": "关于这份账单", "zh-TW": "關於這份帳單"}, // TODO-REVIEW es+ar+zh
+  r_docs:      {en: "Documents the hospital asks for", es: "Documentos que pide el hospital", ar: "المستندات التي يطلبها المستشفى", "zh-CN": "医院要求的文件", "zh-TW": "醫院要求的文件"}, // TODO-REVIEW es+ar+zh
+  r_contact:   {en: "Where to send the application", es: "Dónde enviar la solicitud", ar: "أين ترسل الطلب", "zh-CN": "申请材料寄送处", "zh-TW": "申請資料寄送處"}, // TODO-REVIEW es+ar+zh
+  r_payplan:   {en: "Payment plan contact", es: "Contacto para plan de pagos", ar: "جهة الاتصال لخطة السداد", "zh-CN": "付款计划联系方式", "zh-TW": "付款計畫聯絡方式"}, // TODO-REVIEW es+ar+zh
+  r_phone:     {en: "Phone", es: "Teléfono", ar: "الهاتف", "zh-CN": "电话", "zh-TW": "電話"}, // TODO-REVIEW es+ar+zh
+  r_email:     {en: "Email", es: "Correo electrónico", ar: "البريد الإلكتروني", "zh-CN": "电子邮件", "zh-TW": "電子郵件"}, // TODO-REVIEW es+ar+zh
+  r_tn_title:  {en: "Tennessee protections for uninsured patients", es: "Protecciones de Tennessee para pacientes sin seguro", ar: "حمايات ولاية تينيسي للمرضى غير المؤمَّنين", "zh-CN": "田纳西州对无保险患者的保护", "zh-TW": "田納西州對無保險患者的保護"}, // TODO-REVIEW es+ar+zh
   // TODO-CONTENT: no sourced text exists yet. Replace with a short summary that cites a Tennessee source.
-  r_tn_body:   {en: "Content pending: a sourced summary will go here. Nothing on this card is legal advice.", es: "Contenido pendiente: aquí irá un resumen con fuente. Nada en esta tarjeta es asesoría legal.", ar: "المحتوى قيد الإعداد: سيُضاف هنا ملخص موثّق بمصدره. لا شيء في هذه البطاقة يُعد استشارة قانونية."}, // TODO-REVIEW es+ar
-  r_fallback:  {en: "Shown in English: the translated text did not pass the number check.", es: "Se muestra en inglés: el texto traducido no pasó la verificación de números.", ar: "معروض بالإنجليزية: النص المترجم لم يجتز فحص الأرقام."}, // TODO-REVIEW es+ar
-  r_policy_en: {en: "Policy text is shown in English, as the hospital wrote it.", es: "El texto de la política se muestra en inglés, como lo escribió el hospital.", ar: "نص السياسة معروض بالإنجليزية كما كتبه المستشفى."}, // TODO-REVIEW es+ar
-  r_see_en:    {en: "Show in English", es: "Ver en inglés", ar: "عرض بالإنجليزية"}, // TODO-REVIEW es+ar
-  r_see_native:{en: "Show in my language", es: "Ver en mi idioma", ar: "عرض بلغتي"}, // TODO-REVIEW es+ar
-  r_packet:    {en: "Create my application packet", es: "Crear mi paquete de solicitud", ar: "أنشئ حزمة طلبي"}, // TODO-REVIEW es+ar
-  r_no_packet: {en: "Not eligible under this policy. No application packet is made. Ask about the payment plan.", es: "No califica según esta política. No se crea un paquete de solicitud. Pregunte por el plan de pagos.", ar: "غير مؤهل بحسب هذه السياسة. لا تُنشأ حزمة طلب. اسأل عن خطة السداد."}, // TODO-REVIEW es+ar
-  restart:     {en: "Start over", es: "Empezar de nuevo", ar: "ابدأ من جديد"}, // TODO-REVIEW es+ar
-  p_title:     {en: "Your application packet", es: "Su paquete de solicitud", ar: "حزمة طلبك"}, // TODO-REVIEW es+ar
-  p_print:     {en: "Print", es: "Imprimir", ar: "طباعة"}, // TODO-REVIEW es+ar
-  p_sub:       {en: "You send this yourself. The hospital makes the final decision.", es: "Usted lo envía por su cuenta. El hospital toma la decisión final.", ar: "أنت من يرسله بنفسك. المستشفى هو من يتخذ القرار النهائي."}, // TODO-REVIEW es+ar
-  src:         {en: "Source", es: "Fuente", ar: "المصدر"}, // TODO-REVIEW es+ar
-  page:        {en: "page", es: "página", ar: "صفحة"}, // TODO-REVIEW es+ar
-  effective:   {en: "effective", es: "vigente desde", ar: "ساري من"}, // TODO-REVIEW es+ar
-  err_generic: {en: "Something went wrong. Please try again.", es: "Algo salió mal. Inténtelo de nuevo.", ar: "حدث خطأ ما. حاول مرة أخرى."}, // TODO-REVIEW es+ar
-  err_invalid: {en: "Check the values: they are missing or not valid.", es: "Revise los valores: faltan o no son válidos.", ar: "تحقق من القيم: فهي ناقصة أو غير صالحة."}, // TODO-REVIEW es+ar
+  r_tn_body:   {en: "Content pending: a sourced summary will go here. Nothing on this card is legal advice.", es: "Contenido pendiente: aquí irá un resumen con fuente. Nada en esta tarjeta es asesoría legal.", ar: "المحتوى قيد الإعداد: سيُضاف هنا ملخص موثّق بمصدره. لا شيء في هذه البطاقة يُعد استشارة قانونية.", "zh-CN": "内容待补：此处将放入有来源的摘要。本卡片内容均不构成法律建议。", "zh-TW": "內容待補：此處將放入有來源的摘要。本卡片內容均不構成法律建議。"}, // TODO-REVIEW es+ar+zh
+  r_fallback:  {en: "Shown in English: the translated text did not pass the number check.", es: "Se muestra en inglés: el texto traducido no pasó la verificación de números.", ar: "معروض بالإنجليزية: النص المترجم لم يجتز فحص الأرقام.", "zh-CN": "以英文显示：翻译后的文字未通过数字检查。", "zh-TW": "以英文顯示：翻譯後的文字未通過數字檢查。"}, // TODO-REVIEW es+ar+zh
+  r_policy_en: {en: "Policy text is shown in English, as the hospital wrote it.", es: "El texto de la política se muestra en inglés, como lo escribió el hospital.", ar: "نص السياسة معروض بالإنجليزية كما كتبه المستشفى.", "zh-CN": "政策文本按医院原文以英文显示。", "zh-TW": "政策文本依醫院原文以英文顯示。"}, // TODO-REVIEW es+ar+zh
+  r_see_en:    {en: "Show in English", es: "Ver en inglés", ar: "عرض بالإنجليزية", "zh-CN": "显示英文", "zh-TW": "顯示英文"}, // TODO-REVIEW es+ar+zh
+  r_see_native:{en: "Show in my language", es: "Ver en mi idioma", ar: "عرض بلغتي", "zh-CN": "显示我的语言", "zh-TW": "顯示我的語言"}, // TODO-REVIEW es+ar+zh
+  r_packet:    {en: "Create my application packet", es: "Crear mi paquete de solicitud", ar: "أنشئ حزمة طلبي", "zh-CN": "创建我的申请材料包", "zh-TW": "建立我的申請資料包"}, // TODO-REVIEW es+ar+zh
+  r_no_packet: {en: "Not eligible under this policy. No application packet is made. Ask about the payment plan.", es: "No califica según esta política. No se crea un paquete de solicitud. Pregunte por el plan de pagos.", ar: "غير مؤهل بحسب هذه السياسة. لا تُنشأ حزمة طلب. اسأل عن خطة السداد.", "zh-CN": "根据本政策不符合资格，不会生成申请材料包。请咨询付款计划。", "zh-TW": "根據本政策不符合資格，不會產生申請資料包。請洽詢付款計畫。"}, // TODO-REVIEW es+ar+zh
+  restart:     {en: "Start over", es: "Empezar de nuevo", ar: "ابدأ من جديد", "zh-CN": "重新开始", "zh-TW": "重新開始"}, // TODO-REVIEW es+ar+zh
+  p_title:     {en: "Your application packet", es: "Su paquete de solicitud", ar: "حزمة طلبك", "zh-CN": "您的申请材料包", "zh-TW": "您的申請資料包"}, // TODO-REVIEW es+ar+zh
+  p_print:     {en: "Print", es: "Imprimir", ar: "طباعة", "zh-CN": "打印", "zh-TW": "列印"}, // TODO-REVIEW es+ar+zh
+  p_sub:       {en: "You send this yourself. The hospital makes the final decision.", es: "Usted lo envía por su cuenta. El hospital toma la decisión final.", ar: "أنت من يرسله بنفسك. المستشفى هو من يتخذ القرار النهائي.", "zh-CN": "由您自行寄出。最终决定由医院做出。", "zh-TW": "由您自行寄出。最終決定由醫院做出。"}, // TODO-REVIEW es+ar+zh
+  src:         {en: "Source", es: "Fuente", ar: "المصدر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
+  page:        {en: "page", es: "página", ar: "صفحة", "zh-CN": "页", "zh-TW": "頁"}, // TODO-REVIEW es+ar+zh
+  effective:   {en: "effective", es: "vigente desde", ar: "ساري من", "zh-CN": "生效日期", "zh-TW": "生效日期"}, // TODO-REVIEW es+ar+zh
+  err_generic: {en: "Something went wrong. Please try again.", es: "Algo salió mal. Inténtelo de nuevo.", ar: "حدث خطأ ما. حاول مرة أخرى.", "zh-CN": "出了点问题。请重试。", "zh-TW": "出了點問題。請重試。"}, // TODO-REVIEW es+ar+zh
+  ai_note:     {en: "Written by AI from the English facts above; every number was checked automatically. The English is what counts.", "zh-CN": "此文本由 AI 根据上方的英文事实撰写；每个数字都已自动核对。以英文为准。", "zh-TW": "此文字由 AI 根據上方的英文事實撰寫；每個數字都已自動核對。以英文為準。", es: "Texto escrito por IA a partir de los datos en inglés; cada número se verificó automáticamente. El texto en inglés es el que vale.", ar: "كتب الذكاء الاصطناعي هذا النص من الحقائق الإنجليزية؛ وتم التحقق من كل رقم تلقائيًا. النص الإنجليزي هو المعتمد."}, // TODO-REVIEW es+ar+zh
+  err_invalid: {en: "Check the values: they are missing or not valid.", es: "Revise los valores: faltan o no son válidos.", ar: "تحقق من القيم: فهي ناقصة أو غير صالحة.", "zh-CN": "请检查输入的值：缺失或无效。", "zh-TW": "請檢查輸入的值：缺漏或無效。"}, // TODO-REVIEW es+ar+zh
 };
-const LANG_NAMES = {en: "English", es: "Español", ar: "العربية"};
+const LANG_NAMES = {en: "English", es: "Español", ar: "العربية", "zh-CN": "简体中文", "zh-TW": "繁體中文",
+                    vi: "Tiếng Việt", fr: "Français", ko: "한국어", ru: "Русский", de: "Deutsch", hi: "हिन्दी"};
+const TIER1 = ["ar", "es", "en", "zh-CN", "zh-TW"]; // translated interface
+const TIER2 = ["vi", "fr", "ko", "ru", "de", "hi"]; // English interface, translated explanation and letter
+const viewFor = l => (TIER2.includes(l) ? "en" : l);
 const FIELD_ORDER = [
   ["hospital_name", "f_hospital"], ["statement_date", "f_statement"], ["account_number", "f_account"],
   ["amount_due_cents", "f_amount"], ["date_of_service", "f_service"], ["insurance_status", "f_insurance"],
@@ -96,6 +103,8 @@ function el(tag, attrs, ...kids) {
   for (const kid of kids) if (kid != null) e.append(kid);
   return e;
 }
+// replaceChildren() renders a null argument as the text "null"; skip nulls like el() does.
+function fill(node, ...kids) { node.replaceChildren(...kids.filter(k => k != null)); }
 function englishOnly(tag, attrs, text) { // policy text is English: keep it left-to-right
   return el(tag, Object.assign({lang: "en", dir: "ltr"}, attrs || {}), text);
 }
@@ -151,14 +160,18 @@ function blankBill() {
 }
 
 // ---------- screen 1: start
+function langBtn(l) {
+  return el("button", {"aria-pressed": String(S.lang === l), lang: l, onclick: () => { S.lang = l; S.view = viewFor(l); show(1); }}, LANG_NAMES[l]);
+}
 function renderStart() {
   const root = document.getElementById("s1");
-  root.replaceChildren(
+  fill(root,
     el("p", {class: "notice"}, t("notice")),
     el("p", {class: "muted"}, t("no_id")),
     el("h2", null, t("pick_lang")),
-    el("div", {class: "row"}, ...["ar", "es", "en"].map(l =>
-      el("button", {"aria-pressed": String(S.lang === l), lang: l, onclick: () => { S.lang = l; S.view = l; show(1); }}, LANG_NAMES[l]))),
+    el("div", {class: "row"}, ...TIER1.map(langBtn)),
+    el("p", {class: "muted", lang: "en", dir: "ltr"}, "More languages (interface in English)"),
+    el("div", {class: "row"}, ...TIER2.map(langBtn)),
     el("h2", null, t("for_whom")),
     el("div", {class: "row"}, ...[["self", "me"], ["family", "family"]].map(([v, k]) =>
       el("button", {"aria-pressed": String(S.forWhom === v), onclick: () => { S.forWhom = v; show(1); }}, t(k)))),
@@ -174,7 +187,7 @@ function renderBill() {
   const left = el("div", null, el("label", {for: "bill-file"}, t("upload")), file);
   if (S.imageUrl) left.append(el("img", {src: S.imageUrl, alt: ""}));
   const right = el("div", {id: "fields"});
-  root.replaceChildren(
+  fill(root,
     el("h2", null, t("bill_title")),
     el("p", {class: "muted"}, t("bill_hint")),
     el("div", {class: "bill-grid"}, left, right),
@@ -244,7 +257,7 @@ function renderFields() {
     wrap.sync = sync;
     return wrap;
   });
-  box.replaceChildren(...rows);
+  fill(box, ...rows);
   rows.forEach(r => r.sync());
 }
 
@@ -262,7 +275,7 @@ function renderQuestions() {
   size.addEventListener("input", check);
   income.addEventListener("input", check);
   const taxBtn = (val, key) => el("button", {"aria-pressed": String(S.tax === val), onclick: () => { S.tax = val; renderQuestions(); }}, t(key));
-  root.replaceChildren(
+  fill(root,
     el("h2", null, t("q_title")),
     el("p", {class: "muted"}, t("no_id")),
     el("label", {for: "q-size"}, t("q_size")), size,
@@ -279,7 +292,7 @@ async function submitAnswers() {
   try {
     S.result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     S.explain = await post("/explain", {bill: S.bill, answers: S.answers, result: S.result});
-    S.view = S.lang; showMsg("");
+    S.view = viewFor(S.lang); showMsg("");
     S.busy = false; show(4);
   } catch (e) {
     S.busy = false; showMsg(e.message); renderQuestions();
@@ -290,9 +303,14 @@ async function submitAnswers() {
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
   const english = S.view === "en";
-  const textDir = english || S.explain.fallback_used ? "ltr" : (S.view === "ar" ? "rtl" : "ltr");
-  const textLang = english || S.explain.fallback_used ? "en" : S.view;
-  const lines = (english ? S.explain.text_en : S.explain.text).split("\n");
+  const tier2 = TIER2.includes(S.lang);
+  const fb = S.explain.fallback_used;
+  // Tier 2: English facts first (the interface is English), then the translated text. Tier 1: one or the other.
+  const showEn = english || fb || tier2;
+  const showNative = S.lang !== "en" && !fb && (tier2 || !english);
+  const enLines = showEn ? S.explain.text_en.split("\n") : [];
+  const nativeLines = showNative ? S.explain.text.split("\n") : [];
+  const nativeDir = S.lang === "ar" ? "rtl" : "ltr";
   const eligible = r.tier.eligible;
   const docs = el("ul", null, ...r.documents.map(d => el("li", null, englishOnly("span", null, d.label_en), cite(d.citation))));
   const c = r.contacts;
@@ -301,9 +319,9 @@ function renderResult() {
         el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.phone)), cite(c.citation))
     : el("div", {class: "card"}, el("strong", null, t("r_payplan")),
         el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.payment_plan_phone || c.phone)), cite(c.citation));
-  const toggle = S.lang === "en" ? null
+  const toggle = S.lang === "en" || tier2 ? null
     : el("button", {onclick: () => { S.view = english ? S.lang : "en"; show(4); }}, english ? t("r_see_native") : t("r_see_en"));
-  root.replaceChildren(
+  fill(root,
     el("h2", null, t("r_title")),
     toggle ? el("div", {class: "row"}, toggle) : null,
     el("p", {class: "stat"}, t("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year})),
@@ -313,8 +331,10 @@ function renderResult() {
     el("div", {class: "card"}, el("strong", null, t("r_deadline")),
       englishOnly("p", null, r.deadline.text_en), cite(r.deadline.citation)),
     el("div", {class: "card explain"}, el("strong", null, t("r_about")),
-      ...lines.map(l => el("p", {dir: textDir, lang: textLang}, l))),
-    S.explain.fallback_used && !english ? el("p", {class: "muted"}, t("r_fallback")) : null,
+      ...enLines.map(l => el("p", {dir: "ltr", lang: "en"}, l)),
+      ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, l))),
+    showNative ? el("p", {class: "muted"}, t("ai_note")) : null,
+    fb && (tier2 || !english) ? el("p", {class: "muted"}, t("r_fallback")) : null,
     el("p", {class: "muted"}, t("r_policy_en")),
     eligible ? el("div", {class: "card"}, el("strong", null, t("r_docs")), docs) : null,
     contactCard,
@@ -328,7 +348,7 @@ function renderResult() {
 
 // ---------- screen 5: packet
 function renderPacketShell() {
-  document.getElementById("s5").replaceChildren(
+  fill(document.getElementById("s5"), 
     el("h2", null, t("p_title")), el("p", {class: "muted"}, t("p_sub")),
     el("div", {class: "row"},
       el("button", {onclick: () => show(4)}, t("back")),

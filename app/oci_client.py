@@ -16,7 +16,9 @@ EXTRACT_PROMPT = (
     "you cannot read clearly. Do not guess."
 )
 
-LANGUAGE_NAMES = {"en": "English", "es": "Spanish", "ar": "Arabic"}
+LANGUAGE_NAMES = {"en": "English", "es": "Spanish", "ar": "Arabic", "zh-CN": "Simplified Chinese",
+                  "zh-TW": "Traditional Chinese", "vi": "Vietnamese", "fr": "French", "ko": "Korean",
+                  "ru": "Russian", "de": "German", "hi": "Hindi"}
 
 
 def is_fake():
@@ -126,6 +128,24 @@ def translate_many(texts, target_lang):
         raise RuntimeError("translation returned %d document error(s)" % len(result.errors))
     by_key = {d.key: d.translated_text for d in result.documents}
     return [by_key[str(i)] for i in range(len(texts))]
+
+
+def translate_genai_many(texts, target_lang):
+    """Translate English texts with Command A only. Returns a list in the same order.
+
+    Used where OCI Language has no support (Hindi). NOT back-checked.
+    """
+    if is_fake():
+        return ["[%s draft] %s" % (target_lang.upper(), t) for t in texts]
+    from oci.generative_ai_inference import models as m
+    out = []
+    for text in texts:
+        prompt = (
+            "Translate the text below into %s. Copy every number, date, account number and dollar "
+            "amount EXACTLY, using ASCII digits 0-9. Keep the line breaks. Output only the translation."
+            "\n\nText:\n%s" % (LANGUAGE_NAMES[target_lang], text))
+        out.append(_chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False).strip())
+    return out
 
 
 def translate(text, target_lang):

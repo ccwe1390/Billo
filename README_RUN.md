@@ -29,6 +29,14 @@ Needs `~/.oci/config` (profile DEFAULT, or set `OCI_PROFILE`) and:
 Generative AI calls go to the Chicago endpoint. OCI Language translation is
 UNTESTED against the live service.
 
+## Languages
+
+- Tier 1, translated interface: en, es, ar, zh-CN, zh-TW.
+- Tier 2, English interface; only the explanation and the cover letter and
+  checklist are translated: vi, fr, ko, ru, de, hi. The Hindi letter is
+  written by Command A and is not back-checked (OCI Language has no Hindi).
+- Tagalog is not supported by OCI Language or Command A: known gap.
+
 ## Tests
 
 ```

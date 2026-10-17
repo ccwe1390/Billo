@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bill-to-help-fake",
+      "runtimeExecutable": "py",
+      "runtimeArgs": ["-m", "uvicorn", "app.main:app", "--port", "8765"],
+      "env": {"FAKE_OCI": "1"},
+      "port": 8765
+    }
+  ]
+}

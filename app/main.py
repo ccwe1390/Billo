@@ -46,7 +46,7 @@ class AnswersIn(BaseModel):
     # extra="forbid": no way to send immigration status, SSN, ID or a name.
     model_config = ConfigDict(extra="forbid")
     contract_version: int = CONTRACT_VERSION
-    language: Literal["en", "es", "ar"]
+    language: Literal["en", "es", "ar", "zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"]
     for_whom: Literal["self", "family"]
     household_size: int = Field(ge=1, le=12)
     annual_income_cents: int = Field(ge=0)
@@ -227,7 +227,7 @@ def explain(body: ResultIn):
     lang = body.answers.language
     facts = _facts_en(body.bill, body.answers, result)
     out = {"contract_version": CONTRACT_VERSION, "language": lang, "text_en": facts,
-           "text": facts, "numbers_match": True, "fallback_used": False}
+           "text": facts, "numbers_match": True, "fallback_used": False, "ai_written": False}
     if lang == "en":
         return out
     allowed = _allowed_numbers(result, facts)
@@ -238,6 +238,7 @@ def explain(body: ResultIn):
         text, ok = "", False
     if ok:
         out["text"] = text
+        out["ai_written"] = True
     else:  # mismatch or model failure: fixed English template
         out["numbers_match"] = False
         out["fallback_used"] = True
@@ -302,12 +303,16 @@ def build_packet(bill, answers, result):
     if lang != "en":
         sources = [letter] + [c["label_en"] for c in checklist]
         try:
-            translated = oci_client.translate_many(sources, lang)
+            if lang == "hi":  # OCI Language has no Hindi: Command A, no back-check
+                translated = oci_client.translate_genai_many(sources, "hi")
+            else:
+                translated = oci_client.translate_many(sources, lang)
         except Exception:
             translated = None
         if translated is None:
             check = {"numbers_match": False, "fallback_used": True}
         else:
+            check["back_checked"] = lang != "hi"
             for i, (src, tr) in enumerate(zip(sources, translated)):
                 ok, _m, _u = numlock.check(tr, numlock.extract_numbers(src))
                 if not ok:

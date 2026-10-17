@@ -21,3 +21,8 @@
   `python`/`python3` hit the Microsoft Store alias and fail. This corrects
   earlier "no Python" claims (record Appendix O). The `oci` package is NOT
   installed locally.
+- 2026-10-17 - `Element.replaceChildren(a, null, b)` renders the null as the
+  text "null" (unlike our `el()` helper, which skips nulls). It showed on the
+  result screen as two stray "null" lines. Fixed at the chokepoint: all six
+  callers in app/static/app.js go through `fill()`, which filters nulls;
+  tests/test_api.py asserts `.replaceChildren(` appears only inside fill().

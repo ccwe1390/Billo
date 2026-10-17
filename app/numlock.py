@@ -1,7 +1,7 @@
 """Number lock: every number in generated text must match the engine's numbers.
 
-Pure functions, no I/O. Arabic-Indic digits are normalized to ASCII first, so
-an Arabic translation that shows the same amounts passes.
+Pure functions, no I/O. Arabic-Indic and Devanagari digits are normalized to
+ASCII first, so an Arabic or Hindi translation that shows the same amounts passes.
 """
 import re
 
@@ -11,6 +11,7 @@ _TRANS = {}
 for _i in range(10):
     _TRANS[0x0660 + _i] = str(_i)
     _TRANS[0x06F0 + _i] = str(_i)
+    _TRANS[0x0966 + _i] = str(_i)  # Devanagari digits (Hindi)
 _TRANS[0x066C] = ","
 _TRANS[0x066B] = "."
 

@@ -5,6 +5,7 @@ Run: py tests/test_api.py   (FAKE_OCI=1 is set here; no network or credentials)
 import asyncio
 import io
 import os
+import re
 import sys
 
 os.environ["FAKE_OCI"] = "1"
@@ -116,7 +117,7 @@ oci_client.phrase = real_phrase
 
 # ---- /packet: json shape, html page
 pk = main.packet(body, format="json")
-assert pk["translation_check"] == {"numbers_match": True, "fallback_used": False}
+assert pk["translation_check"] == {"numbers_match": True, "fallback_used": False, "back_checked": True}
 assert [c["id"] for c in pk["checklist"]] == ["proof_income", "bill_copy"]      # files_tax_return false
 assert pk["cover_letter_en"] and pk["cover_letter_translated"].startswith("[AR draft]")
 assert pk["send_to"]["email"] == res["contacts"]["email"] and pk["send_to"]["phone"] == res["contacts"]["phone"]
@@ -149,6 +150,24 @@ oci_client.translate_many = lambda texts, lang: (_ for _ in ()).throw(NotImpleme
 assert main.packet(body, format="json")["translation_check"]["fallback_used"]
 oci_client.translate_many = real_tr
 
+# ---- tier 2 languages: AI explanation + letter; Hindi letter is not back-checked
+for code in ("zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"):
+    a2 = answers(language=code)
+    r2 = main.evaluate(main.EvaluateIn(bill=B, answers=a2))
+    ex2 = main.explain(main.ResultIn(bill=B, answers=a2, result=r2))
+    assert ex2["ai_written"] is True and ex2["numbers_match"] and not ex2["fallback_used"], code
+    pk2 = main.packet(main.ResultIn(bill=B, answers=a2, result=r2), format="json")
+    assert pk2["translation_check"]["back_checked"] is (code != "hi"), code
+    assert pk2["translation_check"]["numbers_match"] and not pk2["translation_check"]["fallback_used"], code
+    assert pk2["cover_letter_translated"].startswith("[%s draft]" % code.upper()), code
+assert pk2["cover_letter_translated"].startswith("[HI draft]")
+assert ex_en["ai_written"] is False
+try:
+    answers(language="ku")
+    raise AssertionError("language ku accepted")
+except ValidationError:
+    pass
+
 # ---- not eligible: honest result, no packet
 rich = answers(annual_income_cents=13200100)
 res2 = main.evaluate(main.EvaluateIn(bill=B, answers=rich))
@@ -160,6 +179,16 @@ expect_http(422, main.packet, main.ResultIn(bill=B, answers=rich, result=res2))
 fake = dict(res, percent_of_fpl=10, tier=dict(res["tier"], id="free_care", eligible=True))
 expect_http(422, main.packet, main.ResultIn(bill=B, answers=rich, result=fake))
 assert "115%" in main.explain(main.ResultIn(bill=B, answers=answers(language="en"), result=fake))["text"]
+
+# ---- every UI string row in app.js has zh-CN and zh-TW
+js = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "static", "app.js"),
+          encoding="utf-8").read()
+t_block = js[js.index("const T = {"):js.index("\nconst LANG_NAMES")]
+rows = [ln for ln in t_block.splitlines() if re.match(r"^  \w+:\s*\{en:", ln)]
+assert len(rows) >= 60, len(rows)
+assert all('"zh-CN":' in ln and '"zh-TW":' in ln for ln in rows), [ln[:30] for ln in rows if '"zh-TW":' not in ln]
+# replaceChildren() prints a null argument as "null": only fill() may call it
+assert js.count(".replaceChildren(") == 1 and "function fill(" in js
 
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)

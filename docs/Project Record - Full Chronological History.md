@@ -53,6 +53,7 @@ the dated entry, not the digest.
 - [Q - App shell built, reviewed, tamper flaw fixed, pushed](#appendix-q---app-shell-built-reviewed-tamper-flaw-fixed-pushed-2026-10-17-1346-cdt) (10-17)
 - [R - Team plan rev 2 adopted with fixes (PRD F9)](#appendix-r---team-plan-rev-2-adopted-with-fixes-prd-f9-2026-10-17-1351-cdt) (10-17)
 - [S - Blur test set and synthetic policy page; citations linked](#appendix-s---blur-test-set-and-synthetic-policy-page-citations-linked-2026-10-17-1352-cdt) (10-17)
+- [T - Language tiers built and reviewed; null-render bug fixed](#appendix-t---language-tiers-built-and-reviewed-null-render-bug-fixed-2026-10-17-1406-cdt) (10-17)
 
 ---
 
@@ -619,3 +620,38 @@ demo line: `date_of_service` null at blur 3 and 5.
 **Correction to Appendix R:** its heading says 13:51 CDT; `date` showed
 13:49 when it was written, and Agent C was dispatched ~13:48, not ~13:50.
 Both were guessed instead of read. Appendix R stays as written.
+
+# Appendix T - Language tiers built and reviewed; null-render bug fixed (2026-10-17 14:06 CDT)
+**What happened:** Language tiers built (Agent D, Sonnet; spec changed
+twice mid-run by Evan's decisions).
+- Tier 1, translated interface: en, es, ar, zh-CN, zh-TW.
+- Tier 2, explanation and cover letter only, English interface: vi, fr, ko,
+  ru, de, hi. Hindi's letter uses Command A (`translate_genai_many`)
+  because OCI Language has no Hindi; the packet marks it
+  `back_checked: false`.
+- Every non-English explanation carries a note: written by AI from the
+  English facts, numbers checked automatically, the English counts.
+- `numlock` normalizes Devanagari digits. `/explain` returns `ai_written`.
+- Gap: Tagalog (#3 on Evan's US list) - neither OCI Language nor Command A
+  supports it (vendor pages read 2026-10-17; languages.md).
+
+**Review (Opus):** all 4 test files ALL PASS, `node --check` OK, Python
+diff read. Browser run (fake mode) through Simplified Chinese, Korean and
+Arabic.
+
+**Bug found in the browser, not by tests:** the result screen showed the
+word "null" twice. Symptom -> two stray "null" lines. Root cause ->
+`Element.replaceChildren()` renders a null argument as the text "null";
+the `el()` helper skips nulls but the six `replaceChildren` callers did
+not. This predates the language work (any null slot, e.g. the toggle for
+English users). Fix -> one `fill()` helper that filters nulls; all six
+callers use it; `tests/test_api.py` asserts `.replaceChildren(` appears
+only inside `fill()`. Re-run in the browser: no "null" for zh-CN or ko;
+Arabic still `dir=rtl`.
+
+**Also:** added Spanish and Arabic text for the AI note (marked
+TODO-REVIEW like all es/ar/zh strings). `.claude/launch.json` added to run
+the fake-mode server in the browser pane.
+
+**Not verified:** real OCI paths for every new language; the
+number-format risk (machine translation may write "4.812,40") is untested.

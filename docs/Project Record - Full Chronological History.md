@@ -55,6 +55,7 @@ the dated entry, not the digest.
 - [S - Blur test set and synthetic policy page; citations linked](#appendix-s---blur-test-set-and-synthetic-policy-page-citations-linked-2026-10-17-1352-cdt) (10-17)
 - [T - Language tiers built and reviewed; null-render bug fixed](#appendix-t---language-tiers-built-and-reviewed-null-render-bug-fixed-2026-10-17-1406-cdt) (10-17)
 - [U - Gate 1 passed from code; blur test passed; JSON-fence bug fixed](#appendix-u---gate-1-passed-from-code-blur-test-passed-json-fence-bug-fixed-2026-10-17-1424-cdt) (10-17)
+- [V - Deployed to OCI VM; 5 PM gate passed; number-safe translation](#appendix-v---deployed-to-oci-vm-5-pm-gate-passed-number-safe-translation-2026-10-17-1511-cdt) (10-17)
 
 ---
 
@@ -679,7 +680,7 @@ number-format risk (machine translation may write "4.812,40") is untested.
 *hospital name returned without "(SYNTHETIC)" on 3 of 4 bill-02 runs.
 
 **Bug found by the live run:** Command A Vision wrapped its JSON in a
-```json fence even with CohereResponseJsonFormat. Symptom: the spike
+json fence even with CohereResponseJsonFormat. Symptom: the spike
 printed "NOT valid JSON". Root cause: `json.loads` on fenced text; the app
 used the same call, so every real /extract would have returned 502 - the
 fake mode could never show this. Fix: `oci_client.parse_json_object`
@@ -692,3 +693,66 @@ phone photos - say so if asked).
 
 **Still blocked:** VM deploy needs the stack's public IP and SSH key from
 Evan. Not yet run live: Command A phrasing, OCI Language translation.
+
+# Appendix V - Deployed to OCI VM; 5 PM gate passed; number-safe translation (2026-10-17 15:11 CDT)
+**What happened:** Deployed to the OCI VM and passed the 5:00 PM gate at
+14:53 CDT (about 2 h early).
+
+**Deploy (14:35-14:42):** the stack output `ssh_private_key` is marked
+sensitive (console shows a lock), so Evan downloaded the job's Terraform
+state and Claude extracted only the key to
+`C:\Users\daruw\.ssh\HackTN26.pem` (icacls-locked; fingerprint
+SHA256:QA3BKoVf7B7Ub+BRjZ2U5/P9fi44/2Bc6uSMPcEfhp4). VM: opc, Oracle Linux
+9.8, x86_64 E5.Flex 1 OCPU (paid), Python 3.9 stock -> python3.12 installed.
+App in /opt/bill-to-help (SELinux blocks services running from home
+dirs), systemd uvicorn on 127.0.0.1:8000 with --no-access-log, existing
+Apache on :80 as reverse proxy. Fake mode first: / 200, /extract 200.
+
+**Auth decision (Evan: option A):** instance principal instead of copying
+Evan's API key - no credentials on the server, least privilege, nothing to
+rotate. Dynamic group bill-to-help-vm + policy with `use
+generative-ai-family` and `use ai-service-language-family`; `use` proved
+enough. Code: `OCI_AUTH=instance_principal` -> `oci_client._auth()`
+(cached signer).
+
+**Gate run on the server (real AI, n=1):**
+
+| Step | Result | Time |
+|---|---|---|
+| /extract (bill-02 blur 3) | date_of_service null; others correct | 4.1 s |
+| /evaluate | 115%, free care, deadline 2027-06-02, cites p.1 | 0.1 s |
+| /explain es | Command A text passed the number check | 4.4 s |
+| /packet es | FAILED number check -> English-only fallback | 1.1 s |
+
+**Bug -> root cause -> fix:** OCI Language localized "$4,812.40" to
+"$4.812,40" (predicted in languages.md at ~14:00). Placeholder test across
+8 languages: `{n}` survived all; `[[n]]`, `<n>`, `#n#` broke in some.
+Fix: `protect_numbers`/`restore_numbers` around OCI Language; a lost
+placeholder fails the number check (fails closed). Live re-run: es, fr, de,
+ru, ar, zh-CN, ko, vi packets all `numbers_match: true`; server journey
+11.8 s with the Spanish packet passing. Tests ALL PASS (4 files).
+
+**Not verified:** zh-TW and hi packets live; phone photos (all tests used
+rendered PNGs). The server runs the working tree, not a commit.
+
+**Slips:** HANDOFF path lost its backslashes again via a node script
+(fixed with the Edit tool); one HANDOFF stamp said 14:56 vs real 14:55
+(fixed).
+
+**Correction to Appendix U (made with Evan's explicit OK, 2026-10-17
+~15:08 CDT):** Appendix U line 682 began with three backticks ("```json
+fence ..."), which opened a Markdown code block that never closed. The
+append script skips fenced lines, so it could not see any later heading
+and refused this entry ("TOC lines (22) != appendix headings (21)", file
+not modified); GitHub also rendered the end of U as code. The fix (Evan, by
+hand, ~15:10 CDT) removed the three backticks, so the line now starts
+"json fence even with CohereResponseJsonFormat."; no other character in the
+record changed (git diff: 1 line). This breaks the append-only rule once,
+because a correction appended after U would itself have been inside the
+open code block. The record-guard hook blocked Claude from making the edit
+directly, so Evan made the one-line edit himself in his editor. Lesson: no
+line in an entry body may start with three backticks.
+
+**Also since:** pre-mortem written (docs/2026-10-17_pre-mortem.md, 18
+risks, 5 launch-blocking); placeholder Tennessee card removed (145c8af)
+and redeployed from the commit at 15:06 CDT.

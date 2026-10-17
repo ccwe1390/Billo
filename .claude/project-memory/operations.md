@@ -56,3 +56,6 @@
   copy app/ to /opt/bill-to-help/, `sudo systemctl restart bill-to-help`.
   Note: this shipped the working tree, not a commit - commit before the
   next deploy so the server matches git.
+- 2026-10-17 15:06 CDT - Redeployed from commit 145c8af (`git archive HEAD
+  app | ssh ...`), so the server matches git. Live app.js has 0 matches for
+  the removed placeholder card; / returns 200.

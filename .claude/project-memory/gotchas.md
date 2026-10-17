@@ -36,3 +36,10 @@
   oci.generative_ai.GenerativeAiClient.list_models (endpoint
   https://generativeai.us-chicago-1.oci.oraclecloud.com) - the console's
   "View code" showed `---`.
+- 2026-10-17 - Record entry bodies: NO line may start with three backticks.
+  Appendix U line 682 did ("```json fence ..."), opening a code block that
+  never closed; append-record-entry.js skips fenced lines, so it refused
+  every later append (TOC/heading count mismatch). The record-guard hook
+  blocks Claude from editing the record; the repair needs Evan (edit by
+  hand, or relaunch with PM_RECORD_UNLOCK=1). Check before appending:
+  grep -n '^\s\{0,3\}```' <body file> must print nothing.

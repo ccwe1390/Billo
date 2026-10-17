@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 14:57 CDT** - this file is the only live
+**Last updated: 2026-10-17 15:11 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-V).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -65,8 +65,6 @@ snapshot; history lives in the record (Phase 0, Appendices A-V).
 
 ## BLOCKED-ON-EVAN
 - Budget alert: still UNCONFIRMED (the VM is E5.Flex, a paid shape).
-- Yes/no on fixing one line in record Appendix U (line 682 starts an
-  unclosed code fence, so the append script cannot add Appendix V).
 - Delete the downloaded Terraform state JSON from Downloads (it holds the SSH key).
 - Ask organizers: submission form, repo, video.
 - Team roster and who owns which role.
@@ -93,15 +91,16 @@ HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
 DIRECTION fork + F9 amendments), then the record's last 3 appendices and
 .claude/project-memory/operations.md (VM details).
 
-State (2026-10-17 14:57 CDT): "Bill to Help" - bill photo -> hospital
+State (2026-10-17 15:11 CDT): "Bill to Help" - bill photo -> hospital
 financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
 zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
 instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
 gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
 4 test files ALL PASS. SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
-opc@207.211.181.174. Record Appendix V is unwritten: Appendix U line 682
-opens an unclosed code fence and Evan has not yet approved fixing it.
+opc@207.211.181.174. Record is current through Appendix V (deploy, gate,
+and the one-line Appendix U fence repair Evan made by hand). Pre-mortem:
+docs/2026-10-17_pre-mortem.md (T4 done; T1-T3, T5, T8 open).
 
 Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
 ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.

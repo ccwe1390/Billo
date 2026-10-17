@@ -58,6 +58,7 @@ the dated entry, not the digest.
 - [V - Deployed to OCI VM; 5 PM gate passed; number-safe translation](#appendix-v---deployed-to-oci-vm-5-pm-gate-passed-number-safe-translation-2026-10-17-1511-cdt) (10-17)
 - [W - Paper Trail design built and deployed (GO at 15:40)](#appendix-w---paper-trail-design-built-and-deployed-go-at-1540-2026-10-17-1541-cdt) (10-17)
 - [X - MySQL deleted; reviewer screenshots; axe audit; 6 bugs found](#appendix-x---mysql-deleted-reviewer-screenshots-axe-audit-6-bugs-found-2026-10-17-1602-cdt) (10-17)
+- [Y - Six reviewer-screenshot bugs fixed and deployed](#appendix-y---six-reviewer-screenshot-bugs-fixed-and-deployed-2026-10-17-1609-cdt) (10-17)
 
 ---
 
@@ -842,3 +843,38 @@ outside landmarks. Report: docs/2026-10-17_accessibility-audit.md.
 6. The packet lacks a `<main>` landmark.
 Also seen: a late /extract response can overwrite confirmations if a bill
 is uploaded twice quickly (edge case).
+
+# Appendix Y - Six reviewer-screenshot bugs fixed and deployed (2026-10-17 16:09 CDT)
+**What happened:** Evan approved fixing all six bugs from record X,
+including the packet code on the server. Two Sonnet agents on disjoint
+files (G: app/main.py, app/oci_client.py, tests/test_api.py; H:
+app/static/app.js); Opus reviewed both diffs, fixed one spacing slip, added
+UI asserts, and ran the live checks. Commit 116d631, deployed from HEAD.
+
+| # | Bug | Fix |
+|---|---|---|
+| 1 | Hospital name mistranslated ("(MONOETIC)", "CETIC") | Name protected with the same {n} placeholders as numbers; if it does not survive, the packet falls back to English (fails closed). Hindi exempt (Command A, no placeholders) - agent's call, accepted |
+| 2 | Packet letters overflow on phones | Columns stack below 640px |
+| 3 | Decorative check icon looked ticked | Removed from the confirm labels |
+| 4 | RTL: clipped English input, misplaced footnote markers | dir="auto" on bill inputs; deadline and document labels are one LTR run |
+| 5 | "this application" -> "this app"; zh-TW dropped the office | Letter now says "apply for financial assistance" |
+| 6 | Packet had no main landmark | Body wrapped in `<main>` |
+
+**Verification:**
+- 4 test files ALL PASS; new tests cover name protection, the mangled-name
+  fallback, the 640px rule, `<main>`, the wording, and the UI changes.
+- Live OCI (laptop key): letters in ar, zh-CN, zh-TW, es, fr, de, ru, ko
+  and vi all keep "Cumberland General Hospital (SYNTHETIC)" and pass the
+  number check. zh-TW now includes the office name (Financial Assistance Office). The
+  "app" wording is gone in ar/zh-CN/zh-TW.
+- Browser (fake mode, 375px, ar and zh-TW): 0 check icons; input direction
+  ltr; deadline/doc runs ltr; packet columns block with 0px overflow;
+  `<main>` present; no page scroll.
+- Live server after deploy: journey 11.7 s; ar and zh-TW packets keep the
+  name (instance-principal auth); packet HTML has `<main>` and the 640px
+  rule; live app.js has no check icon in labels.
+
+**Not covered:** Hindi letters can still mistranslate the name (no
+placeholders on the Command A path); the double-upload race (a late
+/extract response overwriting confirmations) is unchanged; real phone not
+tested.

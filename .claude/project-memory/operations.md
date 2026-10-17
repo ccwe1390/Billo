@@ -71,3 +71,6 @@
   system DELETED 16:01:35; list_db_systems shows 0 ACTIVE. Live journey
   passed afterwards (16:01, 11.3 s). NEVER re-apply the HackTN26-starterkit
   stack: Terraform would recreate both, and `destroy` would delete the VM.
+- 2026-10-17 16:08 CDT - Redeployed from 116d631 (six bug fixes). Live
+  checks: journey 11.7 s; ar and zh-TW packets keep the hospital name and
+  pass the number check; packet HTML has <main> and the 640px stack rule.

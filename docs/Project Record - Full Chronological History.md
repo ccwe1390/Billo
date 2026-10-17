@@ -61,6 +61,7 @@ the dated entry, not the digest.
 - [Y - Six reviewer-screenshot bugs fixed and deployed](#appendix-y---six-reviewer-screenshot-bugs-fixed-and-deployed-2026-10-17-1609-cdt) (10-17)
 - [Z - Full audit: 5 highs, mostly claims that outlived the code](#appendix-z---full-audit-5-highs-mostly-claims-that-outlived-the-code-2026-10-17-1643-cdt) (10-17)
 - [AA - Every audit fix built and verified; not deployed (SSH refused)](#appendix-aa---every-audit-fix-built-and-verified-not-deployed-ssh-refused-2026-10-17-1655-cdt) (10-17)
+- [AB - Audit fixes deployed (c4a28f0); live journey 10.7 s](#appendix-ab---audit-fixes-deployed-c4a28f0-live-journey-107-s-2026-10-17-1700-cdt) (10-17)
 
 ---
 
@@ -996,3 +997,28 @@ slow (21.6 s); the VM's package versions are still unrecorded.
 
 **Corrections to earlier entries:** see Appendix Z; also the record's front
 matter still says "No git history exists" (stale since 65be0e2).
+
+# Appendix AB - Audit fixes deployed (c4a28f0); live journey 10.7 s (2026-10-17, 17:00 CDT)
+**What happened:** Evan allowed SSH to the VM in his permission settings and
+asked for c4a28f0 to be deployed with a live journey. Before deploying, the
+VM venv was read: its versions equal the requirements.txt pins exactly
+(fastapi 0.143.3, starlette 1.8.0, pydantic 2.14.1, uvicorn 0.54.0,
+python-multipart 0.0.32, oci 2.188.0; Python 3.12.15), so the new code's
+imports were safe. Deployed at 16:58 CDT with the git-archive command;
+service active.
+
+**Live checks (real OCI, public URL, n=1 each):**
+
+| Check | Result |
+|---|---|
+| live app.js vs `git archive HEAD` | identical |
+| security headers on / | nosniff, no-referrer, SAMEORIGIN |
+| /openapi.json | 404 |
+| text bytes sent as image/png | 415 (no model call) |
+| journey: bill-02-blur3 photo -> fields -> result -> es explanation -> es packet | 10.7 s; extract 3.5 s, date of service left blank, amount $1,858.50 correct; free_care 115%; both number checks pass |
+| es not-eligible explanation (audit high 2) | numbers_match true, no fallback |
+| hi packet (placeholders now on the Command A path) | number and name checks pass, 15.7 s |
+| journalctl since deploy | no warnings or errors |
+
+**Docs:** operations.md deploy entry; HANDOFF now says the audit fixes are
+live. Rollback target: 116d631.

@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 16:55 CDT** - this file is the only live
+**Last updated: 2026-10-17 17:00 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-Y).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -41,7 +41,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + language tiers (tier 1 en/es/ar/zh-CN/zh-TW; tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53; the live server runs 116d631. The audit fixes (record AA) are committed but NOT deployed yet: redeploy needs SSH, which this session's permission mode refused | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + language tiers (tier 1 en/es/ar/zh-CN/zh-TW; tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53; the live server runs c4a28f0 (audit fixes, deployed 16:58 CDT, live journey 10.7 s; operations.md) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -70,9 +70,6 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## BLOCKED-ON-EVAN
-- DEPLOY the audit fixes (commit after f317d07; see operations.md for the
-  git-archive command, then run a live journey). SSH from this session was
-  refused by the permission mode, so Claude could not deploy or read the VM.
 - Review docs/2026-10-17_pitch-corrections.md and give it to the presenters
   (rev2's pitch still says QR, VUMC, PDF, Dad's bills, a database).
 - V1 chatbot results: needed to fill the pitch brackets ([x], [N], ...).
@@ -102,12 +99,12 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
    record Y).
 7. DONE 16:43: full audit (docs/2026-10-17_full-audit.md, record Z): 5
    highs, mostly claims that outlived the code.
-8. DONE 16:55 (committed, NOT deployed): every audit fix (record AA) -
+8. DONE 16:55, deployed 16:58 (c4a28f0): every audit fix (record AA) -
    /extract no longer freezes the site; not-eligible works in every language;
    Hindi keeps the hospital name; double-upload race fixed; different-hospital
    warning; rate limit and field caps; uploads in memory; docs corrected.
    Live OCI check from the laptop: es/ar not-eligible explanations and hi/ar
-   packets all pass (n=1). Open: deploy (Evan), pitch sheet review (Evan).
+   packets all pass (n=1). Open: pitch sheet review (Evan).
 
 ## Handoff prompt
 
@@ -117,7 +114,7 @@ HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
 DIRECTION fork + F9 amendments), then the record's last 3 appendices and
 .claude/project-memory/operations.md (VM details).
 
-State (2026-10-17 16:55 CDT): "Bill to Help" - bill photo -> hospital
+State (2026-10-17 17:00 CDT): "Bill to Help" - bill photo -> hospital
 financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
 zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
@@ -131,16 +128,15 @@ current through Appendix AA. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: d
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if
-it is lost. The audit-fix commit is NOT deployed yet (Evan: SSH).
+it is lost. The audit fixes are live since 16:58 (c4a28f0).
 
 Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
 ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
 OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
-Next, in order: (1) deploy the audit-fix commit and run a live journey
-(Evan; operations.md); (2) presenters adopt docs/2026-10-17_pitch-
-corrections.md; (3) pre-mortem T1/T2/T3/T8 (Evan: organizers, V1 test,
-phone test, budget alert); (4) fluent review of es/ar/zh strings
+Next, in order: (1) presenters adopt docs/2026-10-17_pitch-corrections.md;
+(2) pre-mortem T1/T2/T3/T8 (Evan: organizers, V1 test, phone test, budget
+alert); (3) fluent review of es/ar/zh strings
 (TODO-REVIEW in app.js); feature freeze ~23:00 Sat.
 ```

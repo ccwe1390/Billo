@@ -78,3 +78,16 @@
   Apache (the first entry's "Next.js" is superseded); instance principals
   for Generative AI and Language are verified live (decisions.md 14:50). The
   "To verify" entry on Always Free is moot: E5.Flex is a paid shape.
+- 2026-10-17 16:58 CDT - Redeployed from c4a28f0 (audit fixes) with the
+  git-archive command; Evan allowed SSH. VM venv versions read first and
+  equal requirements.txt pins: fastapi 0.143.3, starlette 1.8.0, pydantic
+  2.14.1, uvicorn 0.54.0, python-multipart 0.0.32, oci 2.188.0, Python
+  3.12.15. Apache conf: ProxyPreserveHost On, ProxyPass / to 127.0.0.1:8000,
+  LimitRequestBody 10485760 (mod_proxy adds X-Forwarded-For by default).
+  Live checks: app.js equals git archive HEAD; nosniff / no-referrer /
+  SAMEORIGIN headers; /openapi.json 404; text sent as image/png -> 415;
+  journey bill-02-blur3 -> extract 3.5 s (date of service null, amount
+  $1,858.50 correct) -> free_care 115% -> es explanation and es packet pass
+  the number check, 10.7 s total; es not-eligible explanation passes; hi
+  packet passes (translator command_a) in 15.7 s. journalctl: no warnings.
+  Rollback target: 116d631.

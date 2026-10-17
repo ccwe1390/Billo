@@ -15,11 +15,18 @@ flags; the person decides what to do.
   go unchallenged when the patient cannot tell they are errors.
 - **Users:** limited-English and low-income patients, plus the family member
   (often a grown child) who reads the bill for them.
-- **What it does (committed scope):** reads a bill + EOB (photo or file),
-  explains each line in plain words in the user's language, flags likely
-  errors (duplicates, bill-vs-EOB mismatches) with deterministic rules, and
-  drafts an appeal or itemized-bill request letter in English for the user to
-  review and send themselves.
+- **What it does (committed scope), two steps:**
+  1. Summary bill in (photo or file) -> explain what it can in the user's
+     language -> draft a letter asking the hospital for the itemized bill.
+     The tool cannot produce an itemized bill; only the hospital can.
+  2. Itemized bill + EOB in -> explain each line, flag likely errors
+     (duplicates, bill-vs-EOB mismatches) with deterministic rules -> draft an
+     appeal letter if needed.
+  Letters are in English. **The user sends them** (decided 2026-10-17): one
+  tap opens their own email app with the letter filled in, or downloads a
+  PDF to mail. The app never sends anything itself.
+- **Demo only:** a "send" button that delivers to a fake hospital inbox the
+  team controls, clearly labelled as a demo. Not a product feature.
 - **Add-on if time allows:** flag possible eligibility for a hospital's
   financial assistance (charity care) policy, modelled on one fictional
   hospital's policy.
@@ -40,7 +47,7 @@ flags; the person decides what to do.
 ## Current state - Planned, not built: mission set, no code
 
 **Last updated: 2026-10-17** - this file is the only live snapshot; history
-lives in the record (Phase 0, Appendices A-C).
+lives in the record (Phase 0, Appendices A-D).
 
 > **2026-10-17 - Mission and scope set (record Appendix B).** Bill Decoder is
 > the one module. No code, no PRD yet. Repo: private
@@ -52,7 +59,7 @@ lives in the record (Phase 0, Appendices A-C).
 |---|---|---|
 | Track | **Known**: Track 2, Health Access, Equity & Experience | Evan, chat 2026-10-17 |
 | Event name | **Known**: TNHacks26 (the local folder is still named TNHacks27) | Evan, chat 2026-10-17 |
-| Module, users, metric, languages | **Decided** (see Goal) | record Appendices A-B |
+| Module, users, metric, languages, flow | **Decided** (see Goal) | record Appendices A, B, D |
 | Event dates / submission deadline | **MISSING** | - |
 | Event rules, judging rubric, submission format | **MISSING** (only the track text exists) | - |
 | Team roster and roles | **MISSING** | - |

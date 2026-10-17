@@ -37,6 +37,7 @@ the dated entry, not the digest.
 - [A - Planning grill - Bill Decoder chosen, OCI mandatory, languages, credits](#appendix-a---planning-grill---bill-decoder-chosen-oci-mandatory-languages-credits-2026-10-17-1030-1055-cdt) (10-17)
 - [B - Mission statement and intent set; HANDOFF rewritten](#appendix-b---mission-statement-and-intent-set-handoff-rewritten-2026-10-17-1056-cdt) (10-17)
 - [C - Correction - event name is TNHacks26](#appendix-c---correction---event-name-is-tnhacks26-2026-10-17-1057-cdt) (10-17)
+- [D - Two-step flow (request itemized bill first); user sends letters, demo-only send](#appendix-d---two-step-flow-request-itemized-bill-first-user-sends-letters-demo-only-send-2026-10-17-1105-cdt) (10-17)
 
 ---
 
@@ -146,3 +147,28 @@ and the auto-memory file now say TNHacks26.
 `TNHacks27`, and so is the Claude memory directory keyed to it. Renaming the
 folder changes the session's working path and that memory path, so it was not
 done mid-session.
+
+# Appendix D - Two-step flow (request itemized bill first); user sends letters, demo-only send (2026-10-17, ~11:05 CDT)
+**WHAT:** Evan asked about a feature that "gives you an itemized bill and
+allows you to send it to the hospital." Scope was updated in `HANDOFF.md`
+(Goal, "What it does") and `decisions.md`.
+
+**Logical flaw flagged, then resolved:** the tool cannot produce an itemized
+bill, because only the hospital holds the line-level charges. It can request
+one. That splits the product into two steps:
+(1) summary bill -> explanation + itemized-bill request letter;
+(2) itemized bill + EOB -> line-by-line error flags + appeal letter.
+Claude's view is that the duplicate-charge errors the tool hunts for mostly
+show up only on itemized bills. That is inferred and unverified; check it on
+a sample bill.
+
+**Sending, three options weighed:** A) the user sends the letter (mailto
+pre-fill or PDF); B) the app sends it by email through OCI; C) a demo-only
+send to a fake hospital inbox the team controls. Evan picked A+C, matching
+Claude's recommendation. B was rejected: it would route patient names and
+account numbers through our servers (breaking "nothing stored after a
+session"), and Claude knows of no public directory of hospital billing
+contacts.
+
+**HONEST OPEN ITEM (not fixed):** the demo inbox for C (address, OCI service
+or not) is undesigned. That belongs in the PRD.

@@ -29,3 +29,12 @@ Standing decisions (what is decided NOW). History lives in the record.
   = dollars flagged on the same set; no real-world savings claim.
   (5) financial-assistance check = add-on if time allows. (6) product name =
   placeholder. Mission text lives in HANDOFF.md Goal.
+- 2026-10-17 - Two-step flow and sending (Evan picked A+C): step 1 = summary
+  bill -> explanation + itemized-bill request letter; step 2 = itemized bill +
+  EOB -> line-by-line error flags + appeal letter. The tool never creates an
+  itemized bill (only the hospital can). The USER sends letters (mailto
+  pre-fill or PDF); the app sends nothing in the product. The demo may "send"
+  to a team-controlled fake hospital inbox, labelled as demo. Rejected: app
+  sends by email via OCI (would route patient details through our servers,
+  breaking "nothing stored"; no public hospital billing-contact directory
+  known). Decided by: Evan, chat 2026-10-17.

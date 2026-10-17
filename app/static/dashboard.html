@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BillScan - demo dashboard</title>
+<link rel="stylesheet" href="vendor/webawesome/styles/themes/default.css">
+<link rel="stylesheet" href="vendor/webawesome/styles/native.css">
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  .overdue { font-weight: 700; }
+</style>
+</head>
+<body>
+<header>
+  <h1>BillScan demo dashboard</h1>
+</header>
+<main>
+  <p class="notice">Demo dashboard - synthetic data only. Counts since the last server restart; any count under 10 is shown as &lt;10. No personal data is kept.</p>
+  <p><button type="button" id="refresh" class="primary">Refresh</button></p>
+  <p id="since" class="muted"></p>
+  <section id="counts"></section>
+  <section id="languages"></section>
+  <section id="rules"></section>
+</main>
+<script src="dashboard.js"></script>
+</body>
+</html>

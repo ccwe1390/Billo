@@ -1,10 +1,9 @@
-"use client"
-
 import * as React from "react"
 import { cn } from "cn"
 import { Checkbox as CheckboxPrimitive } from "radix-ui"
-import { CheckIcon } from "lucide-react"
 
+// Restyled for Bill to Help: 24px box with a 2px border, solid fill when checked, and a drawn tick (CSS, no icon
+// library), so the checked state is a shape change and not colour alone (team UI rule 10).
 function Checkbox({
   className,
   ...props
@@ -13,17 +12,13 @@ function Checkbox({
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "peer relative flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input transition-colors outline-none group-has-disabled/field:opacity-50 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-input after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground group-has-[:focus-visible]/field-label:data-checked:border-primary dark:data-checked:bg-primary",
+        "relative grid size-6 shrink-0 place-items-center rounded-md border-2 border-input bg-transparent outline-none transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:border-border data-[state=checked]:border-success data-[state=checked]:bg-success",
         className
       )}
       {...props}
     >
-      <CheckboxPrimitive.Indicator
-        data-slot="checkbox-indicator"
-        className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
-      >
-        <CheckIcon
-        />
+      <CheckboxPrimitive.Indicator data-slot="checkbox-indicator" className="block">
+        <span aria-hidden className="mb-0.5 block h-3 w-1.5 rotate-45 border-e-[3px] border-b-[3px] border-success-foreground" />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

@@ -25,8 +25,12 @@ helping a parent. **The AI reads and phrases; a rules engine decides; the family
   (vite.config.ts + `paths` in both tsconfigs, no `baseUrl`); shadcn init (style `radix-nova`, neutral, lucide,
   `rtl: true`, Geist font); components button, card, badge, tabs, select, input, label, checkbox, alert.
   `src/lib/utils.ts` re-exports `cn` from the `cn` package (shadcn's own replacement for clsx + tailwind-merge).
-- To do: dev proxy to :8000 for /extract /evaluate /explain /packet; shadcn RTL direction provider
-  (https://ui.shadcn.com/docs/rtl/vite) so Radix Select/Tabs behave in Arabic; accent color (teal or blue).
+- Done (2026-10-17): all five screens ported from `app/static/app.js` (src/screens/*), Vite dev proxy to :8000,
+  Radix `Direction.Provider`, teal theme (contrast notes in src/index.css), Atkinson Hyperlegible + IBM Plex
+  Arabic/Devanagari bundled from npm, 48px buttons. UI strings: `src/i18n/strings.ts` is GENERATED from the `T`
+  table in `app/static/app.js`; edit there, then regenerate, so both UIs stay identical.
+- Run: backend `$env:FAKE_OCI = "1"; py -m uvicorn app.main:app --port 8000` (repo root), then `npm run dev` here.
+- Not done: serving `dist/` from FastAPI on the VM (team decision: React vs Paper Trail); browser check in ar/zh.
 - Oxlint `only-export-components` warnings in `src/components/ui/*` are expected (generated files); leave them.
 - Windows + PowerShell. Run npm commands from inside `frontend/`.
 
@@ -66,9 +70,17 @@ Rules for all shapes: money is integer cents (never floats); dates `YYYY-MM-DD`;
 - UI strings live in `../app/static/app.js` (`T`); non-English ones are drafts for a human reviewer.
 
 ## UI look
-Mobile-first (the family member photographs the bill on a phone). Calm, trustworthy: one accent color (teal or
-blue), generous whitespace, shadcn components, lucide-react icons. Loading states that name the step
-("Reading the bill...").
+Mobile-first (the family member photographs the bill on a phone). **Dark theme, high contrast** (ratios in
+`src/index.css`), one teal accent, Atkinson Hyperlegible. Loading states that name the step ("Reading the bill...").
+An Uber-style black-and-white restyle was tried and rejected by Dipayan (2026-10-17); don't propose it again.
+Spacing system is written at the top of `src/components/app-shell.tsx`; state is shown by solid surfaces + words.
+
+**Banned (Dipayan, 2026-10-17):** purple-to-blue gradients; gradient hero text; emojis in headings; Inter
+everywhere; coloured-border cards; glassmorphism; low-contrast dark mode; 3 icon boxes in a row; badge above the
+headline; lucide icons everywhere (only the loading spinner remains); untouched shadcn UI (button, input, checkbox
+are restyled); fade-in on scroll; cursor-following beam; buttons that fade on hover (use a solid colour change);
+inconsistent spacing; em dashes; generic buzzword copy; serif italic accents; Space Grotesk + Instrument Serif;
+grain over a gradient.
 
 ## Hard rules
 - Never a promise: it is an *estimate*; "the hospital makes the final decision". Never the word "saved" for money.

@@ -57,6 +57,9 @@ snapshot; history lives in the record (Phase 0, Appendices A-V).
 - `docs/Project Record - Full Chronological History.md` - append-only record;
   append with `node C:\Users\daruw\.claude\skills\project-memory\append-record-entry.js`.
 - `docs/research/2026-10-17_bill-decoder-crowding.md` - competitor research.
+- `docs/2026-10-17_pre-mortem.md` - 18 risks; 5 launch-blocking before the
+  Sat 23:00 freeze (submission rules, validation, phone test, placeholder
+  card, redesign safety).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 

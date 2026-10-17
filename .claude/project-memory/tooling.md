@@ -1,1 +1,1 @@
-STATUS: empty (2026-10-17) - no code or design exists yet; the problem is not chosen.
+STATUS: pointer (2026-10-17 16:50 CDT) - No build step, no linter installed. Record entries only via append-record-entry.js. Deploy: operations.md (git archive HEAD app + ssh).

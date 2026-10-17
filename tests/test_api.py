@@ -7,6 +7,8 @@ import io
 import os
 import re
 import sys
+import time
+from types import SimpleNamespace
 
 os.environ["FAKE_OCI"] = "1"
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,8 +16,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from fastapi import HTTPException  # noqa: E402
 from pydantic import ValidationError  # noqa: E402
 from starlette.datastructures import Headers, UploadFile  # noqa: E402
+from starlette.requests import Request  # noqa: E402
 
 from app import main, numlock, oci_client  # noqa: E402
+
+
+PNG_SIG = b"\x89PNG\r\n\x1a\n"
+JPEG_SIG = b"\xff\xd8\xff"
 
 
 def upload(data, mime):
@@ -45,7 +52,7 @@ def answers(**over):
 
 
 # ---- /extract (FAKE_OCI): fields normalized, none confirmed
-bill = asyncio.run(main.extract(upload(b"\x89PNG fake", "image/png")))
+bill = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png")))
 F = bill["fields"]
 assert F["statement_date"]["value"] == "2026-10-01"
 assert F["amount_due_cents"]["value"] == 481240 and isinstance(F["amount_due_cents"]["value"], int)
@@ -117,7 +124,7 @@ oci_client.phrase = real_phrase
 
 # ---- /packet: json shape, html page
 pk = main.packet(body, format="json")
-assert pk["translation_check"] == {"numbers_match": True, "fallback_used": False, "back_checked": True}
+assert pk["translation_check"] == {"numbers_match": True, "fallback_used": False, "translator": "oci_language"}
 assert [c["id"] for c in pk["checklist"]] == ["proof_income", "bill_copy"]      # files_tax_return false
 assert pk["cover_letter_en"] and pk["cover_letter_translated"].startswith("[AR draft]")
 assert pk["send_to"]["email"] == res["contacts"]["email"] and pk["send_to"]["phone"] == res["contacts"]["phone"]
@@ -157,7 +164,7 @@ for code in ("zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"):
     ex2 = main.explain(main.ResultIn(bill=B, answers=a2, result=r2))
     assert ex2["ai_written"] is True and ex2["numbers_match"] and not ex2["fallback_used"], code
     pk2 = main.packet(main.ResultIn(bill=B, answers=a2, result=r2), format="json")
-    assert pk2["translation_check"]["back_checked"] is (code != "hi"), code
+    assert pk2["translation_check"]["translator"] == ("command_a" if code == "hi" else "oci_language"), code
     assert pk2["translation_check"]["numbers_match"] and not pk2["translation_check"]["fallback_used"], code
     assert pk2["cover_letter_translated"].startswith("[%s draft]" % code.upper()), code
 assert pk2["cover_letter_translated"].startswith("[HI draft]")
@@ -242,6 +249,235 @@ assert "Content pending" not in js and "TODO-CONTENT" not in js
 
 # replaceChildren() prints a null argument as "null": only fill() may call it
 assert js.count(".replaceChildren(") == 1 and "function fill(" in js
+
+# ---- B1: the model call runs off the event loop (a 0.3 s call must not stall other requests)
+real_extract = oci_client.extract_bill
+fake_raw = real_extract(b"", "image/png")
+
+
+def slow_extract(data, mime):
+    time.sleep(0.3)
+    return fake_raw
+
+
+async def ticker():
+    t0 = time.perf_counter()
+    await asyncio.sleep(0.01)
+    return time.perf_counter() - t0
+
+
+async def concurrent_extracts():
+    return await asyncio.gather(main.extract(upload(PNG_SIG + b"1", "image/png")),
+                                main.extract(upload(PNG_SIG + b"2", "image/png")), ticker())
+
+
+oci_client.extract_bill = slow_extract
+try:
+    t0 = time.perf_counter()
+    _a, _b, ticked = asyncio.run(concurrent_extracts())
+    whole = time.perf_counter() - t0
+finally:
+    oci_client.extract_bill = real_extract
+assert ticked < 0.2 and whole < 0.55, (ticked, whole)
+
+# ---- B2: a not-eligible household still passes the lock in another language (locked numbers are allowed, not required)
+poor_rich = answers(language="es", annual_income_cents=20000000)
+res_rich = main.evaluate(main.EvaluateIn(bill=B, answers=poor_rich))
+assert res_rich["tier"]["id"] == "not_eligible"
+ex_rich = main.explain(main.ResultIn(bill=B, answers=poor_rich))
+assert ex_rich["numbers_match"] is True and ex_rich["fallback_used"] is False and ex_rich["ai_written"] is True, ex_rich
+
+# ---- B3: Hindi goes through number/name placeholders; a dropped placeholder fails closed
+HOSP = "X (SYNTHETIC)"
+SRC = "To X (SYNTHETIC): $4,812.40 on 2026-10-01"
+real_fake_fn, real_env, real_chat = oci_client.is_fake, oci_client._env, oci_client._chat
+
+
+def prompt_text(parts):
+    return parts[0].text.split("Text:\n", 1)[1]
+
+
+try:
+    oci_client.is_fake = lambda: False
+    oci_client._env = lambda name: "x"
+    oci_client._chat = lambda model_id, parts, json_mode, max_tokens=600: prompt_text(parts)
+    assert oci_client.translate_genai_many([SRC], "hi", keep=[HOSP]) == [SRC]
+    lit = "Account number: {1}. Due $4,812.40 to X (SYNTHETIC)"
+    assert oci_client.translate_genai_many([lit], "hi", keep=[HOSP]) == [lit]       # literal {1} stays literal
+    assert main.build_packet(B, answers(language="hi"), res)["translation_check"]["fallback_used"] is False
+    oci_client._chat = lambda model_id, parts, json_mode, max_tokens=600: prompt_text(parts).replace("{0}", "")
+    assert HOSP not in oci_client.translate_genai_many([SRC], "hi", keep=[HOSP])[0]
+    dropped = main.build_packet(B, answers(language="hi"), res)
+    assert dropped["translation_check"] == {"numbers_match": False, "fallback_used": True}
+    assert dropped["cover_letter_translated"] == ""
+finally:
+    oci_client.is_fake, oci_client._env, oci_client._chat = real_fake_fn, real_env, real_chat
+
+# ---- B4: a cut-off model reply is an error, not a short text
+real_env, real_client = oci_client._env, oci_client._genai_client
+
+
+def chat_reply(finish):
+    reply = SimpleNamespace(data=SimpleNamespace(chat_response=SimpleNamespace(
+        finish_reason=finish, message=SimpleNamespace(content=[SimpleNamespace(text="cut")]))))
+    return SimpleNamespace(chat=lambda detail: reply)
+
+
+try:
+    oci_client._env = lambda name: "x"
+    oci_client._genai_client = lambda: chat_reply("MAX_TOKENS")
+    try:
+        oci_client._chat("m", [], False)
+        raise AssertionError("MAX_TOKENS accepted")
+    except RuntimeError:
+        pass
+    oci_client._genai_client = lambda: chat_reply("COMPLETE")
+    assert oci_client._chat("m", [], False) == "cut"
+finally:
+    oci_client._env, oci_client._genai_client = real_env, real_client
+
+# ---- B5: a bill from another hospital is flagged on the packet page
+van = main.BillIn(**bill)
+van.fields["hospital_name"].value = "Vanderbilt University Medical Center"
+res_van = main.evaluate(main.EvaluateIn(bill=van, answers=answers()))
+assert res_van["hospital_matches_policy"] is False and res["hospital_matches_policy"] is True
+van_html = main.packet(main.ResultIn(bill=van, answers=answers())).body.decode("utf-8")
+assert "names a different hospital" in van_html and "Cumberland General Hospital (SYNTHETIC) policy" in van_html
+assert "names a different hospital" not in main.packet(body).body.decode("utf-8")
+
+# ---- B6: an upload under the cap stays in memory (Starlette's own parser, ~3 MB body)
+boundary = "bth-test-boundary"
+payload = PNG_SIG + b"a" * (3 * 1024 * 1024)
+mp_body = (("--%s\r\nContent-Disposition: form-data; name=\"file\"; filename=\"bill.png\"\r\n"
+            "Content-Type: image/png\r\n\r\n" % boundary).encode() + payload
+           + ("\r\n--%s--\r\n" % boundary).encode())
+
+
+async def parse_upload():
+    sent = []
+
+    async def receive():
+        if sent:
+            return {"type": "http.disconnect"}
+        sent.append(1)
+        return {"type": "http.request", "body": mp_body, "more_body": False}
+    scope = {"type": "http", "method": "POST", "path": "/extract", "query_string": b"", "headers": [
+        (b"content-type", ("multipart/form-data; boundary=%s" % boundary).encode()),
+        (b"content-length", str(len(mp_body)).encode())]}
+    form = await Request(scope, receive).form()
+    try:
+        up = form["file"]
+        assert len(await up.read()) == len(payload)
+        return up.file._rolled
+    finally:
+        await form.close()
+
+
+assert asyncio.run(parse_upload()) is False
+saved_spool = main.MultiPartParser.spool_max_size
+main.MultiPartParser.spool_max_size = 1024 * 1024
+try:
+    assert asyncio.run(parse_upload()) is True      # the check can fail: Starlette's default would spool to disk
+finally:
+    main.MultiPartParser.spool_max_size = saved_spool
+
+# ---- B7: input limits
+main.FieldIn(value="a" * 200)
+try:
+    main.FieldIn(value="a" * 201)
+    raise AssertionError("201-char value accepted")
+except ValidationError:
+    pass
+try:
+    main.BillIn(fields={"nickname": {"value": "x"}})
+    raise AssertionError("unknown bill field accepted")
+except ValidationError:
+    pass
+main.AnswersIn(contract_version=1, language="en", for_whom="self", household_size=1,
+               annual_income_cents=10**12, files_tax_return=False)
+for bad in ({"annual_income_cents": 10**12 + 1}, {"contract_version": 2}):
+    kw = dict(contract_version=1, language="en", for_whom="self", household_size=1,
+              annual_income_cents=0, files_tax_return=False)
+    kw.update(bad)
+    try:
+        main.AnswersIn(**kw)
+        raise AssertionError("accepted %r" % bad)
+    except ValidationError:
+        pass
+try:
+    main.BillIn(contract_version=2, fields={})
+    raise AssertionError("bill contract_version 2 accepted")
+except ValidationError:
+    pass
+
+main._hits.clear()
+try:
+    def req(host, xff=None):
+        return SimpleNamespace(headers={"x-forwarded-for": xff} if xff else {}, client=SimpleNamespace(host=host))
+    for _ in range(40):
+        main._rate_limit(req("9.9.9.9"))
+    try:
+        main._rate_limit(req("9.9.9.9"))
+        raise AssertionError("41st request allowed")
+    except HTTPException as e:
+        assert e.status_code == 429
+    main._rate_limit(req("8.8.8.8"))
+    for _ in range(40):
+        main._rate_limit(req("9.9.9.9", "1.1.1.1, 2.2.2.2"))     # counts as 2.2.2.2, not the client or 1.1.1.1
+    expect_http(429, main._rate_limit, req("2.2.2.2"))
+    main._rate_limit(req("1.1.1.1"))
+finally:
+    main._hits.clear()
+paid = {r.path for r in main.app.routes if getattr(r, "dependant", None) and r.dependant.dependencies}
+assert paid == {"/extract", "/explain", "/packet"}, paid
+
+# ---- B8: amount parsing is strict
+for raw_amount, want in (("4,812.40", 481240), ("4812.40", 481240), (4812.4, 481240), ("$4,812.40", 481240),
+                         ("4812,40", None), ("4.812,40", None), ("1.234", None), (True, None)):
+    assert main._norm_cents(raw_amount) == want, (raw_amount, main._norm_cents(raw_amount))
+t0 = time.perf_counter()
+assert main._norm_cents("1e999999") is None and main._norm_cents("1E+400000") is None
+assert time.perf_counter() - t0 < 0.5
+
+# ---- B12: placeholders for names, numbers and literal {n} come from one pass and round-trip
+lit_text = "Account number: {1}. Due $4,812.40 to X (SYNTHETIC)"
+for keep_names in (["X (SYNTHETIC)"], []):
+    masked_lit, lit_nums = oci_client.protect_numbers(lit_text, keep_names)
+    assert "4,812.40" not in masked_lit, masked_lit
+    assert oci_client.restore_numbers(masked_lit, lit_nums) == lit_text, (masked_lit, lit_nums)
+
+# ---- B13: no OpenAPI schema; security headers on every response
+assert main.app.openapi_url is None
+
+
+async def echo_next(request):
+    return SimpleNamespace(headers={})
+
+
+hdrs = asyncio.run(main.security_headers(None, echo_next)).headers
+assert hdrs == {"X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer",
+                "X-Frame-Options": "SAMEORIGIN"}, hdrs
+
+# ---- B14: "1 person", not "1 people"
+one = answers(language="en", household_size=1)
+res_one = main.evaluate(main.EvaluateIn(bill=B, answers=one))
+facts_one = main._facts_en(B, one, res_one)
+assert "1 person" in facts_one and "1 people" not in facts_one, facts_one
+assert "1 person" in main._letter_en(B, one, res_one) and "1 people" not in main._letter_en(B, one, res_one)
+assert "4 people" in main._facts_en(B, answers(), res) and "4 people" in main._letter_en(B, answers(), res)
+
+# ---- B15: the file must really be a PNG or JPEG, and the size cap holds
+expect_http(415, lambda: asyncio.run(main.extract(upload(b"this is text, not a picture", "image/png"))))
+expect_http(415, lambda: asyncio.run(main.extract(upload(PNG_SIG + b"x", "image/jpeg"))))
+assert asyncio.run(main.extract(upload(JPEG_SIG + b"fake", "image/jpeg")))["fields"]["hospital_name"]["value"]
+expect_http(413, lambda: asyncio.run(main.extract(
+    upload(PNG_SIG + b"a" * (main.MAX_IMAGE_BYTES + 1 - len(PNG_SIG)), "image/png"))))
+
+# ---- B17: the engine and the app format money the same way
+from app import engine  # noqa: E402
+assert engine._fmt_dollars(3800050) == main._dollars(3800050) == "38,000.50"
+assert engine._fmt_dollars(3800000) == main._dollars(3800000) == "38,000"
+assert engine._fmt_amount_due(481240) == main._amount_due(481240) == "4,812.40"
 
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)

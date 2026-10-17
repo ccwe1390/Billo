@@ -1,1 +1,1 @@
-STATUS: empty (2026-10-17) - no code or design exists yet; the problem is not chosen.
+STATUS: pointer (2026-10-17 16:50 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 11 languages. Not built: PRD F9 Home/Dad's bills, reminders, QR entry, partner dashboard.

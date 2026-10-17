@@ -48,3 +48,9 @@ never values.
   2 OCPU / 12 GB (Always Free, Arm); fallback E5.Flex 1/4 if capacity fails.
   Databases: "MySQL HeatWave" only (the form has no "none"; Autonomous is
   paid). HeatWave "use credits for a more powerful DBSystem" left OFF.
+- 2026-10-17 16:50 CDT - Current state (the lines above are the morning's
+  candidates): live and used = one Compute VM (VM.Standard.E5.Flex, paid),
+  OCI Generative AI (cohere.command-a-vision reads the bill,
+  cohere.command-a-03-2025 phrases and writes Hindi), OCI Language
+  (translates). NOT used: Document Understanding, any database. The kit's
+  MySQL DB system and HeatWave cluster were deleted 15:58-16:01 (record X).

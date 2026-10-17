@@ -23,6 +23,9 @@ dev = "४,८१२.४०"  # 4,812.40
 assert numlock.extract_numbers(dev) == ["4,812.40"]
 assert numlock.check(dev, ["4,812.40"])[0]
 
+# fullwidth digits normalize to ASCII
+assert numlock.extract_numbers("１１５") == ["115"]
+
 # check: all match
 ok, missing, unexpected = numlock.check("Your income is 115% of the limit; 4 people; $38,000.", ["115", "4", "38,000"])
 assert ok and missing == [] and unexpected == []
@@ -47,5 +50,13 @@ assert not ok and missing == ["4"] and unexpected == []
 # check: no numbers at all is ok only if nothing is locked
 assert numlock.check("hello", [])[0]
 assert not numlock.check("hello", ["1"])[0]
+
+# check: a number only in `allowed` may appear (not unexpected) and is not required (not missing)
+ok, missing, unexpected = numlock.check("115 and 240", ["115"], allowed=["240", "100"])
+assert ok and missing == [] and unexpected == []
+ok, missing, unexpected = numlock.check("115", ["115"], allowed=["240"])
+assert ok and missing == [] and unexpected == []
+ok, missing, unexpected = numlock.check("115 and 99", ["115"], allowed=["240"])
+assert not ok and unexpected == ["99"]
 
 print("ALL PASS")

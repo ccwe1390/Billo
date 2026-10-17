@@ -216,14 +216,14 @@ next. **Commits: only when Evan asks; never push without his instruction**
 (per-task commits not yet authorized).
 **Gotchas that will bite you:**
 - Synthea procedure codes are SNOMED-CT, not CPT/HCPCS - bills need our map.
-- ~~Java is not installed on Evan's machine (checked 2026-10-17).~~ (struck 2026-10-17: Temurin 17 installed portably at `C:Usersdaruw	oolsjdk-17.0.20.1+1`, not on PATH)
+- ~~Java is not installed on Evan's machine (checked 2026-10-17).~~ (struck 2026-10-17: Temurin 17 installed portably at `C:\Users\daruw\toolsjdk-17.0.20.1+1`, not on PATH)
 - Synthea MUST run with `--generate.thread_pool_size=1`, or the same seed gives different files (data.md).
 - Synthea output has no contractual adjustments; error type 3 needs adjustments we generate in M1.3 (design open).
 - OCI Language has no Hindi, Tagalog, or Haitian Creole.
 - Document Understanding table extraction may be English-only (docs
   disagree) - fine for US bills, verify in M0.3.
 - Every paid OCI call counts against $500; cache responses.
-- Event dates and deadline are unknown - do not invent a schedule.
+- ~~Event dates and deadline are unknown - do not invent a schedule.~~ (struck (2026-10-17 16:55 CDT, audit record Z/AA): dates are known, see F6)
 - OCI starter kit (github.com/ScottStroz/oci-hackathon-starterkit, read 2026-10-17): home region MUST be US Midwest (Chicago) and is permanent; the kit's VM has Node 16, too old for Next.js (needs Node >= 20.9) - install a current Node LTS in M6.1; its default shape E5.Flex is paid; Free Trial Generative AI model is cohere.command-a-03-2025 (no Grok). See services.md.
 
 ---
@@ -263,7 +263,7 @@ Nothing a user enters is stored. The family submits; the hospital decides.
 ### F1. Product (the one journey that must work live, in under 90 seconds)
 
 Five screens:
-1. **Start:** pick a language (Arabic / Spanish / English) and "This bill is
+1. **Start:** pick a language (~~Arabic / Spanish / English~~ 11 languages; tier 1 en/es/ar/zh-CN/zh-TW translated interface, (2026-10-17 16:55 CDT, audit record Z/AA)) and "This bill is
    for: me / a family member". Show "Nothing you enter is saved. Demo uses
    synthetic bills only."
 2. **Bill:** upload or photograph the bill. Extracted fields appear beside
@@ -275,7 +275,7 @@ Five screens:
 4. **Result** in the chosen language, with an English toggle: percent of the
    2026 poverty guideline, the policy tier with its citation (source, page,
    effective date), the deadline, three lines on what the bill is, and a
-   Tennessee uninsured-protections card. Income over the policy's limits
+   ~~Tennessee uninsured-protections card~~ (hidden in 145c8af: no sourced text). Income over the policy's limits
    gives an honest "not eligible under this policy" plus the payment-plan
    contact.
 5. **Packet:** pre-filled application fields, the policy's document
@@ -295,13 +295,17 @@ Five screens:
   A** (phrasing), in US Midwest (Chicago). Listed on-demand in Chicago per
   Oracle's models-by-region page (via search). Free-trial availability is
   UNTESTED; confirm exact model IDs in the console.
-- OCI Language: translates the cover letter, and back-translates generated
-  Arabic/Spanish to check numbers.
+- OCI Language: translates the cover letter~~, and back-translates generated
+  Arabic/Spanish to check numbers~~. (Struck (2026-10-17 16:55 CDT, audit record Z/AA): no back-translation was
+  built - cut-order item 4. The check is {n} placeholders for numbers and the
+  hospital name, then the number lock.)
 - Number lock: every number, date, and dollar amount in generated text must
   match the engine's output; any mismatch falls back to a fixed template.
-- MySQL HeatWave (from the kit): policy registry (hospital, rule, value,
+- ~~MySQL HeatWave (from the kit): policy registry (hospital, rule, value,
   source, page, effective date, verifier). No patient data. Cut to a JSON
-  file if time runs short.
+  file if time runs short.~~ (Struck (2026-10-17 16:55 CDT, audit record Z/AA): built as a JSON file,
+  app/data/policy_cumberland_synthetic.json, with no verifier field; the kit's
+  MySQL/HeatWave was never used and was deleted 16:01, record X.)
 
 ### F3. Data
 - VUMC financial assistance policy, Appendix B, plain-language summary, and
@@ -312,24 +316,26 @@ Five screens:
   per extra person. Checked via search summaries (ASPE); re-read the source
   before it goes on a slide.
 - 10 synthetic bills (SYNTHETIC watermark, fake names and accounts, no
-  logos) and a 20-household answer key, both hand-computed.
+  logos) and a 20-household answer key, both hand-computed. (Status (2026-10-17 16:55 CDT, audit record Z/AA):
+  2 bills exist, bill-01 and bill-02 with 4 blur levels; no 20-household key -
+  tests/test_engine.py has boundary cases instead.)
 
 ### F4. Acceptance criteria (the done-checks)
-- [ ] On 10 synthetic bills, the 4 key fields (hospital, statement date,
+- [ ] (NOT MET: 2 bills, n=1 runs) On 10 synthetic bills, the 4 key fields (hospital, statement date,
       amount due, account number) are read correctly - report the real
       count.
-- [ ] No field is used until the user confirms it; edits override the
+- [x] (met: engine refuses unconfirmed fields, test_api) No field is used until the user confirms it; edits override the
       model.
-- [ ] Tier results match the hand-computed key on 20 test households.
-- [ ] Every rule on screen shows its source document, page, and effective
+- [ ] (NOT MET: no 20-household key; boundary tests only) Tier results match the hand-computed key on 20 test households.
+- [x] (met: engine citations + footnotes, record W) Every rule on screen shows its source document, page, and effective
       date.
-- [ ] Arabic renders right to left; every number and date in the
+- [x] (met: RTL browser check record W; number lock on every translation) Arabic renders right to left; every number and date in the
       Arabic/Spanish text matches the English exactly.
-- [ ] Over-limit income gives an honest "not eligible under this policy"
+- [x] (met in English; in other languages only after audit fix #2, record AA) Over-limit income gives an honest "not eligible under this policy"
       with the payment-plan contact.
-- [ ] No screen asks for immigration status, SSN, or ID; no user data is
+- [x] (met: extra="forbid"; uploads kept in memory since audit fix #7, record AA) No screen asks for immigration status, SSN, or ID; no user data is
       written anywhere.
-- [ ] The full journey runs in under 90 seconds on the deployed OCI
+- [x] (met: 11.7 s live at 16:08, n=1) The full journey runs in under 90 seconds on the deployed OCI
       address.
 
 **Cut order if short:**
@@ -434,16 +440,22 @@ rejected. F6 is unchanged.
   said.
 
 **New features, gated:**
-- Home "Dad's bills": a page built from engine output over 5 seeded
+- (NOT BUILT as of (2026-10-17 16:55 CDT, audit record Z/AA)) Home "Dad's bills": a page built from engine output over 5 seeded
   SYNTHETIC bills. Opt-in save uses the browser's own storage (the server
   stays stateless; no `saved_bills` table, no login). Start only after the
   5 PM gate passes.
-- Reminders: preview only (computed dates: deadline, day 30 follow-up).
+- (NOT BUILT) Reminders: preview only (computed dates: deadline, day 30 follow-up).
 - Partner dashboard: a labeled mockup on slide 7. Not built (it would need
   server-side event writes).
-- QR entry: a link with `?hospital=cumberland_synthetic`, printed on the
+- (NOT BUILT: no QR on either synthetic bill, no `?hospital=` handling) QR entry: a link with `?hospital=cumberland_synthetic`, printed on the
   synthetic bill once the VM's public address exists.
 
 **Unchanged and now also in scope from rev 2:** validation tasks 1-3, the
 interview script, the pitch, the slide outline, and judge answers, with the
 wording fixes above. Emails to VUMC and Dollar For stay Evan's to send.
+
+**F9 addendum (2026-10-17 16:55 CDT, audit record Z/AA).** Wording fix 1 above is struck: ~~"If the family
+chooses to save, bills stay on their own phone."~~ There is no save feature,
+so that sentence would claim an unbuilt feature. Keep "Nothing is stored on
+our server" until a save exists. Line-by-line pitch, demo and judge-answer
+corrections: docs/2026-10-17_pitch-corrections.md (draft for Evan).

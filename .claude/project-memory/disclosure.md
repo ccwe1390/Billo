@@ -10,3 +10,8 @@ What may leave the project (demo, screenshots, submission page, public repo).
   "nothing is stored"), snapshot each published version with its date in
   `docs/design/`. Consent-capture evidence: N/A (no accounts, no consent flow
   planned).
+- 2026-10-17 16:50 CDT - Privacy notice snapshot (kept here, since
+  `docs/design/` does not exist): "Nothing you enter is saved. Demo uses
+  synthetic bills only." Live on the start screen since 14:42 CDT (first
+  deploy). Made true for photos over 1 MiB by the audit fix (uploads stay in
+  memory). Draft pitch fixes: docs/2026-10-17_pitch-corrections.md.

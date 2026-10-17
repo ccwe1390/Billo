@@ -1,1 +1,1 @@
-STATUS: empty (2026-10-17) - no code or design exists yet; the problem is not chosen.
+STATUS: pointer (2026-10-17 16:50 CDT) - Money = integer cents; dates YYYY-MM-DD; DOM only via el()/fill() in app.js; every new UI string has en/es/ar/zh-CN/zh-TW and a TODO-REVIEW marker; ui.md hard rules.

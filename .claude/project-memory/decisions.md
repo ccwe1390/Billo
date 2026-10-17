@@ -5,9 +5,9 @@ Standing decisions (what is decided NOW). History lives in the record.
 - 2026-10-17 - Track 2, "Health Access, Equity & Experience", is the chosen track.
   Reason: not given. Decided by: the team, as relayed by Evan in chat; team
   membership unknown.
-- 2026-10-17 - No problem, user group, or measurable outcome is chosen yet. This is
+- 2026-10-17 - [SUPERSEDED by the ~13:05 CDT pivot, record M] No problem, user group, or measurable outcome is chosen yet. This is
   the next decision (HANDOFF.md, Next actions).
-- 2026-10-17 - Build ONE module: the Bill Decoder (photo or file of a hospital
+- 2026-10-17 - [SUPERSEDED by the ~13:05 CDT pivot, record M] Build ONE module: the Bill Decoder (photo or file of a hospital
   bill + EOB -> line-by-line plain explanation, flagged likely errors, drafted
   appeal or itemized-bill request). Discharge Companion and Med nudges are
   dropped for this event. Reason: only module with exact ground truth (we write
@@ -19,7 +19,7 @@ Standing decisions (what is decided NOW). History lives in the record.
   question raised: Hindi is not top-ranked for LEP and is not in OCI Language's
   translation list (see languages.md). Ranks 7-10 not yet sourced.
   Decided by: Evan, chat 2026-10-17.
-- 2026-10-17 - Mission and scope set (Evan, answers to 6 questions):
+- 2026-10-17 - [PARTLY SUPERSEDED by the pivot, record M: the users and Hindi parts stand; the precision/recall metric and the Bill Decoder scope do not] Mission and scope set (Evan, answers to 6 questions):
   (1) mission is the internal north star first; pitch copy derived later.
   (2) users = limited-English/low-income patients AND the family member who
   reads the bill. (3) wave-1 languages = Spanish, Chinese, Arabic, Vietnamese;
@@ -29,7 +29,7 @@ Standing decisions (what is decided NOW). History lives in the record.
   = dollars flagged on the same set; no real-world savings claim.
   (5) financial-assistance check = add-on if time allows. (6) product name =
   placeholder. Mission text lives in HANDOFF.md Goal.
-- 2026-10-17 - Two-step flow and sending (Evan picked A+C): step 1 = summary
+- 2026-10-17 - [SUPERSEDED by the ~13:05 CDT pivot, record M] Two-step flow and sending (Evan picked A+C): step 1 = summary
   bill -> explanation + itemized-bill request letter; step 2 = itemized bill +
   EOB -> line-by-line error flags + appeal letter. The tool never creates an
   itemized bill (only the hospital can). The USER sends letters (mailto
@@ -46,20 +46,20 @@ Standing decisions (what is decided NOW). History lives in the record.
   in English, then OCI Language translates it, so the back-translation check
   uses the same service. Specific hosting service not chosen (PRD).
   Decided by: Evan, chat 2026-10-17.
-- 2026-10-17 - Stack: TypeScript everywhere - Next.js + the OCI TypeScript
+- 2026-10-17 - [SUPERSEDED by the ~13:00 CDT Python entry below] Stack: TypeScript everywhere - Next.js + the OCI TypeScript
   SDK (Evan picked B). Claude recommended A (Python FastAPI + plain HTML/JS),
   reasons: shortest readable rules engine and accuracy test, fewer moving
   parts, easier for Evan to explain every line. Dissent recorded per Evan's
   disagreement protocol; Evan's call stands. Consequence: hosting must run a
   Node server. Decided by: Evan, chat 2026-10-17.
-- 2026-10-17 - Hosting: one OCI Compute VM running the Next.js Node server
+- 2026-10-17 - [PARTLY SUPERSEDED: one OCI VM stands; it runs FastAPI/uvicorn behind Apache, not Next.js] Hosting: one OCI Compute VM running the Next.js Node server
   behind a reverse proxy (Evan picked A, matching Claude's recommendation).
   Reasons: possibly $0 under Always Free (unverified), keeps credits for AI
   calls; instance principals may let the VM call AI services with no API key
   on disk (unverified). Rejected: Container Instances (hourly credit burn),
   OKE (overkill), static export + Functions (breaks Next.js server features).
   Decided by: Evan, chat 2026-10-17.
-- 2026-10-17 - Synthetic bills: Synthea as the source + our own bill/EOB
+- 2026-10-17 - [SUPERSEDED by the ~13:05 CDT pivot, record M] Synthetic bills: Synthea as the source + our own bill/EOB
   printer and error planter (Evan picked B; Claude had recommended A, our own
   generator). Checked after the pick (Synthea CSV data dictionary): Synthea
   DOES export billing data - claims_transactions.csv has CHARGE / PAYMENT /
@@ -69,7 +69,7 @@ Standing decisions (what is decided NOW). History lives in the record.
   procedure codes are SNOMED-CT, not CPT/HCPCS, so we map a small code set
   ourselves; Synthea data is clean, so we still plant errors and write the
   answer key. Decided by: Evan, chat 2026-10-17.
-- 2026-10-17 - Errors to plant (Evan: "1-6 + 7 stretch", matching Claude's
+- 2026-10-17 - [SUPERSEDED by the ~13:05 CDT pivot, record M] Errors to plant (Evan: "1-6 + 7 stretch", matching Claude's
   recommendation). Core: (1) duplicate charge; (2) bill patient balance >
   EOB patient responsibility; (3) billed for the contractual adjustment the
   EOB writes off; (4) insurer payment not credited; (5) charge dated outside
@@ -114,7 +114,7 @@ Standing decisions (what is decided NOW). History lives in the record.
   blur-test before claiming "left it blank", synthetic policy page for
   citations, home page via browser storage after the 5 PM gate, dashboard as
   slide mockup. Decided by: Evan ("adopt with fixes"), chat 2026-10-17.
-- 2026-10-17 13:57 CDT - Languages: two tiers (Evan chose option 1). Tier 1
+- 2026-10-17 13:57 CDT - [TIERS REVISED ~14:06 CDT, entry below] Languages: two tiers (Evan chose option 1). Tier 1
   en/es/ar with a translated interface; tier 2 zh-CN, zh-TW, vi, hi with the
   explanation and cover letter in the language and the interface in English.
   Restores Evan's own Wave 1 (languages.md, 2026-10-17), which plan rev 2 had
@@ -145,3 +145,23 @@ Standing decisions (what is decided NOW). History lives in the record.
   Hindi packet fall back) - proposed by the coding agent, accepted by Opus.
   Letter wording changed to "apply for financial assistance". Decided by:
   Evan (fix all six), details by Claude.
+- 2026-10-17 ~13:05 CDT (entry added 16:50 by the audit fix) - PIVOT: the Bill
+  Decoder is replaced by "Bill to Help" (bill photo -> that hospital's
+  financial assistance packet). Decided by Evan (record M; PRD CURRENT
+  DIRECTION). Entries above marked SUPERSEDED belong to the Bill Decoder.
+- 2026-10-17 ~14:06 CDT (entry added 16:50) - Language tiers revised: tier 1
+  (translated interface) en, es, ar, zh-CN, zh-TW; tier 2 (English interface,
+  translated explanation and letter) vi, fr, ko, ru, de, hi. Commit c5f04a9,
+  record T. Supersedes the tier lists in the 13:57 entry.
+- 2026-10-17 16:50 CDT - Audit fixes (Evan: "fix all", record Z/AA). Claude's
+  recommended options were applied: (A2) a bill naming another hospital gets
+  the estimate WITH a "different hospital" warning and a "uses the policy of"
+  line, not a refusal; (A3) text fields <= 200 chars, known field names only,
+  income <= 10^12 cents, 40 paid requests per 60 s per client IP (429),
+  generous so a shared venue IP is not blocked; the packet's `back_checked`
+  flag is replaced by `translator` (no back-translation exists); Hindi uses
+  the same {n} placeholders, so the hospital-name check now covers every
+  language (supersedes the 16:05 Hindi exemption); uploads stay in memory
+  (multipart spool limit above 8 MB). Not done: a project LICENSE (Evan's
+  legal call), TLS (needs a domain), filling the pitch brackets (needs the V1
+  results). Pitch fixes: docs/2026-10-17_pitch-corrections.md (draft).

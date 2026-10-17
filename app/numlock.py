@@ -5,13 +5,14 @@ ASCII first, so an Arabic or Hindi translation that shows the same amounts passe
 """
 import re
 
-# Arabic-Indic (U+0660-0669) and Eastern Arabic-Indic (U+06F0-06F9) digits,
-# plus the Arabic thousands (U+066C) and decimal (U+066B) separators.
+# Arabic-Indic (U+0660-0669), Eastern Arabic-Indic (U+06F0-06F9) and fullwidth
+# (U+FF10-FF19) digits, plus the Arabic thousands (U+066C) and decimal (U+066B) separators.
 _TRANS = {}
 for _i in range(10):
     _TRANS[0x0660 + _i] = str(_i)
     _TRANS[0x06F0 + _i] = str(_i)
     _TRANS[0x0966 + _i] = str(_i)  # Devanagari digits (Hindi)
+    _TRANS[0xFF10 + _i] = str(_i)  # fullwidth digits (Chinese, Japanese, Korean)
 _TRANS[0x066C] = ","
 _TRANS[0x066B] = "."
 
@@ -30,16 +31,18 @@ def extract_numbers(text):
     return _NUM.findall(normalize(text))
 
 
-def check(text, locked_numbers):
+def check(text, locked_numbers, allowed=()):
     """Compare numbers in `text` with `locked_numbers`.
 
     Returns (ok, missing, unexpected):
       missing    - locked numbers that do not appear in the text
-      unexpected - numbers in the text that are not locked
+      unexpected - numbers in the text that are neither locked nor in `allowed`
+    `allowed` numbers may appear but are not required.
     ok is True only when both lists are empty.
     """
     locked = [normalize(str(n)) for n in locked_numbers]
+    permitted = set(locked) | {normalize(str(n)) for n in allowed}
     found = set(extract_numbers(text))
     missing = sorted({n for n in locked if n not in found})
-    unexpected = sorted(n for n in found if n not in set(locked))
+    unexpected = sorted(n for n in found if n not in permitted)
     return (not missing and not unexpected, missing, unexpected)

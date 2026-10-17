@@ -6,8 +6,8 @@
 [Name] turns a photo of a Nashville hospital bill into that hospital's
 financial assistance packet - eligibility estimate against the hospital's own
 published policy (every rule cited), pre-filled application fields, document
-checklist, deadline and cover letter - explained in Arabic or Spanish for the
-family member helping a parent. The AI reads and phrases; a rules engine
+checklist, deadline and cover letter - explained in 11 languages (Arabic, Spanish and Chinese with a translated
+interface) for the family member helping a parent. The AI reads and phrases; a rules engine
 decides; the family submits; the hospital decides. Nothing is stored.
 
 Why this and not the earlier Bill Decoder: the bill/EOB error-checker space
@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 16:09 CDT** - this file is the only live
+**Last updated: 2026-10-17 16:55 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-Y).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -41,16 +41,22 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + language tiers (tier 1 en/es/ar/zh-CN/zh-TW; tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53, deployed from c689291 | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + language tiers (tier 1 en/es/ar/zh-CN/zh-TW; tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53; the live server runs 116d631. The audit fixes (record AA) are committed but NOT deployed yet: redeploy needs SSH, which this session's permission mode refused | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
 - FastAPI app on the OCI VM, endpoints `/extract`, `/evaluate`, `/explain`,
   `/packet`; stateless.
 - OCI Generative AI: Cohere Command A Vision (read bill), Command A (phrase);
-  OCI Language (translate + back-translate check); MySQL HeatWave policy
-  registry (cut to JSON if short).
+  OCI Language (translate). No back-translation: numbers and the hospital
+  name are swapped for {n} placeholders, then the number lock checks the
+  result (Hindi: Command A with the same placeholders). Policy rules are a
+  JSON file (app/data/policy_cumberland_synthetic.json); no database
+  (MySQL/HeatWave was never used and is deleted).
 - Number lock on all generated text; printable HTML packet (no server PDF).
+- Limits: text fields <= 200 chars; 40 paid requests (/extract, /explain,
+  /packet) per 60 s per client IP (last X-Forwarded-For entry; if Apache does
+  not add it, the 40/min cap is shared by everyone); uploads stay in memory.
 
 ## Documentation
 - `PRD_ROADMAP.md` - CURRENT DIRECTION fork at the end is the plan.
@@ -64,6 +70,13 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## BLOCKED-ON-EVAN
+- DEPLOY the audit fixes (commit after f317d07; see operations.md for the
+  git-archive command, then run a live journey). SSH from this session was
+  refused by the permission mode, so Claude could not deploy or read the VM.
+- Review docs/2026-10-17_pitch-corrections.md and give it to the presenters
+  (rev2's pitch still says QR, VUMC, PDF, Dad's bills, a database).
+- V1 chatbot results: needed to fill the pitch brackets ([x], [N], ...).
+- Project LICENSE (legal call); TLS needs a domain.
 - Budget alert: still UNCONFIRMED (the VM is E5.Flex, a paid shape).
 - Delete the downloaded Terraform state JSON from Downloads (it holds the SSH key).
 - Ask organizers: submission form, repo, video.
@@ -86,8 +99,15 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
    deleted (record X), axe audit clean (docs/2026-10-17_accessibility-audit.md),
    reviewer screenshots sent (ar, zh-CN, zh-TW).
 6. DONE 16:08: the 6 bugs from record X fixed and live (commit 116d631,
-   record Y). Left open: Hindi letters can still mistranslate the name;
-   double-upload race on /extract.
+   record Y).
+7. DONE 16:43: full audit (docs/2026-10-17_full-audit.md, record Z): 5
+   highs, mostly claims that outlived the code.
+8. DONE 16:55 (committed, NOT deployed): every audit fix (record AA) -
+   /extract no longer freezes the site; not-eligible works in every language;
+   Hindi keeps the hospital name; double-upload race fixed; different-hospital
+   warning; rate limit and field caps; uploads in memory; docs corrected.
+   Live OCI check from the laptop: es/ar not-eligible explanations and hi/ar
+   packets all pass (n=1). Open: deploy (Evan), pitch sheet review (Evan).
 
 ## Handoff prompt
 
@@ -97,7 +117,7 @@ HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
 DIRECTION fork + F9 amendments), then the record's last 3 appendices and
 .claude/project-memory/operations.md (VM details).
 
-State (2026-10-17 16:09 CDT): "Bill to Help" - bill photo -> hospital
+State (2026-10-17 16:55 CDT): "Bill to Help" - bill photo -> hospital
 financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
 zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
@@ -107,18 +127,20 @@ gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
 opc@207.211.181.174. UI: "Paper Trail" design (policy table with your row
 highlighted, footnoted citations; vendored Web Awesome CSS + IBM Plex;
 brief in docs/research/2026-10-17_design-system-brief.md). Record is
-current through Appendix Y. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AA. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
-numbers) and fall back to English if it is lost; live since 116d631.
+numbers, Hindi included since the audit fixes) and fall back to English if
+it is lost. The audit-fix commit is NOT deployed yet (Evan: SSH).
 
 Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
 ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
 OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
-Next, in order: (1) pre-mortem T1/T2/T3/T8 (Evan); (2) axe/Lighthouse
-audit saved in docs/; (3) fluent review of es/ar/zh strings; (4) after
-each change: commit, then redeploy from HEAD (see operations.md);
-feature freeze ~23:00 Sat.
+Next, in order: (1) deploy the audit-fix commit and run a live journey
+(Evan; operations.md); (2) presenters adopt docs/2026-10-17_pitch-
+corrections.md; (3) pre-mortem T1/T2/T3/T8 (Evan: organizers, V1 test,
+phone test, budget alert); (4) fluent review of es/ar/zh strings
+(TODO-REVIEW in app.js); feature freeze ~23:00 Sat.
 ```

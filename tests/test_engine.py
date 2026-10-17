@@ -127,6 +127,31 @@ def test_null_value_rejected():
     raise AssertionError("null required value should raise ValueError")
 
 
+def test_hospital_match():
+    def match(name):
+        b = bill()
+        if name is not None:
+            b["fields"]["hospital_name"] = {"value": name, "confidence": 0.9, "confirmed": True}
+        r = engine.evaluate(b, answers(3_800_000), POLICY, FPL)
+        assert r["policy_hospital_name"] == "Cumberland General Hospital (SYNTHETIC)"
+        return r["hospital_matches_policy"]
+    assert match("Cumberland General Hospital (SYNTHETIC)") is True
+    assert match("CUMBERLAND GENERAL HOSPITAL") is True
+    assert match("Cumberland General") is True
+    assert match("Vanderbilt University Medical Center") is False
+    assert match(None) is False
+
+
+def test_statement_date_strict():
+    for bad in (20261001, "20261001", "2026-W40-4", "2026-02-30", "9999-12-31"):
+        try:
+            run(3_800_000, statement=bad)
+        except ValueError:
+            continue
+        raise AssertionError("statement_date %r should raise ValueError" % (bad,))
+    assert run(3_800_000, statement="2026-10-01")["deadline"]["date"] == "2027-05-29"
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

@@ -19,12 +19,12 @@
   can never be committed. Use that path in the icacls/ssh commands above.
 - 2026-10-17 - Python on Evan's laptop: use `py` (Python 3.14.7, pip 26.2.1).
   `python`/`python3` hit the Microsoft Store alias and fail. This corrects
-  earlier "no Python" claims (record Appendix O). The `oci` package is NOT
-  installed locally.
+  earlier "no Python" claims (record Appendix O). The `oci` package was NOT
+  installed then (installed later: 2.188.0).
 - 2026-10-17 - `Element.replaceChildren(a, null, b)` renders the null as the
   text "null" (unlike our `el()` helper, which skips nulls). It showed on the
-  result screen as two stray "null" lines. Fixed at the chokepoint: all six
-  callers in app/static/app.js go through `fill()`, which filters nulls;
+  result screen as two stray "null" lines. Fixed at the chokepoint: every
+  caller in app/static/app.js goes through `fill()`, which filters nulls;
   tests/test_api.py asserts `.replaceChildren(` appears only inside fill().
 - 2026-10-17 - OCI config on Windows: Notepad saved `config` as
   `config.txt`, and the downloaded key was saved without `.pem` while
@@ -55,3 +55,17 @@
   that need local files, run the app locally instead.
 - 2026-10-17 - The browser pane's screenshots can lag a fresh DOM change;
   confirm the visible screen with JS before trusting a shot.
+- 2026-10-17 16:50 CDT - The Appendix U fence gotcha above was repaired in
+  0f8e552; the rule (no record line may start with three backticks) stands.
+- 2026-10-17 - Starlette spools any multipart upload over 1 MiB to a temp
+  FILE on disk before the handler runs (MultiPartParser.spool_max_size).
+  Phone photos are larger, so "nothing written to disk" was false until
+  main.py raised the limit above the 8 MB cap (audit, record AA).
+- 2026-10-17 - An `async def` FastAPI endpoint that calls a blocking SDK
+  freezes the whole event loop: static files and every other user wait.
+  Call blocking work with `await asyncio.to_thread(...)`, or make it a plain
+  `def` (FastAPI runs those in a thread pool).
+- 2026-10-17 - numlock.check(text, locked) treats every locked number as
+  REQUIRED. Passing "allowed" numbers there (the engine's discount "0" for a
+  not-eligible tier) made every non-English not-eligible explanation fall
+  back. Required = numbers in the English facts; locked = allowed only.

@@ -1,1 +1,1 @@
-STATUS: empty (2026-10-17) - no code or design exists yet; the problem is not chosen.
+STATUS: pointer (2026-10-17 16:50 CDT) - No auth by design; AnswersIn extra="forbid" (no SSN/ID/name); instance principal (no keys on the VM); text fields <= 200 chars; 40 paid requests/60 s per IP; nosniff/no-referrer/SAMEORIGIN headers; no /openapi.json. Plain HTTP (no domain for TLS). Audit: docs/2026-10-17_full-audit.md.

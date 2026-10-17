@@ -176,6 +176,9 @@ mark.hl { padding: 0 var(--s1); font-weight: 700; color: var(--ink); background-
 .card strong { display: block; margin-bottom: var(--s1); }
 .card strong.with-icon { display: flex; }
 .card p { margin-block: var(--s1) 0; }
+.card.warn { color: var(--synth-fg); background-color: var(--synth-bg); border-color: var(--synth-fg); }
+.warn-text { color: var(--synth-fg); font-weight: 700; }
+#q-tax-label { margin-bottom: var(--s1); font-weight: 700; }
 .explain p { margin: var(--s2) 0; white-space: pre-wrap; }
 ul.plain { margin: 0; padding-inline-start: var(--s5); list-style: disc; }
 ul.plain li { margin-block: var(--s1); }

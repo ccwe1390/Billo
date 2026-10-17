@@ -1,4 +1,4 @@
-# JSON contracts - DRAFT for team agreement (PRD fork F6 gate ~1:45 PM)
+# JSON contracts - in production since 14:53 CDT (drafted for the PRD fork F6 gate ~1:45 PM)
 
 Drafted 2026-10-17 ~13:20 CDT by Claude. Each shape changes only by team
 agreement; when one changes, bump `contract_version`.
@@ -6,7 +6,9 @@ agreement; when one changes, bump `contract_version`.
 Rules that apply to all four:
 - **Money:** integer cents (`4812.40` -> `481240`), never floats.
 - **Dates:** `YYYY-MM-DD`.
-- **Languages:** `"en" | "es" | "ar"`.
+- **Languages:** `"en" | "es" | "ar" | "zh-CN" | "zh-TW" | "vi" | "fr" | "ko" | "ru" | "de" | "hi"`
+  (tier 1 en/es/ar/zh-CN/zh-TW has a translated interface; corrected 2026-10-17
+  from `"en" | "es" | "ar"`, which the code stopped matching at c5f04a9).
 - **Eligibility math compares cents, not rounded percents:**
   `income_cents * 100 <= fpl_cents * limit_percent`.
   `percent_of_fpl` is for display only (rounded down to a whole number), so a
@@ -74,10 +76,12 @@ Rules that apply to all four:
 - `tier.id` is one of `"free_care" | "discount" | "not_eligible"`.
   `not_eligible` carries the payment-plan contact in `contacts`.
 - Every rule-derived item carries a `citation` with source, url, page, and
-  effective date. Values are filled from the policy registry (JSON or
-  HeatWave), never by the model.
-- `locked_numbers`: every number exactly as the UI shows it. `/explain` and
-  `/packet` check generated text against this list.
+  effective date. Values are filled from the policy file
+  (app/data/policy_cumberland_synthetic.json; no database), never by the model.
+- `locked_numbers`: every number exactly as the UI shows it. `/explain`
+  requires every number of its fixed English facts in the generated text and
+  allows `locked_numbers` too; `/packet` checks each translation against the
+  numbers of its own English source (see the 2026-10-17 audit-fix note below).
 
 ## 4. Packet - output of `POST /packet` (EngineResult + BillFields + HouseholdAnswers in)
 
@@ -109,3 +113,20 @@ Rules that apply to all four:
   for exactly the matched tier, marked by position (two tiers share id
   "discount"). `locked_numbers` is unchanged: table numbers are rendered from
   data, never from generated text.
+
+- 2026-10-17 audit fixes (record Appendix AA; additive except where marked):
+  - EngineResult gains `policy_hospital_name` (the hospital whose policy was
+    applied) and `hospital_matches_policy` (false when the bill names another
+    hospital; the UI and packet then warn that the estimate is not about it).
+  - Packet `translation_check` is `{numbers_match, fallback_used, translator}`
+    with `translator` `"oci_language"` or `"command_a"` (Hindi). It REPLACES
+    `back_checked`: no back-translation exists. Hindi now uses the same {n}
+    placeholders, so the hospital-name check applies to every language.
+  - `/explain` returns `{contract_version, language, text_en, text,
+    numbers_match, fallback_used, ai_written}`.
+  - Now enforced: `contract_version` must be 1; bill `fields` keys must be the
+    six above; a text field value is at most 200 characters;
+    `annual_income_cents` at most 10^12; `/extract` checks the PNG/JPEG
+    file signature (415 otherwise).
+  - `/extract`, `/explain` and `/packet` return 429 after 40 requests per 60 s
+    from one client IP.

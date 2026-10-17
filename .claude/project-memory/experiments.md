@@ -1,6 +1,6 @@
 # experiments - TNHacks26
 
-- 2026-10-17 - Headline experiment (planned, not run): precision and recall
+- 2026-10-17 - [SUPERSEDED by the ~13:05 CDT pivot, record M] error checking moved to Deferred. Headline experiment (planned, not run): precision and recall
   per error type, on a seeded synthetic set of bill+EOB pairs built from
   Synthea with errors 1-6 planted (decisions.md) and ~1/3 clean pairs to
   expose false alarms. Measured twice: (a) rules on the structured answer-key

@@ -84,6 +84,14 @@ const T = {
   err_generic: {en: "Something went wrong. Please try again.", es: "Algo salió mal. Inténtelo de nuevo.", ar: "حدث خطأ ما. حاول مرة أخرى.", "zh-CN": "出了点问题。请重试。", "zh-TW": "出了點問題。請重試。"}, // TODO-REVIEW es+ar+zh
   ai_note:     {en: "Written by AI from the English facts above; every number was checked automatically. The English is what counts.", "zh-CN": "此文本由 AI 根据上方的英文事实撰写；每个数字都已自动核对。以英文为准。", "zh-TW": "此文字由 AI 根據上方的英文事實撰寫；每個數字都已自動核對。以英文為準。", es: "Texto escrito por IA a partir de los datos en inglés; cada número se verificó automáticamente. El texto en inglés es el que vale.", ar: "كتب الذكاء الاصطناعي هذا النص من الحقائق الإنجليزية؛ وتم التحقق من كل رقم تلقائيًا. النص الإنجليزي هو المعتمد."}, // TODO-REVIEW es+ar+zh
   err_invalid: {en: "Check the values: they are missing or not valid.", es: "Revise los valores: faltan o no son válidos.", ar: "تحقق من القيم: فهي ناقصة أو غير صالحة.", "zh-CN": "请检查输入的值：缺失或无效。", "zh-TW": "請檢查輸入的值：缺漏或無效。"}, // TODO-REVIEW es+ar+zh
+  err_too_big: {en: "This photo is larger than 8 MB. Take a smaller photo, or type the fields in by hand.", es: "Esta foto pesa más de 8 MB. Tome una foto más pequeña o escriba los campos a mano.", ar: "حجم هذه الصورة أكبر من 8 ميغابايت. التقط صورة أصغر أو اكتب الحقول يدويًا.", "zh-CN": "这张照片超过 8 MB。请拍一张较小的照片，或手动填写各字段。", "zh-TW": "這張照片超過 8 MB。請拍一張較小的照片，或手動填寫各欄位。"}, // TODO-REVIEW es+ar+zh
+  err_type:    {en: "Upload a PNG or JPEG photo, or type the fields in by hand.", es: "Suba una foto PNG o JPEG, o escriba los campos a mano.", ar: "ارفع صورة بصيغة PNG أو JPEG، أو اكتب الحقول يدويًا.", "zh-CN": "请上传 PNG 或 JPEG 照片，或手动填写各字段。", "zh-TW": "請上傳 PNG 或 JPEG 照片，或手動填寫各欄位。"}, // TODO-REVIEW es+ar+zh
+  err_busy:    {en: "Too many requests right now. Wait a minute and try again.", es: "Hay demasiadas solicitudes en este momento. Espere un minuto e inténtelo de nuevo.", ar: "هناك طلبات كثيرة الآن. انتظر دقيقة ثم حاول مرة أخرى.", "zh-CN": "目前请求过多。请等一分钟后再试。", "zh-TW": "目前請求過多。請等一分鐘後再試。"}, // TODO-REVIEW es+ar+zh
+  r_policy_used:{en: "This estimate uses the policy of {name}.", es: "Esta estimación usa la política de {name}.", ar: "يستخدم هذا التقدير سياسة {name}.", "zh-CN": "此估算使用 {name} 的政策。", "zh-TW": "此估算使用 {name} 的政策。"}, // TODO-REVIEW es+ar+zh
+  r_mismatch_title:{en: "Different hospital", es: "Hospital distinto", ar: "مستشفى مختلف", "zh-CN": "不同的医院", "zh-TW": "不同的醫院"}, // TODO-REVIEW es+ar+zh
+  r_mismatch:  {en: "Your bill names a different hospital. This demo has only one hospital's policy, and it is synthetic, so this estimate is not about your hospital.", es: "Su factura menciona otro hospital. Esta demostración solo tiene la política de un hospital, y es sintética, así que esta estimación no corresponde a su hospital.", ar: "تذكر فاتورتك مستشفى مختلفًا. يحتوي هذا العرض التجريبي على سياسة مستشفى واحد فقط، وهي اصطناعية، لذا فإن هذا التقدير لا يخص مستشفاك.", "zh-CN": "您的账单上是另一家医院。本演示只有一家医院的政策，而且是合成的，所以此估算与您的医院无关。", "zh-TW": "您的帳單上是另一家醫院。本示範只有一家醫院的政策，而且是合成的，所以此估算與您的醫院無關。"}, // TODO-REVIEW es+ar+zh
+  r_deadline_passed:{en: "This date has passed. Ask the hospital whether it will still accept your application.", es: "Esta fecha ya pasó. Pregunte al hospital si todavía aceptará su solicitud.", ar: "لقد مضى هذا التاريخ. اسأل المستشفى هل سيقبل طلبك رغم ذلك.", "zh-CN": "这个日期已经过了。请询问医院是否仍会接受您的申请。", "zh-TW": "這個日期已經過了。請詢問醫院是否仍會接受您的申請。"}, // TODO-REVIEW es+ar+zh
+  income_hint: {en: "Type the amount in US dollars, like 38000 or 38,000.50.", es: "Escriba el monto en dólares de EE. UU., como 38000 o 38,000.50.", ar: "اكتب المبلغ بالدولار الأمريكي، مثل 38000 أو 38,000.50.", "zh-CN": "请用美元填写金额，例如 38000 或 38,000.50。", "zh-TW": "請用美元填寫金額，例如 38000 或 38,000.50。"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = {en: "English", es: "Español", ar: "العربية", "zh-CN": "简体中文", "zh-TW": "繁體中文",
                     vi: "Tiếng Việt", fr: "Français", ko: "한국어", ru: "Русский", de: "Deutsch", hi: "हिन्दी"};
@@ -97,7 +105,8 @@ const FIELD_ORDER = [
 const REQUIRED = new Set(["statement_date", "amount_due_cents"]); // the engine needs these two
 
 const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, answers: null,
-          result: null, explain: null, size: "", income: "", tax: null, busy: false};
+          result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0};
+let firstShow = true, curScreen = 0;
 
 // ---------- helpers
 function t(key, vars) {
@@ -133,11 +142,23 @@ function showMsg(text, info) {
   m.className = "msg" + (info ? " info" : "");
 }
 function show(n) {
+  if (n !== 4) { // leaving the questions cancels an in-flight submit
+    S.submitSeq = (S.submitSeq || 0) + 1;
+    if (S.busy) showMsg("");
+    S.busy = false;
+  }
+  const changed = n !== curScreen;
+  curScreen = n;
   for (let i = 1; i <= 5; i++) document.getElementById("s" + i).hidden = i !== n;
   applyDir();
   renderSteps(n);
   document.getElementById("foot").textContent = t("not_affiliated");
   [null, renderStart, renderBill, renderQuestions, renderResult, renderPacketShell][n]();
+  if (!firstShow && changed) { // move focus to the new screen's heading so keyboard and screen-reader users land on it
+    const h = document.querySelector("#s" + n + " h2");
+    if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
+  }
+  firstShow = false;
 }
 async function post(path, body, asText) {
   let r;
@@ -145,6 +166,7 @@ async function post(path, body, asText) {
     r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
   } catch (e) { throw new Error(t("err_generic")); }
   if (!r.ok) {
+    if (r.status === 429) throw new Error(t("err_busy"));
     let detail = "";
     try { const j = await r.json(); detail = typeof j.detail === "string" ? j.detail : t("err_invalid"); } catch (e) { /* ignore */ }
     throw new Error(detail || t("err_generic"));
@@ -153,9 +175,15 @@ async function post(path, body, asText) {
 }
 // "4812.40" or "$4,812.4" -> 481240 ; invalid -> null. String math, no floats.
 function dollarsToCents(s) {
-  const m = /^\$?\s*(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?$/.exec((s || "").trim());
+  const norm = (s || "")
+    .replace(/[\u0660-\u0669]/g, d => String(d.charCodeAt(0) - 0x0660)) // Arabic-Indic digits
+    .replace(/[\u06F0-\u06F9]/g, d => String(d.charCodeAt(0) - 0x06F0)) // Eastern Arabic-Indic digits
+    .replace(/[\uFF10-\uFF19]/g, d => String(d.charCodeAt(0) - 0xFF10)) // fullwidth digits
+    .replace(/\u066C/g, ",").replace(/\u066B/g, "."); // Arabic thousands and decimal separators
+  const m = /^\$?\s*(\d{1,3}(?:,\d{3})+|\d+)(?:\.(\d{1,2}))?$/.exec(norm.trim());
   if (!m) return null;
-  return parseInt(m[1].replace(/,/g, ""), 10) * 100 + parseInt((m[2] || "0").padEnd(2, "0"), 10);
+  const cents = parseInt(m[1].replace(/,/g, ""), 10) * 100 + parseInt((m[2] || "0").padEnd(2, "0"), 10);
+  return cents > Number.MAX_SAFE_INTEGER ? null : cents;
 }
 function centsToDollars(c) {
   return Math.floor(c / 100) + "." + String(c % 100).padStart(2, "0");
@@ -245,12 +273,12 @@ function renderStart() {
   fill(root,
     el("p", {class: "notice"}, t("notice")),
     el("p", {class: "muted"}, t("no_id")),
-    el("h2", {class: "with-icon"}, icon("globe"), t("pick_lang")),
-    el("div", {class: "row"}, ...TIER1.map(langBtn)),
+    el("h2", {class: "with-icon", id: "pick-lang-label"}, icon("globe"), t("pick_lang")),
+    el("div", {class: "row", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER1.map(langBtn)),
     el("p", {class: "muted", lang: "en", dir: "ltr"}, "More languages (interface in English)"),
-    el("div", {class: "row"}, ...TIER2.map(langBtn)),
-    el("h2", null, t("for_whom")),
-    el("div", {class: "row"}, ...[["self", "me"], ["family", "family"]].map(([v, k]) =>
+    el("div", {class: "row", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER2.map(langBtn)),
+    el("h2", {id: "for-whom-label"}, t("for_whom")),
+    el("div", {class: "row", role: "group", "aria-labelledby": "for-whom-label"}, ...[["self", "me"], ["family", "family"]].map(([v, k]) =>
       el("button", {"aria-pressed": String(S.forWhom === v), onclick: () => { S.forWhom = v; show(1); }}, t(k)))),
     el("div", {class: "row"}, el("button", {class: "primary", onclick: () => { showMsg(""); show(2); }}, t("start"))),
   );
@@ -276,20 +304,32 @@ function renderBill() {
 async function onFile(ev) {
   const f = ev.target.files[0];
   if (!f) return;
+  const seq = (S.extractSeq = (S.extractSeq || 0) + 1); // a newer upload makes this one stale
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
   S.imageUrl = URL.createObjectURL(f);
   S.bill = null;
+  renderBill();
   showMsg(t("reading"), true);
   const fd = new FormData();
   fd.append("file", f);
+  let failMsg = t("read_failed");
   try {
     const r = await fetch("/extract", {method: "POST", body: fd});
-    if (!r.ok) throw new Error("extract");
-    S.bill = await r.json();
+    if (seq !== S.extractSeq) return;
+    if (!r.ok) {
+      if (r.status === 413) failMsg = t("err_too_big");
+      else if (r.status === 415) failMsg = t("err_type");
+      else if (r.status === 429) failMsg = t("err_busy");
+      throw new Error("extract");
+    }
+    const bill = await r.json();
+    if (seq !== S.extractSeq) return;
+    S.bill = bill;
     showMsg("");
   } catch (e) {
+    if (seq !== S.extractSeq) return;
     S.bill = blankBill();
-    showMsg(t("read_failed"));
+    showMsg(failMsg);
   }
   renderBill();
 }
@@ -342,10 +382,12 @@ function renderFields() {
 function renderQuestions() {
   const root = document.getElementById("s3");
   const size = el("input", {type: "number", id: "q-size", min: "1", max: "12", step: "1", value: S.size});
-  const income = el("input", {type: "text", id: "q-income", inputmode: "decimal", value: S.income, autocomplete: "off"});
+  const income = el("input", {type: "text", id: "q-income", inputmode: "decimal", value: S.income, autocomplete: "off", "aria-describedby": "q-income-hint"});
+  const incomeHint = el("p", {class: "hint", id: "q-income-hint"});
   const go = el("button", {class: "primary", id: "q-go", onclick: submitAnswers}, t("see_result"));
   const check = () => {
     S.size = size.value; S.income = income.value;
+    incomeHint.textContent = (S.income.trim() !== "" && dollarsToCents(S.income) === null) ? t("income_hint") : "";
     const n = Number(S.size);
     go.disabled = S.busy || !(Number.isInteger(n) && n >= 1 && n <= 12) || dollarsToCents(S.income) === null || S.tax === null;
   };
@@ -356,25 +398,30 @@ function renderQuestions() {
     el("h2", null, t("q_title")),
     el("p", {class: "muted"}, t("no_id")),
     el("label", {for: "q-size"}, t("q_size")), size,
-    el("p", null), el("label", {for: "q-income"}, t("q_income")), income,
-    el("p", null), el("label", null, t("q_tax")), el("div", {class: "row"}, taxBtn(true, "yes"), taxBtn(false, "no")),
+    el("p", null), el("label", {for: "q-income"}, t("q_income")), income, incomeHint,
+    el("p", null), el("p", {id: "q-tax-label"}, t("q_tax")), el("div", {class: "row", role: "group", "aria-labelledby": "q-tax-label"}, taxBtn(true, "yes"), taxBtn(false, "no")),
     el("div", {class: "row"}, el("button", {onclick: () => show(2)}, t("back")), go));
   check();
 }
 async function submitAnswers() {
+  const seq = (S.submitSeq = (S.submitSeq || 0) + 1); // Back or restart bumps S.submitSeq and cancels this submit
   S.answers = {contract_version: 1, language: S.lang, for_whom: S.forWhom, household_size: Number(S.size),
                annual_income_cents: dollarsToCents(S.income), files_tax_return: S.tax};
   S.busy = true; showMsg(t("load_evaluate"), true);
   document.getElementById("q-go").disabled = true;
   try {
     S.result = await post("/evaluate", {bill: S.bill, answers: S.answers});
+    if (seq !== S.submitSeq) return;
     showMsg(t("load_explain"), true);
     S.explain = await post("/explain", {bill: S.bill, answers: S.answers, result: S.result});
-    S.view = viewFor(S.lang); showMsg("");
-    S.busy = false; show(4);
   } catch (e) {
+    if (seq !== S.submitSeq) return;
     S.busy = false; showMsg(e.message); renderQuestions();
+    return;
   }
+  if (seq !== S.submitSeq) return;
+  S.view = viewFor(S.lang); showMsg("");
+  S.busy = false; show(4);
 }
 
 // ---------- screen 4: result
@@ -414,8 +461,11 @@ function renderResult() {
     ? [el("p", {class: "excerpt-head"}, t("r_tier")), tierTable(r)]
     : [el("div", {class: "card"}, el("strong", null, t("r_tier")), englishOnly("p", {class: "stat"}, r.tier.label_en))];
   const tierNote = el("p", {class: "muted tbl-note"}, t("r_policy_en"), notes.mark(r.tier.citation));
+  const now = new Date();
+  const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
   const deadline = el("div", {class: "deadline"}, el("strong", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
-    el("p", {lang: "en", dir: "ltr"}, deadlineLine(r.deadline), notes.mark(r.deadline.citation)));
+    el("p", {lang: "en", dir: "ltr"}, deadlineLine(r.deadline), notes.mark(r.deadline.citation)),
+    r.deadline.date < today ? el("p", {class: "warn-text"}, t("r_deadline_passed")) : null);
   const docs = el("ul", {class: "plain"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, notes.mark(d.citation)))));
   const c = r.contacts;
   const contactCard = eligible
@@ -429,6 +479,10 @@ function renderResult() {
     el("h2", null, t("r_title")),
     toggle ? el("div", {class: "row"}, toggle) : null,
     lead,
+    typeof r.policy_hospital_name === "string" ? el("p", {class: "muted"}, ...tNodes("r_policy_used", {name: r.policy_hospital_name})) : null,
+    r.hospital_matches_policy === false
+      ? el("div", {class: "card warn", role: "note"}, el("strong", null, t("r_mismatch_title")), el("p", null, t("r_mismatch")))
+      : null,
     el("p", {class: "decides"}, t("r_decides")),
     ...tierBlock,
     tierNote,
@@ -470,7 +524,7 @@ async function loadPacket() {
 
 function restart() {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
-  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false});
+  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0});
   showMsg(""); show(1);
 }
 

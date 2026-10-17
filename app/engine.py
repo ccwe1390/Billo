@@ -1,6 +1,7 @@
 """Pure eligibility engine. Money is integer cents. No I/O except the loaders."""
 import copy
 import json
+import re
 from datetime import date, timedelta
 
 CONTRACT_VERSION = 1
@@ -58,9 +59,29 @@ def _int_cents(value, name):
     return value
 
 
+def _name_core(s):
+    """Lowercase, no parenthesized part, no 'hospital', letters and digits only."""
+    s = re.sub(r"\(.*?\)", "", s.lower()).replace("hospital", "")
+    return re.sub(r"[^a-z0-9]", "", s)
+
+
+def _hospital_matches(bill_name, policy_name):
+    core = _name_core(policy_name)
+    return bool(core) and isinstance(bill_name, str) and core in _name_core(bill_name)
+
+
+def _statement_date(value):
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+        raise ValueError("statement_date must be YYYY-MM-DD")
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        raise ValueError("statement_date must be YYYY-MM-DD")
+
+
 def evaluate(bill_fields, answers, policy, fpl):
     fields = _confirmed_fields(bill_fields)
-    statement_date = date.fromisoformat(_required(fields, "statement_date"))
+    statement_date = _statement_date(_required(fields, "statement_date"))
     amount_due_cents = _int_cents(_required(fields, "amount_due_cents"), "amount_due_cents")
 
     size = answers.get("household_size")
@@ -99,7 +120,10 @@ def evaluate(bill_fields, answers, policy, fpl):
     ]
 
     window = policy["application_window"]
-    deadline_date = (statement_date + timedelta(days=window["days_from_statement"])).isoformat()
+    try:
+        deadline_date = (statement_date + timedelta(days=window["days_from_statement"])).isoformat()
+    except OverflowError:
+        raise ValueError("statement_date is out of range")
 
     documents = [
         {
@@ -113,9 +137,13 @@ def evaluate(bill_fields, answers, policy, fpl):
         or (d["required_if"] == "files_tax_return" and files_tax_return)
     ]
 
+    hospital_name = fields.get("hospital_name")
+    hospital_name = hospital_name.get("value") if isinstance(hospital_name, dict) else None
     return {
         "contract_version": CONTRACT_VERSION,
         "hospital_id": policy["hospital_id"],
+        "policy_hospital_name": policy["hospital_name"],
+        "hospital_matches_policy": _hospital_matches(hospital_name, policy["hospital_name"]),
         "fpl": {
             "year": fpl["year"],
             "household_size": size,

@@ -1,5 +1,10 @@
 # Accessibility audit - Bill to Help (Paper Trail UI)
 
+> **Status 2026-10-17 16:57 CDT (audit, record Z/AA):** the packet `<main>` fix and the visual items 1-7
+> below were fixed in 116d631 and are live; the audit-fix build adds focus
+> moves on screen change, `aria-live` on #msg, labelled button groups and an
+> income hint. axe was NOT re-run on either build.
+
 - **Date:** 2026-10-17, ~15:58-16:00 CDT
 - **Build audited:** commit c689291 (the live UI at the time), served locally
   in FAKE_OCI mode (same HTML/CSS/JS as the server)

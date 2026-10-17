@@ -1,1 +1,1 @@
-STATUS: empty (2026-10-17) - no code or design exists yet; the problem is not chosen.
+STATUS: pointer (2026-10-17 16:50 CDT) - HANDOFF.md Architecture + docs/contracts.md (the 4 endpoint shapes). App: app/main.py (FastAPI), app/engine.py (rules, pure), app/numlock.py (number lock), app/oci_client.py (all OCI calls), app/static/ (UI).

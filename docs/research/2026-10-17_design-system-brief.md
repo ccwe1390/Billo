@@ -1466,3 +1466,8 @@ frame 341 px with no overflow, zero network resource entries, Arabic line
 height 1.7 applied, D1 h3 23 px and notes 14 px, all three D1 tables have 4
 row headers and an `aria-current` row; at 320x700, no page scroll and the
 D1 tables fit (226/228 px). The zh-CN mock was inspected in a screenshot.
+- 2026-10-17 16:57 CDT (audit, record Z/AA) - Errata (from record W and the audit): Web Awesome needs 13 CSS
+  files, not the 7 this brief lists (sections 5.3, Direction 1, verification);
+  Plex Devanagari and Arabic load for every visitor, not "only for Hindi",
+  because the language buttons show those scripts; section 5.1 now has 13
+  tells, not 12; native.css is 37,010 B and themes/default.css 16,773 B on disk.

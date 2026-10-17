@@ -1,5 +1,10 @@
 # Research brief - Is the medical bill / EOB decoder space crowded?
 
+> **Status 2026-10-17 16:57 CDT (audit, record Z/AA):** point-in-time brief. Its recommendation fed the
+> pivot to "Bill to Help" (record M); the Bill Decoder it evaluates is
+> superseded. The "61.0%" figure counts hospitals that post a policy, not
+> all 426.
+
 **Date:** 2026-10-17 (12:20-12:32 CDT)
 **Question:** Is the space for medical bill / EOB explainer-and-error-checker
 tools crowded, and is TNHacks26 Bill Decoder's differentiation (multilingual

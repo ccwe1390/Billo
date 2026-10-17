@@ -62,7 +62,7 @@ act on a tripwire.
 
 | # | Risk | Why it's a paper tiger | Becomes a Tiger if |
 |---|------|------------------------|--------------------|
-| P1 | OCI model outage during the demo | 4 services ran live today with no errors; recording + FAKE_OCI switch are fallbacks | A live call fails during a rehearsal |
+| P1 | OCI model outage during the demo | 3 OCI services (Command A Vision, Command A, Language) ran live; two bugs were found and fixed on the way (corrected 2026-10-17 16:57 CDT (audit, record Z/AA)); recording + FAKE_OCI switch are fallbacks | A live call fails during a rehearsal |
 | P2 | Model costs exceed $500 | ~3 short calls per journey | Cost analysis shows more than $20/day |
 | P3 | Server overload at the showcase | Stateless, 2 vCPU, a handful of users | Rehearsal latency exceeds 30 s |
 | P4 | Judges call it a copy of CareRoute or B.A.R.S. | Prior art named in PRD F8, with answers prepared | A judge cites a feature we lack |
@@ -83,3 +83,16 @@ act on a tripwire.
 3. **Claude, now:** hide the placeholder card (T4); make the redesign safe to deploy (T5).
 4. **Evan, before 19:00:** phone-photo test against http://207.211.181.174/ (T3).
 5. **Evan, before 18:00:** check billing, set the budget alert, decide on the HeatWave cluster (T8).
+
+## Updates
+
+- 2026-10-17 16:57 CDT (audit, record Z/AA): T3's pointer `app.js:185` is stale; the upload limits now live in
+  app/main.py (8 MB, PNG/JPEG signature check) and app.js shows a specific
+  message for 413/415/429. T4's `app.js:57 / app.js:341` were removed in
+  145c8af. T7's unverified-number list also needs: $7 billion bad debt,
+  Tennessee 175% of cost, VUMC 24% of charges, 9.3% uninsured, 282,294
+  renewals (docs/2026-10-17_pitch-corrections.md). The HHS 2026 poverty
+  values were verified against the Federal Register notice. Counting note:
+  E1 merged into T2 and E4 was reclassified after the summary table, so
+  "5 launch-blocking" counts T1-T5 only. P4's "answers prepared" was false
+  until the pitch-corrections sheet added a B.A.R.S. answer.

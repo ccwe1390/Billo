@@ -2,29 +2,77 @@
 
 Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet; static UI at /.
 """
+import asyncio
+import collections
 import functools
 import html
+import logging
 import os
+import re
+import threading
+import time
 from datetime import datetime
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any, Dict, Literal, Optional
 
-from fastapi import FastAPI, HTTPException, Query, UploadFile
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+from starlette.formparsers import MultiPartParser
 
 from app import numlock, oci_client
+
+log = logging.getLogger("bill_to_help")
 
 CONTRACT_VERSION = 1
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 POLICY_PATH = os.path.join(BASE_DIR, "data", "policy_cumberland_synthetic.json")
 FPL_PATH = os.path.join(BASE_DIR, "data", "fpl_2026.json")
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
+MultiPartParser.spool_max_size = MAX_IMAGE_BYTES + 1024 * 1024  # uploads stay in memory: nothing is spooled to disk
 ALLOWED_MIME = ("image/png", "image/jpeg")
 NOTICE_EN = "This is a draft you choose to send. The hospital makes the final decision."
 
-app = FastAPI(title="Bill to Help", docs_url=None, redoc_url=None)
+app = FastAPI(title="Bill to Help", docs_url=None, redoc_url=None, openapi_url=None)
+
+
+@app.middleware("http")
+async def security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    return response
+
+
+# ---------------------------------------------------------------- rate limit (paid endpoints only)
+
+RATE_LIMIT = 40
+RATE_WINDOW_S = 60
+_hits = {}
+_hits_lock = threading.Lock()
+
+
+def _rate_limit(request: Request):
+    # Behind the VM's proxy the last X-Forwarded-For entry is the one the proxy appended.
+    fwd = request.headers.get("x-forwarded-for")
+    if fwd:
+        ip = fwd.split(",")[-1].strip()
+    else:
+        ip = request.client.host if request.client else "unknown"
+    now = time.monotonic()
+    with _hits_lock:
+        for key in list(_hits):
+            q = _hits[key]
+            while q and now - q[0] > RATE_WINDOW_S:
+                q.popleft()
+            if not q:
+                del _hits[key]
+        q = _hits.setdefault(ip, collections.deque())
+        if len(q) >= RATE_LIMIT:
+            raise HTTPException(429, "Too many requests. Wait a minute and try again.")
+        q.append(now)
 
 
 # ---------------------------------------------------------------- models
@@ -35,21 +83,39 @@ class FieldIn(BaseModel):
     confidence: Optional[float] = None
     confirmed: bool = False
 
+    @field_validator("value")
+    @classmethod
+    def _value_not_too_long(cls, v):
+        if isinstance(v, str) and len(v) > 200:
+            raise ValueError("field value is too long")
+        return v
+
+
+_BILL_FIELDS = ("hospital_name", "statement_date", "account_number", "amount_due_cents",
+                "date_of_service", "insurance_status")
+
 
 class BillIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    contract_version: int = CONTRACT_VERSION
+    contract_version: Literal[1] = CONTRACT_VERSION
     fields: Dict[str, FieldIn]
+
+    @field_validator("fields")
+    @classmethod
+    def _known_fields_only(cls, v):
+        if any(k not in _BILL_FIELDS for k in v):
+            raise ValueError("unknown bill field")
+        return v
 
 
 class AnswersIn(BaseModel):
     # extra="forbid": no way to send immigration status, SSN, ID or a name.
     model_config = ConfigDict(extra="forbid")
-    contract_version: int = CONTRACT_VERSION
+    contract_version: Literal[1] = CONTRACT_VERSION
     language: Literal["en", "es", "ar", "zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"]
     for_whom: Literal["self", "family"]
     household_size: int = Field(ge=1, le=12)
-    annual_income_cents: int = Field(ge=0)
+    annual_income_cents: int = Field(ge=0, le=10**12)
     files_tax_return: bool
 
 
@@ -99,11 +165,18 @@ def _norm_date(v):
 def _norm_cents(v):
     if v is None or isinstance(v, bool):
         return None
-    try:
-        d = Decimal(str(v).replace("$", "").replace(",", "").strip())
-    except InvalidOperation:
+    s = str(v).replace("$", "").strip()
+    if len(s) > 15:
         return None
-    if not d.is_finite() or d < 0:
+    if re.fullmatch(r".*,\d{1,2}", s):  # decimal comma: ambiguous
+        return None
+    if re.search(r"\.\d{3,}$", s):  # "1.234" may be a European thousands separator
+        return None
+    try:
+        d = Decimal(s.replace(",", ""))
+    except (InvalidOperation, ArithmeticError, ValueError):
+        return None
+    if not d.is_finite() or d < 0 or d > Decimal(10**9):
         return None
     return int((d * 100).to_integral_value(rounding=ROUND_HALF_UP))
 
@@ -147,7 +220,7 @@ def normalize_bill(raw):
     }
 
 
-@app.post("/extract")
+@app.post("/extract", dependencies=[Depends(_rate_limit)])
 async def extract(file: UploadFile):
     mime = (file.content_type or "").lower()
     if mime not in ALLOWED_MIME:
@@ -155,9 +228,12 @@ async def extract(file: UploadFile):
     data = await file.read(MAX_IMAGE_BYTES + 1)
     if not data or len(data) > MAX_IMAGE_BYTES:
         raise HTTPException(413, "Image is empty or larger than 8 MB.")
+    if not data.startswith(b"\x89PNG\r\n\x1a\n" if mime == "image/png" else b"\xff\xd8\xff"):
+        raise HTTPException(415, "Upload a PNG or JPEG image.")
     try:
-        raw = oci_client.extract_bill(data, mime)
-    except Exception:  # no detail echoed: it could contain request content
+        raw = await asyncio.to_thread(oci_client.extract_bill, data, mime)
+    except Exception as e:  # no detail echoed: it could contain request content
+        log.warning("photo reading failed: %s", type(e).__name__)
         raise HTTPException(502, "Photo reading is unavailable. Enter the fields by hand.")
     return normalize_bill(raw)
 
@@ -192,6 +268,10 @@ def _val(bill, name):
     return None if f is None else f.value
 
 
+def _people(n):
+    return "1 person" if n == 1 else "%d people" % n
+
+
 def _facts_en(bill, answers, result):
     """The three fixed English lines. Every number in them comes from the engine or a confirmed field."""
     n = answers.household_size
@@ -199,20 +279,12 @@ def _facts_en(bill, answers, result):
         "This bill is from %s. The statement date is %s and the amount due is $%s."
         % (_val(bill, "hospital_name") or "the hospital", _val(bill, "statement_date"),
            _amount_due(_val(bill, "amount_due_cents"))),
-        "Your household has %d people and a yearly income of $%s. The %d poverty guideline for %d people is $%s, "
+        "Your household has %s and a yearly income of $%s. The %d poverty guideline for %s is $%s, "
         "so your income is %d%% of it."
-        % (n, _dollars(answers.annual_income_cents), result["fpl"]["year"], n,
+        % (_people(n), _dollars(answers.annual_income_cents), result["fpl"]["year"], _people(n),
            _dollars(result["fpl"]["amount_cents"]), result["percent_of_fpl"]),
         "%s. %s" % (result["tier"]["label_en"], result["deadline"]["text_en"]),
     ])
-
-
-def _allowed_numbers(result, *texts):
-    """Engine locked numbers plus the numbers in the fixed English text built from engine/confirmed values."""
-    out = list(result.get("locked_numbers", []))
-    for t in texts:
-        out.extend(numlock.extract_numbers(t))
-    return sorted(set(out))
 
 
 # ---------------------------------------------------------------- /explain
@@ -221,7 +293,7 @@ def _server_result(body):
     return evaluate(EvaluateIn(bill=body.bill, answers=body.answers))
 
 
-@app.post("/explain")
+@app.post("/explain", dependencies=[Depends(_rate_limit)])
 def explain(body: ResultIn):
     result = _server_result(body)
     lang = body.answers.language
@@ -230,11 +302,12 @@ def explain(body: ResultIn):
            "text": facts, "numbers_match": True, "fallback_used": False, "ai_written": False}
     if lang == "en":
         return out
-    allowed = _allowed_numbers(result, facts)
+    required = numlock.extract_numbers(facts)  # the translation must show these; locked numbers may also appear
     try:
         text = oci_client.phrase(facts, lang)
-        ok, _missing, _unexpected = numlock.check(text, allowed)
-    except Exception:
+        ok, _missing, _unexpected = numlock.check(text, required, allowed=result["locked_numbers"])
+    except Exception as e:
+        log.warning("explanation failed: %s", type(e).__name__)
         text, ok = "", False
     if ok:
         out["text"] = text
@@ -262,8 +335,8 @@ def _letter_en(bill, answers, result):
     lines.append("Statement date: %s" % _val(bill, "statement_date"))
     lines.append("Amount due: $%s" % _amount_due(_val(bill, "amount_due_cents")))
     lines.append("")
-    lines.append("My household has %d people and a yearly income of $%s. By my estimate this is %d%% of the %d "
-                 "federal poverty guideline." % (n, _dollars(answers.annual_income_cents),
+    lines.append("My household has %s and a yearly income of $%s. By my estimate this is %d%% of the %d "
+                 "federal poverty guideline." % (_people(n), _dollars(answers.annual_income_cents),
                                                  result["percent_of_fpl"], result["fpl"]["year"]))
     lines.append("I am sending the documents on your checklist. Please review my application and tell me your "
                  "decision in writing.")
@@ -303,19 +376,19 @@ def build_packet(bill, answers, result):
     if lang != "en":
         sources = [letter] + [c["label_en"] for c in checklist]
         hospital = _val(bill, "hospital_name")
-        # Hindi (Command A, no placeholders) cannot keep the name verbatim: no name check there
-        keep = [hospital] if isinstance(hospital, str) and hospital and lang != "hi" else []
+        keep = [hospital] if isinstance(hospital, str) and hospital else []
         try:
-            if lang == "hi":  # OCI Language has no Hindi: Command A, no back-check
-                translated = oci_client.translate_genai_many(sources, "hi")
+            if lang == "hi":  # OCI Language has no Hindi: Command A
+                translated = oci_client.translate_genai_many(sources, "hi", keep=keep)
             else:
                 translated = oci_client.translate_many(sources, lang, keep=keep)
-        except Exception:
+        except Exception as e:
+            log.warning("translation failed: %s", type(e).__name__)
             translated = None
         if translated is None:
             check = {"numbers_match": False, "fallback_used": True}
         else:
-            check["back_checked"] = lang != "hi"
+            check["translator"] = "command_a" if lang == "hi" else "oci_language"
             for i, (src, tr) in enumerate(zip(sources, translated)):
                 ok, _m, _u = numlock.check(tr, numlock.extract_numbers(src))
                 if not ok or any(k in src and k not in tr for k in keep):
@@ -386,6 +459,9 @@ def render_packet_html(packet, result, lang):
     send = p["send_to"]
     synth = ('<div class="banner">SYNTHETIC DEMO. Fictional hospital and policy. Not a real application.</div>'
              if r.get("hospital_id", "").endswith("synthetic") else "")
+    if r.get("hospital_matches_policy") is False:
+        synth += ('<div class="banner">This bill names a different hospital. This estimate uses the %s policy, '
+                  "not that hospital's policy.</div>" % _E(r["policy_hospital_name"]))
     return (
         '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" '
         'content="width=device-width,initial-scale=1"><title>Financial assistance packet</title>'
@@ -399,7 +475,7 @@ def render_packet_html(packet, result, lang):
          rows, "".join(items), cols, _E(send["email"]), _E(send["phone"]), _cite(send.get("citation")))
 
 
-@app.post("/packet")
+@app.post("/packet", dependencies=[Depends(_rate_limit)])
 def packet(body: ResultIn, format: str = Query("html", pattern="^(html|json)$")):
     result = _server_result(body)
     pk = build_packet(body.bill, body.answers, result)

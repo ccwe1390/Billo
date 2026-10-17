@@ -1,6 +1,6 @@
 # ui - TNHacks26
 
-- 2026-10-17 - No UI yet. Accessibility is named in the track's responsible-innovation list; design it in from the start. Arabic needs right-to-left layout.
+- 2026-10-17 - [SUPERSEDED: the 5-screen UI is built and live] No UI yet. Accessibility is named in the track's responsible-innovation list; design it in from the start. Arabic needs right-to-left layout.
 - 2026-10-17 - Website-profile rows that apply (project-memory
   profiles/website.md): keep approved wireframes/mockups dated in
   `docs/design/`; keep an asset inventory WITH a license per asset (fonts for
@@ -47,3 +47,6 @@ third-party requests.
 - The design brief said Web Awesome needs 7 files; following the @import
   graph showed 13 (color/variants.css and 5 variant files were missing).
 - Chinese and Korean: system fonts, nothing vendored.
+- 2026-10-17 16:50 CDT - `docs/design/` was never created. Mockups live in
+  docs/research/2026-10-17_design-directions.html; the dated accessibility
+  audit is docs/2026-10-17_accessibility-audit.md. Use those paths.

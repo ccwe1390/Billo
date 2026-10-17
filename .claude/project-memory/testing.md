@@ -1,1 +1,1 @@
-STATUS: empty (2026-10-17) - no code or design exists yet; the problem is not chosen.
+STATUS: pointer (2026-10-17 16:50 CDT) - 4 plain-assert scripts in tests/ (no pytest): `py tests/test_engine.py`, test_numlock.py, test_api.py, test_policy_page.py; each sets FAKE_OCI=1 and prints ALL PASS. They call endpoint functions directly, so HTTP routing is not covered.

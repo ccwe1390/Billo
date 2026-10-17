@@ -48,6 +48,8 @@ Generative AI) is BLOCKED-ON-EVAN until he confirms it.
 **Why:** Building on another provider would mean a rebuild, or a submission
 that misses the requirement.
 **Source:** Evan's message 2026-10-17; detail in compliance.md and services.md.
+**Update 2026-10-17 16:50 CDT:** OCI access is no longer blocked: the
+account, the VM and Generative AI + Language calls all work (services.md).
 
 ## 5. OCI credits: $500, hard cap (2026-10-17)
 **What:** The team has $500 in OCI credits (Evan, chat 2026-10-17). Evan's

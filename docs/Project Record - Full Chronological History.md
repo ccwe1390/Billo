@@ -60,6 +60,7 @@ the dated entry, not the digest.
 - [X - MySQL deleted; reviewer screenshots; axe audit; 6 bugs found](#appendix-x---mysql-deleted-reviewer-screenshots-axe-audit-6-bugs-found-2026-10-17-1602-cdt) (10-17)
 - [Y - Six reviewer-screenshot bugs fixed and deployed](#appendix-y---six-reviewer-screenshot-bugs-fixed-and-deployed-2026-10-17-1609-cdt) (10-17)
 - [Z - Full audit: 5 highs, mostly claims that outlived the code](#appendix-z---full-audit-5-highs-mostly-claims-that-outlived-the-code-2026-10-17-1643-cdt) (10-17)
+- [AA - Every audit fix built and verified; not deployed (SSH refused)](#appendix-aa---every-audit-fix-built-and-verified-not-deployed-ssh-refused-2026-10-17-1655-cdt) (10-17)
 
 ---
 
@@ -924,3 +925,74 @@ laptop. No Python process was running at 16:35.
 subagent tokens, about 20 minutes (16:14-16:35 CDT).
 
 **Next:** Evan said "fix all" (16:3x). Fixes follow in the next entry.
+
+# Appendix AA - Every audit fix built and verified; not deployed (SSH refused) (2026-10-17, 16:55 CDT)
+**What happened:** Evan said "commit and push then fix all then commit and
+push again". The audit report was committed and pushed as f317d07 (record Z).
+Opus planned every fix and made the design calls; two Sonnet agents coded on
+disjoint files (backend: app/*.py, tests, requirements.txt; frontend:
+app/static/*); Opus reviewed both diffs on disk, made two small fixes of its
+own, did all doc work, and ran the checks. NOT deployed: SSH to the VM was
+refused by the session's permission mode, so the live server still runs
+116d631.
+
+**Design calls (Claude's recommendations, applied under "fix all"):**
+- Not-eligible fallback, root cause: numlock.check treated every allowed
+  number as required. Now check(text, required, allowed): required = numbers
+  in the English facts, the engine's locked_numbers are allowed only.
+- Different hospital (audit A2): the estimate still shows, with a "uses the
+  policy of Cumberland General Hospital (SYNTHETIC)" line, a warning card and
+  a packet banner when the bill names another hospital. Not a refusal.
+- Abuse (A3): text fields <= 200 chars, only the six bill fields, income <=
+  10^12 cents, contract_version must be 1, PNG/JPEG signature check, and 40
+  paid requests per 60 s per client IP (429). The IP is the last
+  X-Forwarded-For entry; if Apache does not add one, the cap is shared.
+- `back_checked` (no back-translation ever existed) is replaced by
+  `translator`: oci_language or command_a.
+- Hindi now uses the same {n} placeholders, so the hospital-name check
+  covers every language (supersedes the 16:05 exemption).
+
+**Fixed (audit numbers):** 1 /extract runs the model call in a thread;
+2 not-eligible works in every language; 3 flag renamed and docs corrected;
+4 HeatWave claims struck; 5 pitch corrections sheet
+(docs/2026-10-17_pitch-corrections.md, draft for Evan); 6 hospital match
+flag; 7 uploads stay in memory (spool limit above 8 MB); 8 double-upload race
+(sequence token); 9 stale Continue button; 10 field caps and rate limit;
+11 finish_reason checked (Hindi max_tokens 2000); 12 tests added; 13-17 docs
+(contracts, HANDOFF, bins incl. a dated PIVOT entry in decisions.md, PRD F2
+strikes, F4 ticks with evidence, F9 not-built marks, 7 stub bins now point
+at the code); 19 HHS 2026 poverty values verified (Federal Register 2026-00755,
+published 2026-01-15, effective 2026-01-13; the engine formula matches the
+table for every size 1-8); 20 requirements pinned to laptop-tested versions;
+21 specific 413/415/429 messages; 22-24 amount and date parsing guards;
+25 failure type logged (never the message); 26 past-deadline warning;
+27 fullwidth digits; 28 literal {n} in text; 29 openapi off, nosniff,
+no-referrer and SAMEORIGIN headers; 30 focus moves, aria-live, labelled
+button groups, non-ASCII digit input, "1 person", NOTICE.md, doc errata.
+
+**Agent extras, reviewed and kept:** restore_numbers is now one regex pass
+(the old loop re-replaced a restored literal "{1}"); the "poverty guideline
+for 1 person" line; `S.busy = false` when leaving screen 3 (else the button
+stayed disabled). Opus fixes: focus moves only when the screen changes;
+the loading message is cleared when a submit is cancelled; the Hindi prompt
+no longer forbids reordering placeholders.
+
+**Verification:**
+- 4 test files ALL PASS, exit 0 (test_api grew by about 240 lines).
+- Browser, fake mode: es not-eligible -> numbers_match true, ai text kept;
+  Vanderbilt name -> warning card + "uses the policy of"; stale extract reply
+  ignored; Back during submit stays on screen 2 with no message; ar journey to
+  the packet at 375 px: rtl, no sideways scroll, <main>, 0 console errors.
+- Live OCI from the laptop key (n=1 each): explain es and ar not-eligible
+  numbers_match True, 8.0 s and 7.8 s; packet hi translator command_a, name
+  kept, 21.6 s (one model call per text); packet ar oci_language, name kept,
+  1.6 s.
+- Secret scan of the working tree: 0 findings.
+
+**Not done:** deploy (Evan, SSH); a project LICENSE (Evan's legal call);
+TLS (needs a domain); the pitch brackets (need the V1 results); CSP header
+(the packet iframe needs inline styles); axe not re-run; the Hindi packet is
+slow (21.6 s); the VM's package versions are still unrecorded.
+
+**Corrections to earlier entries:** see Appendix Z; also the record's front
+matter still says "No git history exists" (stale since 65be0e2).

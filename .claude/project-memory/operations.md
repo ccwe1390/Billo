@@ -74,3 +74,7 @@
 - 2026-10-17 16:08 CDT - Redeployed from 116d631 (six bug fixes). Live
   checks: journey 11.7 s; ar and zh-TW packets keep the hospital name and
   pass the number check; packet HTML has <main> and the 640px stack rule.
+- 2026-10-17 16:50 CDT - Corrections: the VM runs FastAPI/uvicorn behind
+  Apache (the first entry's "Next.js" is superseded); instance principals
+  for Generative AI and Language are verified live (decisions.md 14:50). The
+  "To verify" entry on Always Free is moot: E5.Flex is a paid shape.

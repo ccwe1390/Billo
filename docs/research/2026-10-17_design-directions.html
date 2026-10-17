@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bill to Help - three design directions (SYNTHETIC DEMO)</title>
+<style>
+/* Preview page only. No external requests: every font below is a SYSTEM stand-in.
+   The intended self-hosted fonts per direction are named in each column's spec box. */
+:root {
+  --page-bg: #F4F5F6; --page-ink: #1B1E23; --page-muted: #4F5661; --page-line: #8A919C;
+  --sys-sans: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --sys-arabic: "Segoe UI", "Geeza Pro", "Noto Sans Arabic", "Noto Naskh Arabic", Tahoma, sans-serif;
+  --sys-serif: Georgia, "Times New Roman", serif;
+  /* CJK: these are the PRODUCTION stacks too (no CJK webfont; see brief 5.4). system-ui stands in for IBM Plex Sans. */
+  --sys-zh-hans: system-ui, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --sys-zh-hant: system-ui, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page-bg); color: var(--page-ink); font: 16px/1.5 var(--sys-sans); }
+.page-head { max-width: 1240px; margin: 0 auto; padding: 24px 16px 8px; }
+.page-head h1 { font-size: 1.6rem; line-height: 1.2; margin: 0 0 8px; }
+.page-head p { margin: 4px 0; max-width: 75ch; color: var(--page-muted); }
+.page-head .warn { color: var(--page-ink); font-weight: 600; }
+.grid { max-width: 1240px; margin: 0 auto; padding: 8px 16px 40px; display: grid; gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); }
+.col h2 { font-size: 1.25rem; margin: 8px 0 2px; }
+.col .idea { margin: 0 0 10px; color: var(--page-muted); font-size: .95rem; }
+.spec { font-size: .82rem; line-height: 1.45; background: #fff; border: 1px solid var(--page-line); border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; }
+.spec dt { font-weight: 700; }
+.spec dd { margin: 0 0 6px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; list-style: none; }
+.swatches li { display: flex; align-items: center; gap: 4px; font-size: .75rem; }
+.swatches i { width: 18px; height: 18px; border-radius: 3px; border: 1px solid #6B7280; display: inline-block; }
+.mock-label { font-size: .8rem; font-weight: 700; color: var(--page-muted); margin: 14px 0 4px; }
+.phone { width: 100%; max-width: 390px; margin: 0 auto; border: 1px solid #6B7280; border-radius: 22px; overflow: hidden; background: #fff; }
+.synthetic-tag { display: inline-block; font: 700 .72rem/1.3 var(--sys-sans); padding: 2px 6px; border: 1.5px solid currentColor; border-radius: 3px; white-space: nowrap; }
+bdi, .num { unicode-bidi: isolate; }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+[dir="rtl"] { font-family: var(--sys-arabic); }
+:lang(zh-CN) { font-family: var(--sys-zh-hans); }
+:lang(zh-TW) { font-family: var(--sys-zh-hant); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ======================= D1 PAPER TRAIL ======================= */
+.d1 { --paper:#FFFFFF; --desk:#EEF1F4; --ink:#1B2430; --ink-2:#4A5361; --pen:#1F4FA3; --hi:#FFE45C; --rule:#8A93A0; --focus:#FFBE2E;
+  background: var(--desk); color: var(--ink); padding: 0 0 16px; }
+.d1 .bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 16px; background: var(--paper); border-block-end: 1px solid var(--rule); }
+.d1 .bar strong { font-size: 1rem; }
+.d1 .bar .synthetic-tag { color: #7A2E00; background: #FFF4E5; }
+.d1:lang(ar) { line-height: 1.7; }
+.d1 .step { font-size: .875rem; color: var(--ink-2); padding: 12px 16px 0; margin: 0; }
+.d1 .sheet { background: var(--paper); margin: 8px 12px 0; border: 1px solid var(--rule); border-radius: 4px; padding: 16px; }
+.d1 h3 { font-size: 1.4375rem; line-height: 1.25; margin: 0 0 12px; font-weight: 700; }
+.d1 .lead { font-size: 1.1875rem; margin: 0 0 16px; }
+.d1 .lead .num { font-weight: 700; }
+.d1 sup a { color: var(--pen); font-weight: 700; text-decoration: none; padding: 0 2px; }
+.d1 .excerpt-head { font-size: .875rem; color: var(--ink-2); margin: 0 0 4px; }
+.d1 table { width: 100%; border-collapse: collapse; font-size: .875rem; margin: 0 0 16px; }
+.d1 th, .d1 td { border: 1px solid var(--rule); padding: 8px; text-align: start; vertical-align: top; }
+.d1 th { font-weight: 600; background: var(--desk); }
+.d1 tr.yours td { background: var(--hi); font-weight: 700; }
+.d1 tr.yours td:first-child { box-shadow: inset 4px 0 0 var(--ink); }
+.d1 .you { display: inline-block; font-size: .875rem; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 3px; padding: 0 4px; margin-inline-start: 4px; }
+.d1 .deadline { font-size: 1.1875rem; margin: 0 0 4px; }
+.d1 mark { background: linear-gradient(100deg, transparent 0 2%, var(--hi) 2% 97%, transparent 97%); color: var(--ink); padding: 1px 4px; font-weight: 700; }
+.d1 .decide { color: var(--ink-2); font-size: 1rem; margin: 12px 0 0; }
+.d1 .notes { border-block-start: 1px solid var(--rule); margin-top: 16px; padding-top: 8px; font-size: .875rem; color: var(--ink-2); }
+.d1 .notes ol { margin: 0; padding-inline-start: 18px; }
+.d1 .actions { padding: 16px 12px 0; display: flex; flex-direction: column; gap: 8px; }
+.d1 .btn { font: inherit; font-weight: 700; min-height: 48px; border-radius: 4px; border: 2px solid var(--pen); background: var(--paper); color: var(--pen); padding: 12px 16px; text-align: center; }
+.d1 .btn.primary { background: var(--pen); color: #fff; }
+.d1 .btn:focus-visible, .d1 a:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; box-shadow: 0 0 0 6px var(--focus); }
+
+/* ======================= D2 PUBLIC COUNTER ======================= */
+.d2 { --bg:#FFFFFF; --ink:#1B1B1B; --ink-2:#565C65; --river:#00597A; --river-tint:#E1F3F8; --gold:#FFBE2E; --line:#71767A; --soft:#F0F0F0; --free:#1B6B3A;
+  background: var(--bg); color: var(--ink); padding: 0 0 18px; }
+.d2 .bar { background: var(--ink); color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.d2 .bar strong { font-size: 1rem; }
+.d2 .bar .synthetic-tag { color: var(--ink); background: var(--gold); border-color: var(--gold); }
+.d2 .steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; padding: 14px 16px 4px; }
+.d2 .steps span { height: 8px; background: var(--soft); border: 1px solid var(--line); }
+.d2 .steps span.done { background: var(--river); border-color: var(--river); }
+.d2 .steps span.now { background: var(--ink); border-color: var(--ink); }
+.d2 .step-text { font-size: .9rem; font-weight: 600; padding: 0 16px; margin: 4px 0 6px; }
+.d2 .body { padding: 0 16px; }
+.d2 h3 { font-size: 1.9rem; line-height: 1.15; margin: 4px 0 12px; font-weight: 800; letter-spacing: -.01em; }
+.d2 .answer { border-inline-start: 6px solid var(--free); background: #F1F8F3; padding: 12px 14px; margin: 0 0 14px; }
+.d2 .answer .k { font-size: .9rem; margin: 0; }
+.d2 .answer .v { font-size: 1.45rem; font-weight: 800; margin: 2px 0 2px; }
+.d2 .answer .gloss { margin: 0; font-weight: 600; }
+.d2 .fact { font-size: 1.05rem; margin: 0 0 10px; }
+.d2 .fact .num { font-weight: 700; }
+.d2 .scale-label { font-size: .85rem; font-weight: 600; margin: 8px 0 4px; }
+.d2 .scale { position: relative; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2px; margin: 0 0 4px; padding-top: 30px; }
+.d2 .scale div { font-size: .72rem; line-height: 1.2; padding: 6px 4px; color: #fff; font-weight: 700; min-height: 40px; }
+.d2 .scale .b1 { background: var(--free); } .d2 .scale .b2 { background: var(--river); } .d2 .scale .b3 { background: #3D4551; } .d2 .scale .b4 { background: var(--soft); color: var(--ink); border: 1px solid var(--line); }
+.d2 .pin { position: absolute; top: 0; inset-inline-start: 23%; transform: translateX(-50%); font-size: .75rem; font-weight: 800; background: var(--ink); color: #fff; padding: 2px 6px; border-radius: 2px; white-space: nowrap; }
+.d2 .pin::after { content: ""; position: absolute; top: 100%; inset-inline-start: 50%; margin-inline-start: -5px; border: 5px solid transparent; border-top-color: var(--ink); }
+.d2 .ticks { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; font-size: .72rem; color: var(--ink-2); margin-bottom: 12px; }
+.d2 .ticks span { border-inline-start: 1px solid var(--line); padding-inline-start: 3px; }
+.d2 .cite { font-size: .82rem; color: var(--ink-2); margin: 0 0 12px; }
+.d2 .cite a { color: var(--river); font-weight: 600; }
+.d2 .due { display: flex; gap: 10px; align-items: baseline; border-block: 1px solid var(--line); padding: 10px 0; margin: 0 0 12px; }
+.d2 .due .k { font-size: .9rem; } .d2 .due .v { font-size: 1.15rem; font-weight: 800; }
+.d2 .btn { display: block; width: 100%; font: inherit; font-weight: 700; font-size: 1.05rem; min-height: 52px; border: 0; border-radius: 2px; background: var(--free); color: #fff; box-shadow: 0 3px 0 #0E3A1F; margin: 0 0 10px; }
+.d2 .link { color: var(--river); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ======================= D3 FRONT PORCH ======================= */
+.d3 { --bg:#FFFFFF; --surface:#F1F6F4; --ink:#10302A; --ink-2:#4D615C; --green:#0F6B5C; --marigold:#F2B035; --mint:#DCEFE8; --edge:#5F7A73;
+  background: var(--bg); color: var(--ink); padding: 0 0 18px; }
+.d3 .bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 16px; }
+.d3 .bar strong { font-size: 1.05rem; color: var(--green); }
+.d3 .bar .synthetic-tag { color: var(--ink); background: var(--marigold); border-color: var(--ink); }
+.d3 .toggle { display: flex; margin: 0 16px 12px; border: 2px solid var(--green); border-radius: 999px; overflow: hidden; width: max-content; }
+.d3 .toggle span { padding: 6px 14px; font-size: .9rem; font-weight: 700; }
+.d3 .toggle .on { background: var(--green); color: #fff; }
+.d3 .hello { padding: 0 16px; font-size: .95rem; color: var(--ink-2); margin: 0 0 4px; }
+.d3 h3 { padding: 0 16px; font-size: 1.55rem; line-height: 1.3; margin: 0 0 14px; font-weight: 700; }
+.d3 h3 .num { box-shadow: inset 0 -.38em 0 var(--marigold); padding: 0 2px; }
+.d3 .result { margin: 0 12px 14px; background: var(--surface); border-radius: 16px; padding: 14px 16px; border: 2px solid var(--green); }
+.d3 .result .k { font-size: .9rem; margin: 0; }
+.d3 .result .v { font-size: 1.35rem; font-weight: 800; color: var(--green); margin: 2px 0; }
+.d3 .result .src { font-size: .8rem; color: var(--ink-2); margin: 6px 0 0; }
+.d3 .result .src a { color: var(--green); font-weight: 600; }
+.d3 h4 { padding: 0 16px; font-size: 1rem; margin: 0 0 6px; }
+.d3 ol.next { list-style: none; margin: 0 12px 14px; padding: 0; counter-reset: n; }
+.d3 ol.next li { counter-increment: n; display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: start; padding: 10px 4px; border-block-end: 1px solid var(--mint); }
+.d3 ol.next li::before { content: counter(n); width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--green); color: var(--green); font-weight: 800; display: grid; place-items: center; }
+.d3 ol.next li.due::before { background: var(--marigold); border-color: var(--ink); color: var(--ink); }
+.d3 ol.next b { display: block; }
+.d3 ol.next small { color: var(--ink-2); font-size: .85rem; }
+.d3 .btn { display: block; margin: 0 12px 8px; width: calc(100% - 24px); font: inherit; font-weight: 800; font-size: 1.05rem; min-height: 52px; border-radius: 999px; border: 0; background: var(--green); color: #fff; }
+.d3 .decide { padding: 0 16px; font-size: .9rem; color: var(--ink-2); margin: 6px 0 0; }
+
+.foot { max-width: 1240px; margin: 0 auto; padding: 0 16px 40px; font-size: .85rem; color: var(--page-muted); }
+.foot p { max-width: 90ch; }
+</style>
+</head>
+<body>
+<header class="page-head">
+  <h1>Bill to Help: three design directions for the Result screen</h1>
+  <p class="warn">SYNTHETIC DEMO. Every mock below uses a fictional hospital (Cumberland General, synthetic) and made-up numbers: household of 4, $38,000 a year, 115% of the 2026 federal poverty guideline.</p>
+  <p>Fonts: this page makes no network requests, so all text uses <b>system fonts as stand-ins</b> (system-ui / Segoe UI / Georgia). The intended self-hosted fonts are named in each spec box. Icons are omitted on purpose; each spec names the open-licensed set it would use.</p>
+  <p>Arabic and Chinese text is a draft written for this preview and needs review by a fluent speaker before any use (the Chinese reuses the app's own zh-CN strings where they exist). Policy text stays in English (as the app does today), isolated inside the translated layout.</p>
+  <p>Direction 1 (recommended) also has a Simplified Chinese (zh-CN) mock. Its CJK fonts are the real production choice, not a stand-in: the brief recommends the phone's own Chinese font over a CJK webfont.</p>
+  <p>Companion brief: <code>docs/research/2026-10-17_design-system-brief.md</code> (sources, contrast ratios, build cost, recommendation).</p>
+</header>
+
+<main class="grid">
+
+<!-- ============================ D1 ============================ -->
+<section class="col" aria-labelledby="d1h">
+  <h2 id="d1h">1. Paper Trail</h2>
+  <p class="idea">The result reads like a well-made document: the hospital's own policy table, with your row highlighted and every claim footnoted to its page.</p>
+  <dl class="spec">
+    <dt>Signals trust to</dt><dd>The physician and Vanderbilt faculty (citations, sources first); families who already trust paper.</dd>
+    <dt>Colors (ratios in the brief)</dt>
+    <dd><ul class="swatches">
+      <li><i style="background:#1B2430"></i>ink #1B2430</li><li><i style="background:#4A5361"></i>ink-2 #4A5361</li>
+      <li><i style="background:#1F4FA3"></i>pen #1F4FA3</li><li><i style="background:#FFE45C"></i>highlighter #FFE45C</li>
+      <li><i style="background:#EEF1F4"></i>desk #EEF1F4</li><li><i style="background:#8A93A0"></i>rule #8A93A0</li></ul></dd>
+    <dt>Intended type</dt><dd>IBM Plex Sans (Latin, Vietnamese, Cyrillic) + Plex Sans Arabic + Plex Sans Devanagari, 400/600, self-hosted. Chinese uses the phone's own CJK font (PingFang / Microsoft YaHei or JhengHei / Noto Sans CJK), no CJK webfont. Scale 14 / 16 / 19 / 23 / 28 px.</dd>
+    <dt>Signature</dt><dd>Policy-table excerpt with your row highlighted; numbered footnote citations; the highlighter in exactly two places: your row and the deadline.</dd>
+  </dl>
+
+  <p class="mock-label">English, left-to-right</p>
+  <div class="phone"><div class="d1" lang="en" dir="ltr">
+    <div class="bar"><strong>Bill to Help</strong><span class="synthetic-tag">SYNTHETIC DEMO</span></div>
+    <p class="step">Step 4 of 5: Your result</p>
+    <div class="sheet">
+      <h3>You can likely get free care at this hospital.</h3>
+      <p class="lead">A household of <span class="num">4</span> with <span class="num">$38,000</span> a year is at about <span class="num">115%</span> of the 2026 federal poverty guideline.<sup><a href="#">1</a></sup></p>
+      <p class="excerpt-head">From the hospital's policy, page 1<sup><a href="#">2</a></sup></p>
+      <table>
+        <tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr>
+        <tr class="yours"><td>Up to 200% <span class="you">You: 115%</span></td><td>Free care (100% discount)</td></tr>
+        <tr><td>Above 200% up to 300%</td><td>75% discount</td></tr>
+        <tr><td>Above 300% up to 400%</td><td>50% discount</td></tr>
+        <tr><td>Above 400%</td><td>Payment plan</td></tr>
+      </table>
+      <p class="deadline">Apply by <mark><span class="num">2027-05-29</span></mark>.<sup><a href="#">3</a></sup></p>
+      <p class="decide">This is an estimate from the hospital's published rules. The hospital makes the final decision.</p>
+      <div class="notes"><ol>
+        <li>HHS 2026 Poverty Guidelines, effective 2026-01-13.</li>
+        <li>Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1, effective 2026-01-13.</li>
+        <li>Same policy, page 2: 240 days from the first billing statement.</li>
+      </ol></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="button">Create my application packet</button>
+      <button class="btn" type="button">Show in Arabic</button>
+    </div>
+  </div></div>
+
+  <p class="mock-label">Arabic, right-to-left</p>
+  <div class="phone"><div class="d1" lang="ar" dir="rtl">
+    <div class="bar"><strong>من الفاتورة إلى المساعدة</strong><span class="synthetic-tag" lang="en" dir="ltr">SYNTHETIC DEMO</span></div>
+    <p class="step">الخطوة <span class="num">4</span> من <span class="num">5</span>: نتيجتك</p>
+    <div class="sheet">
+      <h3>يُرجَّح أنك مؤهل لرعاية مجانية في هذا المستشفى.</h3>
+      <p class="lead">أسرة من <span class="num">4</span> أفراد بدخل <bdi class="num">$38,000</bdi> في السنة تعادل تقريبًا <bdi class="num">115%</bdi> من الحد الفيدرالي للفقر لعام <span class="num">2026</span>.<sup><a href="#">1</a></sup></p>
+      <p class="excerpt-head">من سياسة المستشفى، صفحة <span class="num">1</span> (النص الأصلي بالإنجليزية)<sup><a href="#">2</a></sup></p>
+      <table lang="en" dir="ltr">
+        <tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr>
+        <tr class="yours"><td>Up to 200% <span class="you" lang="ar" dir="rtl">أنت: <bdi>115%</bdi></span></td><td>Free care (100% discount)</td></tr>
+        <tr><td>Above 200% up to 300%</td><td>75% discount</td></tr>
+        <tr><td>Above 300% up to 400%</td><td>50% discount</td></tr>
+        <tr><td>Above 400%</td><td>Payment plan</td></tr>
+      </table>
+      <p class="deadline">قدّم الطلب قبل <mark><bdi class="num">2027-05-29</bdi></mark>.<sup><a href="#">3</a></sup></p>
+      <p class="decide">هذا تقدير من قواعد المستشفى المنشورة. المستشفى هو من يتخذ القرار النهائي.</p>
+      <div class="notes"><ol>
+        <li><bdi lang="en">HHS 2026 Poverty Guidelines, effective 2026-01-13.</bdi></li>
+        <li><bdi lang="en">Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1, effective 2026-01-13.</bdi></li>
+        <li><bdi lang="en">Same policy, page 2: 240 days from the first billing statement.</bdi></li>
+      </ol></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="button">أنشئ حزمة طلبي</button>
+      <button class="btn" type="button">عرض بالإنجليزية</button>
+    </div>
+  </div></div>
+
+  <p class="mock-label">Simplified Chinese (zh-CN), left-to-right. Interface translated (tier 1); policy text stays in English. CJK glyphs come from the device's own font.</p>
+  <div class="phone"><div class="d1" lang="zh-CN" dir="ltr">
+    <div class="bar"><strong>从账单到帮助</strong><span class="synthetic-tag" lang="en">SYNTHETIC DEMO</span></div>
+    <p class="step">第 <span class="num">4</span> 步，共 <span class="num">5</span> 步：您的结果</p>
+    <div class="sheet">
+      <h3>您很可能在这家医院获得免费医疗。</h3>
+      <p class="lead"><span class="num">4</span> 口之家年收入 <bdi class="num">$38,000</bdi>，约为 <span class="num">2026</span> 年联邦贫困线的 <bdi class="num">115%</bdi>。<sup><a href="#">1</a></sup></p>
+      <p class="excerpt-head">摘自医院政策第 <span class="num">1</span> 页（政策文本按医院原文以英文显示）<sup><a href="#">2</a></sup></p>
+      <table lang="en" dir="ltr">
+        <tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr>
+        <tr class="yours"><td>Up to 200% <span class="you" lang="zh-CN">您：<bdi>115%</bdi></span></td><td>Free care (100% discount)</td></tr>
+        <tr><td>Above 200% up to 300%</td><td>75% discount</td></tr>
+        <tr><td>Above 300% up to 400%</td><td>50% discount</td></tr>
+        <tr><td>Above 400%</td><td>Payment plan</td></tr>
+      </table>
+      <p class="deadline">截止日期：<mark><bdi class="num">2027-05-29</bdi></mark><sup><a href="#">3</a></sup></p>
+      <p class="decide">这是根据医院公布的规则所做的估算。最终由医院决定。</p>
+      <div class="notes"><ol>
+        <li><bdi lang="en">HHS 2026 Poverty Guidelines, effective 2026-01-13.</bdi></li>
+        <li><bdi lang="en">Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1, effective 2026-01-13.</bdi></li>
+        <li><bdi lang="en">Same policy, page 2: 240 days from the first billing statement.</bdi></li>
+      </ol></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" type="button">创建我的申请材料包</button>
+      <button class="btn" type="button">显示英文</button>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============================ D2 ============================ -->
+<section class="col" aria-labelledby="d2h">
+  <h2 id="d2h">2. Public Counter</h2>
+  <p class="idea">A service-desk system in the GOV.UK / USWDS tradition: one decision per screen, the answer first in huge type, and a sliding-scale bar that shows where you fall.</p>
+  <dl class="spec">
+    <dt>Signals trust to</dt><dd>The HCA application-services director and Oracle executives (rigor, workflow clarity, accessibility); public-service users.</dd>
+    <dt>Colors (ratios in the brief)</dt>
+    <dd><ul class="swatches">
+      <li><i style="background:#1B1B1B"></i>ink #1B1B1B</li><li><i style="background:#00597A"></i>river #00597A</li>
+      <li><i style="background:#1B6B3A"></i>go #1B6B3A</li><li><i style="background:#FFBE2E"></i>focus gold #FFBE2E</li>
+      <li><i style="background:#565C65"></i>ink-2 #565C65</li><li><i style="background:#71767A"></i>line #71767A</li></ul></dd>
+    <dt>Intended type</dt><dd>Noto Sans (Latin, Vietnamese, Cyrillic, Devanagari) + Noto Sans Arabic, self-hosted; system CJK fonts as in Direction 1; 800-weight headings.</dd>
+    <dt>Signature</dt><dd>Sliding-scale bar built from the policy's real bands; segmented step bar; a heavy "answer block" with a thick inline-start rule; no cards anywhere.</dd>
+  </dl>
+
+  <p class="mock-label">English, left-to-right</p>
+  <div class="phone"><div class="d2" lang="en" dir="ltr">
+    <div class="bar"><strong>Bill to Help</strong><span class="synthetic-tag">SYNTHETIC DEMO</span></div>
+    <div class="steps" aria-hidden="true"><span class="done"></span><span class="done"></span><span class="done"></span><span class="now"></span><span></span></div>
+    <p class="step-text">Step 4 of 5</p>
+    <div class="body">
+      <h3>Free care is likely.</h3>
+      <div class="answer">
+        <p class="k">Under this hospital's policy</p>
+        <p class="v">Free care (100% discount)</p>
+      </div>
+      <p class="fact">Your household of <span class="num">4</span> with <span class="num">$38,000</span> a year is at about <span class="num">115%</span> of the 2026 federal poverty guideline.</p>
+      <p class="scale-label">Where you fall on this hospital's sliding scale</p>
+      <div class="scale" aria-label="Sliding scale: you are at 115 percent, inside the free care band (up to 200 percent)">
+        <span class="pin">You: 115%</span>
+        <div class="b1">Free care</div><div class="b2">75% off</div><div class="b3">50% off</div><div class="b4">Payment plan</div>
+      </div>
+      <div class="ticks" aria-hidden="true"><span>0%</span><span>200%</span><span>300%</span><span>400%+</span></div>
+      <p class="cite">Source: <a href="#">Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1</a>, effective 2026-01-13.</p>
+      <div class="due"><span class="k">Apply by</span><span class="v num">2027-05-29</span></div>
+      <button class="btn" type="button">Create my application packet</button>
+      <a class="link" href="#">Show in Arabic</a>
+    </div>
+  </div></div>
+
+  <p class="mock-label">Arabic, right-to-left (layout and step bar mirror; the number scale does not, per Material Design: charts and graphs are not mirrored)</p>
+  <div class="phone"><div class="d2" lang="ar" dir="rtl">
+    <div class="bar"><strong>من الفاتورة إلى المساعدة</strong><span class="synthetic-tag" lang="en" dir="ltr">SYNTHETIC DEMO</span></div>
+    <div class="steps" aria-hidden="true"><span class="done"></span><span class="done"></span><span class="done"></span><span class="now"></span><span></span></div>
+    <p class="step-text">الخطوة <span class="num">4</span> من <span class="num">5</span></p>
+    <div class="body">
+      <h3>يُرجَّح أنك مؤهل لرعاية مجانية.</h3>
+      <div class="answer">
+        <p class="k">بحسب سياسة هذا المستشفى</p>
+        <p class="v" lang="en" dir="ltr">Free care (100% discount)</p>
+        <p class="gloss">رعاية مجانية (خصم <bdi>100%</bdi>)</p>
+      </div>
+      <p class="fact">أسرتك المكوّنة من <span class="num">4</span> أفراد بدخل <bdi class="num">$38,000</bdi> في السنة تعادل تقريبًا <bdi class="num">115%</bdi> من الحد الفيدرالي للفقر لعام <span class="num">2026</span>.</p>
+      <p class="scale-label">موقعك على جدول التخفيضات في هذا المستشفى</p>
+      <div class="scale" dir="ltr" aria-label="أنت عند 115 بالمئة، ضمن فئة الرعاية المجانية">
+        <span class="pin" dir="rtl" style="inset-inline-start:auto; inset-inline-end:auto; left:23%">أنت: <bdi>115%</bdi></span>
+        <div class="b1" dir="rtl">مجانية</div><div class="b2" dir="rtl">خصم <bdi>75%</bdi></div><div class="b3" dir="rtl">خصم <bdi>50%</bdi></div><div class="b4" dir="rtl">خطة سداد</div>
+      </div>
+      <div class="ticks" dir="ltr" aria-hidden="true"><span><bdi>0%</bdi></span><span><bdi>200%</bdi></span><span><bdi>300%</bdi></span><span><bdi>400%+</bdi></span></div>
+      <p class="cite">المصدر: <a href="#" lang="en" dir="ltr">Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1, effective 2026-01-13</a></p>
+      <div class="due"><span class="k">قدّم الطلب قبل</span><bdi class="v num">2027-05-29</bdi></div>
+      <button class="btn" type="button">أنشئ حزمة طلبي</button>
+      <a class="link" href="#">عرض بالإنجليزية</a>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============================ D3 ============================ -->
+<section class="col" aria-labelledby="d3h">
+  <h2 id="d3h">3. Front Porch</h2>
+  <p class="idea">A warm community-clinic voice: the result is a sentence spoken to the helper, followed by a short numbered to-do list with the deadline as the one bright item.</p>
+  <dl class="spec">
+    <dt>Signals trust to</dt><dd>Families and the adult child helping a parent (warmth, plain speech); weaker with the executives and the physician.</dd>
+    <dt>Colors (ratios in the brief)</dt>
+    <dd><ul class="swatches">
+      <li><i style="background:#10302A"></i>ink #10302A</li><li><i style="background:#0F6B5C"></i>green #0F6B5C</li>
+      <li><i style="background:#F2B035"></i>marigold #F2B035</li><li><i style="background:#F1F6F4"></i>surface #F1F6F4</li>
+      <li><i style="background:#4D615C"></i>ink-2 #4D615C</li><li><i style="background:#5F7A73"></i>edge #5F7A73</li></ul></dd>
+    <dt>Intended type</dt><dd>Readex Pro (Latin, Vietnamese, Arabic) + Noto Sans for Cyrillic and Devanagari; system CJK fonts as in Direction 1.</dd>
+    <dt>Signature</dt><dd>Marigold underline under the key numbers; numbered next-steps list where only the deadline step is filled; pill language toggle.</dd>
+  </dl>
+
+  <p class="mock-label">English, left-to-right</p>
+  <div class="phone"><div class="d3" lang="en" dir="ltr">
+    <div class="bar"><strong>Bill to Help</strong><span class="synthetic-tag">SYNTHETIC DEMO</span></div>
+    <div class="toggle" aria-hidden="true"><span class="on">English</span><span lang="ar">العربية</span></div>
+    <p class="hello">For your father's bill</p>
+    <h3>At <span class="num">$38,000</span> a year for <span class="num">4</span> people, he is at about <span class="num">115%</span> of the poverty line.</h3>
+    <div class="result">
+      <p class="k">Under this hospital's policy, that means</p>
+      <p class="v">Free care (100% discount)</p>
+      <p class="src">Source: <a href="#">Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1</a>, effective 2026-01-13</p>
+    </div>
+    <h4>What to do next</h4>
+    <ol class="next">
+      <li><span><b>Make the application packet</b><small>We fill in what we know from the bill.</small></span></li>
+      <li><span><b>Gather two documents</b><small>Proof of income for the last 30 days; a copy of this bill.</small></span></li>
+      <li class="due"><span><b>Send it by <span class="num">2027-05-29</span></b><small>240 days from the first billing statement (policy page 2).</small></span></li>
+    </ol>
+    <button class="btn" type="button">Make my packet</button>
+    <p class="decide">An estimate from the hospital's own rules. The hospital decides.</p>
+  </div></div>
+
+  <p class="mock-label">Arabic, right-to-left</p>
+  <div class="phone"><div class="d3" lang="ar" dir="rtl">
+    <div class="bar"><strong>من الفاتورة إلى المساعدة</strong><span class="synthetic-tag" lang="en" dir="ltr">SYNTHETIC DEMO</span></div>
+    <div class="toggle" aria-hidden="true"><span lang="en">English</span><span class="on">العربية</span></div>
+    <p class="hello">لفاتورة والدك</p>
+    <h3>بدخل <bdi class="num">$38,000</bdi> في السنة لأسرة من <span class="num">4</span> أفراد، يعادل دخله تقريبًا <bdi class="num">115%</bdi> من خط الفقر.</h3>
+    <div class="result">
+      <p class="k">بحسب سياسة هذا المستشفى، هذا يعني</p>
+      <p class="v" lang="en" dir="ltr">Free care (100% discount)</p>
+      <p class="k">رعاية مجانية (خصم <bdi>100%</bdi>)</p>
+      <p class="src">المصدر: <a href="#" lang="en" dir="ltr">Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only), page 1, effective 2026-01-13</a></p>
+    </div>
+    <h4>الخطوات التالية</h4>
+    <ol class="next">
+      <li><span><b>أنشئ حزمة الطلب</b><small>نملأ ما نعرفه من الفاتورة.</small></span></li>
+      <li><span><b>اجمع مستندين</b><small>إثبات الدخل لآخر <span class="num">30</span> يومًا، ونسخة من هذه الفاتورة.</small></span></li>
+      <li class="due"><span><b>أرسلها قبل <bdi class="num">2027-05-29</bdi></b><small><span class="num">240</span> يومًا من أول كشف حساب (صفحة <span class="num">2</span> من السياسة).</small></span></li>
+    </ol>
+    <button class="btn" type="button">أنشئ حزمتي</button>
+    <p class="decide">تقدير من قواعد المستشفى نفسه. المستشفى هو من يقرر.</p>
+  </div></div>
+</section>
+
+</main>
+<footer class="foot">
+  <p>All three mocks render the same synthetic facts so they can be compared directly. Ratios for every text/background pair were computed with the WCAG 2.x relative-luminance formula; the table is in the brief. Buttons are 48-52px tall to clear the 44px target size guideline.</p>
+</footer>
+</body>
+</html>

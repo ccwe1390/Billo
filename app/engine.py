@@ -73,12 +73,30 @@ def evaluate(bill_fields, answers, policy, fpl):
     percent = (income_cents * 100) // fpl_c
 
     tier = None
-    for t in policy["tiers"]:
+    tier_index = None
+    for i, t in enumerate(policy["tiers"]):
         if t["max_percent"] is None or income_cents * 100 <= fpl_c * t["max_percent"]:
             tier = t
+            tier_index = i
             break
     if tier is None:
         raise ValueError("policy has no matching tier")
+
+    # Whole tier table for the Result screen; `current` is marked by position
+    # because two tiers share the id "discount".
+    tiers = [
+        {
+            "id": t["id"],
+            "label_en": t["label_en"],
+            "discount_percent": t["discount_percent"],
+            "eligible": t["eligible"],
+            "min_percent_exclusive": policy["tiers"][i - 1]["max_percent"] if i > 0 else None,
+            "max_percent": t["max_percent"],
+            "citation": copy.deepcopy(t["citation"]),
+            "current": i == tier_index,
+        }
+        for i, t in enumerate(policy["tiers"])
+    ]
 
     window = policy["application_window"]
     deadline_date = (statement_date + timedelta(days=window["days_from_statement"])).isoformat()
@@ -112,6 +130,7 @@ def evaluate(bill_fields, answers, policy, fpl):
             "eligible": tier["eligible"],
             "citation": copy.deepcopy(tier["citation"]),
         },
+        "tiers": tiers,
         "deadline": {
             "date": deadline_date,
             "text_en": window["text_template_en"].format(date=deadline_date),

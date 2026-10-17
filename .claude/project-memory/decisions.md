@@ -165,3 +165,10 @@ Standing decisions (what is decided NOW). History lives in the record.
   (multipart spool limit above 8 MB). Not done: a project LICENSE (Evan's
   legal call), TLS (needs a domain), filling the pitch brackets (needs the V1
   results). Pitch fixes: docs/2026-10-17_pitch-corrections.md (draft).
+- 2026-10-17 ~18:35 CDT - F10 approved by Evan (PRD F10): D1a (Dad's bills
+  = seeded synthetic bills, nothing saved), D2b (live dashboard of in-memory
+  counts, no personal data), HTTPS included (Let's Encrypt IP certificate,
+  agreement accepted with no email, approved ~18:31), QR via the vendored
+  qrcode-generator 2.0.4 (download approved), product renamed "BillScan".
+  Built on branch f10; NOTHING deploys until Evan says go. Dipayan's React
+  PR #1 is out of scope; which UI teammates demo is undecided (Evan).

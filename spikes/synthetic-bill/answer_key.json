@@ -1,0 +1,82 @@
+{
+  "bill-01": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-01",
+    "account_number": "CGH-00482913",
+    "amount_due_cents": 481240,
+    "date_of_service": "2026-09-12",
+    "insurance_status": "self_pay"
+  },
+  "bill-02": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-05",
+    "account_number": "CGH-00519377",
+    "amount_due_cents": 185850,
+    "date_of_service": "2026-09-20",
+    "insurance_status": "self_pay"
+  },
+  "bill-03": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-09",
+    "account_number": "CGH-00527104",
+    "amount_due_cents": 64200,
+    "date_of_service": "2026-09-26",
+    "insurance_status": "self_pay"
+  },
+  "bill-04": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-12",
+    "account_number": "CGH-00527118",
+    "amount_due_cents": 31875,
+    "date_of_service": "2026-09-26",
+    "insurance_status": "self_pay"
+  },
+  "bill-05": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-14",
+    "account_number": "CGH-00533062",
+    "amount_due_cents": 120600,
+    "date_of_service": "2026-10-02",
+    "insurance_status": "self_pay"
+  },
+  "bill-06": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-09-08",
+    "account_number": "CGH-00541206",
+    "amount_due_cents": 79150,
+    "date_of_service": "2026-09-01",
+    "insurance_status": "self_pay"
+  },
+  "bill-07": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-09-17",
+    "account_number": "CGH-00548830",
+    "amount_due_cents": 519100,
+    "date_of_service": "2026-09-02",
+    "insurance_status": "self_pay"
+  },
+  "bill-08": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-09-24",
+    "account_number": "CGH-00556471",
+    "amount_due_cents": 34900,
+    "date_of_service": "2026-09-19",
+    "insurance_status": "self_pay"
+  },
+  "bill-09": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-02",
+    "account_number": "CGH-00563920",
+    "amount_due_cents": 456900,
+    "date_of_service": "2026-09-10",
+    "insurance_status": "self_pay"
+  },
+  "bill-10": {
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "statement_date": "2026-10-15",
+    "account_number": "CGH-00571348",
+    "amount_due_cents": 614180,
+    "date_of_service": "2026-09-27",
+    "insurance_status": "self_pay"
+  }
+}

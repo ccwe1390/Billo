@@ -1,0 +1,186 @@
+{
+  "synthetic": true,
+  "note_en": "Five SYNTHETIC bills from one emergency visit at a fictional hospital. Demo data only.",
+  "bills": [
+    {
+      "id": "bill-01",
+      "label_en": "Emergency department visit",
+      "fields": {
+        "hospital_name": {
+          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "confidence": null,
+          "confirmed": true
+        },
+        "statement_date": {
+          "value": "2026-10-01",
+          "confidence": null,
+          "confirmed": true
+        },
+        "account_number": {
+          "value": "CGH-00482913",
+          "confidence": null,
+          "confirmed": true
+        },
+        "amount_due_cents": {
+          "value": 481240,
+          "confidence": null,
+          "confirmed": true
+        },
+        "date_of_service": {
+          "value": "2026-09-12",
+          "confidence": null,
+          "confirmed": true
+        },
+        "insurance_status": {
+          "value": "self_pay",
+          "confidence": null,
+          "confirmed": true
+        }
+      }
+    },
+    {
+      "id": "bill-02",
+      "label_en": "Emergency department follow-up visit",
+      "fields": {
+        "hospital_name": {
+          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "confidence": null,
+          "confirmed": true
+        },
+        "statement_date": {
+          "value": "2026-10-05",
+          "confidence": null,
+          "confirmed": true
+        },
+        "account_number": {
+          "value": "CGH-00519377",
+          "confidence": null,
+          "confirmed": true
+        },
+        "amount_due_cents": {
+          "value": 185850,
+          "confidence": null,
+          "confirmed": true
+        },
+        "date_of_service": {
+          "value": "2026-09-20",
+          "confidence": null,
+          "confirmed": true
+        },
+        "insurance_status": {
+          "value": "self_pay",
+          "confidence": null,
+          "confirmed": true
+        }
+      }
+    },
+    {
+      "id": "bill-03",
+      "label_en": "Clinic follow-up",
+      "fields": {
+        "hospital_name": {
+          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "confidence": null,
+          "confirmed": true
+        },
+        "statement_date": {
+          "value": "2026-10-09",
+          "confidence": null,
+          "confirmed": true
+        },
+        "account_number": {
+          "value": "CGH-00527104",
+          "confidence": null,
+          "confirmed": true
+        },
+        "amount_due_cents": {
+          "value": 64200,
+          "confidence": null,
+          "confirmed": true
+        },
+        "date_of_service": {
+          "value": "2026-09-26",
+          "confidence": null,
+          "confirmed": true
+        },
+        "insurance_status": {
+          "value": "self_pay",
+          "confidence": null,
+          "confirmed": true
+        }
+      }
+    },
+    {
+      "id": "bill-04",
+      "label_en": "Lab tests",
+      "fields": {
+        "hospital_name": {
+          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "confidence": null,
+          "confirmed": true
+        },
+        "statement_date": {
+          "value": "2026-10-12",
+          "confidence": null,
+          "confirmed": true
+        },
+        "account_number": {
+          "value": "CGH-00527118",
+          "confidence": null,
+          "confirmed": true
+        },
+        "amount_due_cents": {
+          "value": 31875,
+          "confidence": null,
+          "confirmed": true
+        },
+        "date_of_service": {
+          "value": "2026-09-26",
+          "confidence": null,
+          "confirmed": true
+        },
+        "insurance_status": {
+          "value": "self_pay",
+          "confidence": null,
+          "confirmed": true
+        }
+      }
+    },
+    {
+      "id": "bill-05",
+      "label_en": "Imaging follow-up",
+      "fields": {
+        "hospital_name": {
+          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "confidence": null,
+          "confirmed": true
+        },
+        "statement_date": {
+          "value": "2026-10-14",
+          "confidence": null,
+          "confirmed": true
+        },
+        "account_number": {
+          "value": "CGH-00533062",
+          "confidence": null,
+          "confirmed": true
+        },
+        "amount_due_cents": {
+          "value": 120600,
+          "confidence": null,
+          "confirmed": true
+        },
+        "date_of_service": {
+          "value": "2026-10-02",
+          "confidence": null,
+          "confirmed": true
+        },
+        "insurance_status": {
+          "value": "self_pay",
+          "confidence": null,
+          "confirmed": true
+        }
+      }
+    }
+  ]
+}

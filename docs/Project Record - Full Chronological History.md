@@ -63,6 +63,7 @@ the dated entry, not the digest.
 - [AA - Every audit fix built and verified; not deployed (SSH refused)](#appendix-aa---every-audit-fix-built-and-verified-not-deployed-ssh-refused-2026-10-17-1655-cdt) (10-17)
 - [AB - Audit fixes deployed (c4a28f0); live journey 10.7 s](#appendix-ab---audit-fixes-deployed-c4a28f0-live-journey-107-s-2026-10-17-1700-cdt) (10-17)
 - [AC - V1 chatbot test: 13/13 raise assistance, 0/13 give the window or a letter](#appendix-ac---v1-chatbot-test-1313-raise-assistance-013-give-the-window-or-a-letter-2026-10-17-1803-cdt) (10-17)
+- [AD - F10 approved; build started on branch f10 (deploy on hold)](#appendix-ad---f10-approved-build-started-on-branch-f10-deploy-on-hold-2026-10-17-1835-cdt) (10-17)
 
 ---
 
@@ -1050,3 +1051,27 @@ stop there: no eligibility estimate, no application window, no finished
 packet. Slide-3 text and bracket fills are in
 docs/2026-10-17_pitch-corrections.md (draft). Scoring calls are Claude's;
 one scorer, n=13, free tiers, one evening.
+
+# Appendix AD - F10 approved; build started on branch f10 (deploy on hold) (2026-10-17, 18:35 CDT)
+**What happened:** Evan approved the F10 plan (PRD F10; plan file
+~/.claude/task-plans/tnhacks26-f10.md) with D1a, D2b, HTTPS and a vendored QR
+library, renamed the product "BillScan", and put every deploy on hold until
+he says go. Dipayan's React frontend PR #1 (32 files in frontend/) is out of
+scope. Work runs on branch `f10`; main and the live server (c4a28f0) are
+untouched.
+
+**Done so far (branch f10):**
+- c704468: F10 marked approved; contracts for /household, /stats,
+  demo_bills.json and the coverage-period rule fixed before agents started.
+- ec973b8: qrcode-generator 2.0.4 vendored (56,694 bytes; sha256 equals
+  jsDelivr's published hash); LICENSE from the GitHub repo because the npm
+  package has none; NOTICE.md updated.
+- 20-household answer key computed by an independent script from the Federal
+  Register table (sizes 1-8 typed literally), not from the engine.
+- Agent C: app/data/demo_bills.json (5 bills, total $8,837.65, matches the
+  spec exactly) and synthetic bills 03-10 with PNGs and an answer key for the
+  later 10-bill accuracy run. Opus checked the values on disk and viewed
+  bill-07's render.
+
+**Running:** Agent A (parallel Hindi calls, answer-key test, coverage rule,
+evaluate_many, rename), Agent B (BillScan rename, photo downscaling).

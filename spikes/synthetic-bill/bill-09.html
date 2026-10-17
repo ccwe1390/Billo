@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SYNTHETIC hospital statement 09</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; color: #222; margin: 0; background: #fff; }
+  .page { width: 780px; margin: 24px auto; padding: 28px 32px; border: 1px solid #ccc; position: relative; overflow: hidden; }
+  .wm { position: absolute; top: 190px; left: 70px; font-size: 110px; font-weight: bold; color: rgba(200, 0, 0, 0.12); transform: rotate(-28deg); }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  .small { font-size: 11px; color: #555; }
+  .row { display: flex; justify-content: space-between; margin-top: 16px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 6px 4px; text-align: left; }
+  td.n, th.n { text-align: right; }
+  .box { border: 2px solid #222; padding: 10px 14px; font-size: 14px; }
+  .total td { font-weight: bold; border-top: 2px solid #222; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="wm">SYNTHETIC</div>
+  <h1>Cumberland General Hospital (SYNTHETIC)</h1>
+  <div class="small">100 Example Ave, Nashville, TN 37000 - Patient Billing: (615) 555-0100 - FOR DEMO ONLY, NOT A REAL BILL</div>
+
+  <div class="row">
+    <div>
+      <b>PATIENT STATEMENT</b><br>
+      Patient: Theo Example<br>
+      Guarantor: Theo Example<br>
+      Account number: CGH-00563920<br>
+      Insurance: None on file (self-pay)
+    </div>
+    <div class="box">
+      Statement date: 10/02/2026<br>
+      Date of service: <span id="dos">09/10/2026</span><br>
+      Payment due by: 11/01/2026<br>
+      <b>Amount due: $4,569.00</b>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Description</th><th class="n">Qty</th><th class="n">Charges</th></tr>
+    <tr><td>Emergency department visit, moderate complexity</td><td class="n">1</td><td class="n">$1,480.00</td></tr>
+    <tr><td>MRI, extremity, without contrast</td><td class="n">1</td><td class="n">$2,310.00</td></tr>
+    <tr><td>Ultrasound, limited</td><td class="n">1</td><td class="n">$695.00</td></tr>
+    <tr><td>Crutches and supplies</td><td class="n">1</td><td class="n">$84.00</td></tr>
+    <tr class="total"><td>Total charges</td><td></td><td class="n">$4,569.00</td></tr>
+    <tr><td>Payments and adjustments</td><td></td><td class="n">$0.00</td></tr>
+    <tr class="total"><td>Amount due</td><td></td><td class="n">$4,569.00</td></tr>
+  </table>
+
+  <p class="small" style="margin-top:22px">Financial assistance may be available. Call (615) 555-0100 or visit the
+  billing office. This statement is synthetic test data generated for a hackathon demo; all names, numbers and
+  the hospital are fictional.</p>
+</div>
+<script>
+  var m = /blur=([0-9.]+)/.exec(location.hash);
+  if (m) { document.getElementById('dos').style.filter = 'blur(' + m[1] + 'px)'; }
+</script>
+</body>
+</html>

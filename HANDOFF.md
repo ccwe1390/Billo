@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 18:04 CDT** - this file is the only live
+**Last updated: 2026-10-17 18:47 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-Y).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -68,6 +68,22 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
   card, redesign safety).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
+
+## F10 STATUS (18:47 CDT) - read this first
+- Product renamed **BillScan**. F10 (PRD) is BUILT on branch `f10`
+  (head adfa78e, pushed), deploy-ready, NOT deployed: the live server still
+  runs c4a28f0 (main). Evan holds the deploy until the team picks the demo
+  UI (our vanilla app vs Dipayan's React PR #1, which is out of scope).
+- On Evan's "go": fast-forward main to f10, then deploy in order D1
+  (R1-R3 + F10.2 data, rollback rehearsal) -> HTTPS (Let's Encrypt IP cert,
+  certbot >= 5.4 in /opt/certbot, approved incl. the agreement with no
+  email; 30-min box) -> D2 Home + reminders -> D3 dashboard -> D4 QR; each
+  with backup tar, `import app.main` check before restart, live journey.
+  Plan: ~/.claude/task-plans/tnhacks26-f10.md. Then /landing-check and
+  /docs-sync.
+- If the team picks React: every server change is additive, so the React
+  app keeps working; the vanilla-only UI work (Home, reminders, QR chip,
+  downscaling) would not be in the demo.
 
 ## BLOCKED-ON-EVAN
 - Review docs/2026-10-17_pitch-corrections.md and give it to the presenters

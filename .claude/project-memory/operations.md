@@ -59,3 +59,8 @@
 - 2026-10-17 15:06 CDT - Redeployed from commit 145c8af (`git archive HEAD
   app | ssh ...`), so the server matches git. Live app.js has 0 matches for
   the removed placeholder card; / returns 200.
+- 2026-10-17 15:40 CDT - Redeployed from c689291 (Paper Trail) via
+  `git archive HEAD app | ssh ...`. Live checks: /, /style.css,
+  /fonts/fonts.css, an Arabic woff2, a Web Awesome variant CSS and an icon
+  all 200; live app.js contains the new markers; real-AI journey 11.4 s,
+  Spanish packet numbers_match=True.

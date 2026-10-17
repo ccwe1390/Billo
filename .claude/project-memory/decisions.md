@@ -130,3 +130,11 @@ Standing decisions (what is decided NOW). History lives in the record.
   `use` proved enough for chat and batch translation (live 14:53). No
   credentials on the server. Code: OCI_AUTH=instance_principal in
   oci_client._auth(). Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 ~15:23 CDT - UI design: build "Paper Trail" (brief Direction 1)
+  on the existing vanilla JS, not Dipayan's React branch. Tier rows come
+  from the engine (option A, not a hard-coded copy in app.js, so a VUMC
+  policy swap can never show another hospital's table). Assets vendored,
+  never loaded from a CDN at runtime. 21:00 go/no-go; result: GO at 15:40.
+  Dipayan's feature/frontend branch stays unmerged; only its ideas (named
+  loading steps, hard UI rules) were ported. Decided by: Evan, chat
+  2026-10-17.

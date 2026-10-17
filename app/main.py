@@ -1,17 +1,19 @@
 """BillScan - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
 
-Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet; static UI at /.
+Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet, /household;
+GET /stats; static UI at /.
 """
 import asyncio
 import collections
 import functools
 import html
+import json
 import logging
 import os
 import re
 import threading
 import time
-from datetime import datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any, Dict, Literal, Optional
 
@@ -75,6 +77,25 @@ def _rate_limit(request: Request):
         q.append(now)
 
 
+# ---------------------------------------------------------------- in-memory counters
+# Counts only: no request content, IP or time is ever stored. Reset on restart.
+
+_counts = collections.Counter()
+_langs = collections.Counter()
+_counts_lock = threading.Lock()
+_since = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
+
+
+def _count(key, lang=None):
+    try:  # counting must never break a request
+        with _counts_lock:
+            _counts[key] += 1
+            if lang:
+                _langs[lang] += 1
+    except Exception:
+        pass
+
+
 # ---------------------------------------------------------------- models
 
 class FieldIn(BaseModel):
@@ -122,6 +143,12 @@ class AnswersIn(BaseModel):
 class EvaluateIn(BaseModel):
     bill: BillIn
     answers: AnswersIn
+
+
+class HouseholdIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    answers: AnswersIn
+    bill: Optional[BillIn] = None
 
 
 class ResultIn(EvaluateIn):
@@ -235,18 +262,26 @@ async def extract(file: UploadFile):
     except Exception as e:  # no detail echoed: it could contain request content
         log.warning("photo reading failed: %s", type(e).__name__)
         raise HTTPException(502, "Photo reading is unavailable. Enter the fields by hand.")
-    return normalize_bill(raw)
+    out = normalize_bill(raw)
+    _count("photos_read")
+    return out
 
 
 # ---------------------------------------------------------------- /evaluate
 
-@app.post("/evaluate")
-def evaluate(body: EvaluateIn):
+def _evaluate(body):
     engine, policy, fpl = _rules()
     try:
         return engine.evaluate(body.bill.model_dump(), body.answers.model_dump(), policy, fpl)
     except ValueError as e:
         raise HTTPException(422, str(e))
+
+
+@app.post("/evaluate")
+def evaluate(body: EvaluateIn):
+    result = _evaluate(body)
+    _count("results_" + result["tier"]["id"], lang=body.answers.language)
+    return result
 
 
 # ---------------------------------------------------------------- shared text helpers
@@ -290,7 +325,7 @@ def _facts_en(bill, answers, result):
 # ---------------------------------------------------------------- /explain
 
 def _server_result(body):
-    return evaluate(EvaluateIn(bill=body.bill, answers=body.answers))
+    return _evaluate(EvaluateIn(bill=body.bill, answers=body.answers))
 
 
 @app.post("/explain", dependencies=[Depends(_rate_limit)])
@@ -315,6 +350,7 @@ def explain(body: ResultIn):
     else:  # mismatch or model failure: fixed English template
         out["numbers_match"] = False
         out["fallback_used"] = True
+        _count("fallbacks")
     return out
 
 
@@ -479,9 +515,73 @@ def render_packet_html(packet, result, lang):
 def packet(body: ResultIn, format: str = Query("html", pattern="^(html|json)$")):
     result = _server_result(body)
     pk = build_packet(body.bill, body.answers, result)
+    _count("packets")
+    if pk["translation_check"]["fallback_used"] is True:
+        _count("fallbacks")
     if format == "json":
         return pk
     return HTMLResponse(render_packet_html(pk, result, body.answers.language))
+
+
+# ---------------------------------------------------------------- /household
+
+@functools.lru_cache(maxsize=1)
+def _demo_bills():
+    with open(os.path.join(BASE_DIR, "data", "demo_bills.json"), encoding="utf-8") as f:
+        data = json.load(f)
+    return tuple({"id": b["id"], "label_en": b["label_en"], "source": "demo", "fields": b["fields"]}
+                 for b in data["bills"])
+
+
+@app.post("/household")
+def household(body: HouseholdIn):
+    engine, policy, fpl = _rules()
+    bills = [dict(b) for b in _demo_bills()]
+    if body.bill is not None:
+        fields = body.bill.model_dump()["fields"]
+        acct = fields.get("account_number", {}).get("value")
+        match = [b for b in bills if acct is not None and b["fields"]["account_number"]["value"] == acct]
+        if match:
+            match[0]["source"] = "yours"
+        else:
+            bills.append({"id": "yours", "label_en": "Your bill", "source": "yours", "fields": fields})
+    try:
+        result = engine.evaluate_many(bills, body.answers.model_dump(), policy, fpl, date.today())
+    except ValueError as e:
+        raise HTTPException(422, str(e))
+    _count("household_views")
+    return {"contract_version": CONTRACT_VERSION, **result}
+
+
+# ---------------------------------------------------------------- /stats
+
+_STAT_KEYS = ("photos_read", "results_free_care", "results_discount", "results_not_eligible",
+              "packets", "fallbacks", "household_views")
+
+
+def _shown(n):
+    return n if n >= 10 else "<10"
+
+
+def _rule(text, citation):
+    return {"rule_en": text, "source": citation.get("source"), "page": citation.get("page"),
+            "effective_date": citation.get("effective_date")}
+
+
+@app.get("/stats")
+def stats():
+    _engine, policy, _fpl = _rules()
+    with _counts_lock:
+        counts = {k: _shown(_counts[k]) for k in _STAT_KEYS}
+        languages = {code: _shown(n) for code, n in sorted(_langs.items())}
+    rules = [_rule(t["label_en"], t["citation"]) for t in policy["tiers"]]
+    win = policy["application_window"]
+    rules.append(_rule("Apply within %d days of the first billing statement" % win["days_from_statement"],
+                       win["citation"]))
+    rules.append(_rule(policy["coverage_period"]["text_en"], policy["coverage_period"]["citation"]))
+    rules.extend(_rule("Document: " + d["label_en"], d["citation"]) for d in policy["documents"])
+    return {"contract_version": CONTRACT_VERSION, "since": _since, "counts": counts, "languages": languages,
+            "rules": rules, "rules_review_by": policy["rules_review_by"]}
 
 
 # ---------------------------------------------------------------- static UI (must be mounted last)

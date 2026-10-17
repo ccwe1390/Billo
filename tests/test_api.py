@@ -498,6 +498,73 @@ finally:
 assert _out == _texts, _out
 assert _dt < 0.9, _dt
 
+# ---- F10 M3/M5: counters (results counted once; explain does not count results)
+_saved_counts, _saved_langs = main._counts.copy(), main._langs.copy()
+try:
+    main._counts.clear()
+    main._langs.clear()
+    _A = answers()
+    main.evaluate(main.EvaluateIn(bill=B, answers=_A))
+    assert main._counts["results_free_care"] == 1 and main._langs["ar"] == 1, (main._counts, main._langs)
+    main.explain(main.ResultIn(bill=B, answers=_A))
+    assert main._counts["results_free_care"] == 1 and main._counts["results_discount"] == 0
+    assert main._counts["results_not_eligible"] == 0 and main._langs["ar"] == 1
+
+    # ---- M4: /stats shape, small-number suppression, no content
+    main._counts.clear()
+    main._counts["photos_read"] = 3
+    main._counts["packets"] = 12
+    st = main.stats()
+    assert st["counts"]["photos_read"] == "<10" and st["counts"]["packets"] == 12, st["counts"]
+    assert set(st) == {"contract_version", "since", "counts", "languages", "rules", "rules_review_by"}, set(st)
+    assert set(st["counts"]) == {"photos_read", "results_free_care", "results_discount", "results_not_eligible",
+                                 "packets", "fallbacks", "household_views"}
+    assert st["languages"] == {"ar": "<10"}, st["languages"]
+    _dump = str(st)
+    assert "CGH-" not in _dump and "4,812" not in _dump
+    assert st["rules"] and all(set(r) == {"rule_en", "source", "page", "effective_date"} for r in st["rules"])
+    assert st["rules_review_by"] == "2027-01-13"
+finally:
+    main._counts.clear()
+    main._counts.update(_saved_counts)
+    main._langs.clear()
+    main._langs.update(_saved_langs)
+
+# ---- F10 M2/M5: POST /household
+_HA = answers(language="en")
+h0 = main.household(main.HouseholdIn(answers=_HA))
+assert h0["contract_version"] == 1 and len(h0["bills"]) == 5 and h0["estimate_cents"] == 883765 and h0["eligible"] is True
+assert all(b["source"] == "demo" for b in h0["bills"])
+
+_hbill = confirm_all(main.normalize_bill({"hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+                                          "statement_date": "2026-10-01", "account_number": "CGH-00482913",
+                                          "amount_due": "4812.40", "date_of_service": "2026-09-12",
+                                          "insurance_status": "self-pay"}))
+h1 = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_hbill)))
+assert len(h1["bills"]) == 5 and h1["bills"][0]["id"] == "bill-01" and h1["bills"][0]["source"] == "yours"
+assert [b["source"] for b in h1["bills"][1:]] == ["demo"] * 4
+assert main.household(main.HouseholdIn(answers=_HA))["bills"][0]["source"] == "demo"  # demo cache not mutated
+
+_hbill["fields"]["account_number"]["value"] = "CGH-00999999"
+h2 = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_hbill)))
+assert len(h2["bills"]) == 6 and h2["bills"][-1]["source"] == "yours" and h2["bills"][-1]["id"] == "yours"
+assert h2["estimate_cents"] == 883765 + 481240, h2["estimate_cents"]
+
+h3 = main.household(main.HouseholdIn(answers=answers(language="en", annual_income_cents=20000000)))
+assert h3["eligible"] is False and h3["estimate_cents"] == 0
+
+_unconf = main.normalize_bill({"hospital_name": "X", "statement_date": "2026-10-01", "amount_due": "10",
+                               "date_of_service": "2026-09-12", "insurance_status": "self-pay"})
+_unconf = confirm_all(_unconf)
+_unconf["fields"]["amount_due_cents"]["confirmed"] = False
+expect_http(422, main.household, main.HouseholdIn(answers=_HA, bill=main.BillIn(**_unconf)))
+
+try:
+    main.HouseholdIn(answers=_HA, extra_key=1)
+    raise AssertionError("unknown top-level key accepted")
+except ValidationError:
+    pass
+
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)
 

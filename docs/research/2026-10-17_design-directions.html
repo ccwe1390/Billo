@@ -59,11 +59,13 @@ bdi, .num { unicode-bidi: isolate; }
 .d1 table { width: 100%; border-collapse: collapse; font-size: .875rem; margin: 0 0 16px; }
 .d1 th, .d1 td { border: 1px solid var(--rule); padding: 8px; text-align: start; vertical-align: top; }
 .d1 th { font-weight: 600; background: var(--desk); }
-.d1 tr.yours td { background: var(--hi); font-weight: 700; }
-.d1 tr.yours td:first-child { box-shadow: inset 4px 0 0 var(--ink); }
+.d1 tbody th { font-weight: 400; background: var(--paper); }
+.d1 tr.yours > * { background: var(--hi); font-weight: 700; }
+.d1 tr.yours > th { border-inline-start: 4px solid var(--ink); }
+@media (forced-colors: active) { .d1 tr.yours > * { border: 3px solid CanvasText; } .d1 mark { border: 2px solid CanvasText; } }
 .d1 .you { display: inline-block; font-size: .875rem; font-weight: 700; border: 1.5px solid var(--ink); border-radius: 3px; padding: 0 4px; margin-inline-start: 4px; }
 .d1 .deadline { font-size: 1.1875rem; margin: 0 0 4px; }
-.d1 mark { background: linear-gradient(100deg, transparent 0 2%, var(--hi) 2% 97%, transparent 97%); color: var(--ink); padding: 1px 4px; font-weight: 700; }
+.d1 mark { background: var(--hi); color: var(--ink); padding: 0 4px; font-weight: 700; }
 .d1 .decide { color: var(--ink-2); font-size: 1rem; margin: 12px 0 0; }
 .d1 .notes { border-block-start: 1px solid var(--rule); margin-top: 16px; padding-top: 8px; font-size: .875rem; color: var(--ink-2); }
 .d1 .notes ol { margin: 0; padding-inline-start: 18px; }
@@ -154,13 +156,13 @@ bdi, .num { unicode-bidi: isolate; }
   <h2 id="d1h">1. Paper Trail</h2>
   <p class="idea">The result reads like a well-made document: the hospital's own policy table, with your row highlighted and every claim footnoted to its page.</p>
   <dl class="spec">
-    <dt>Signals trust to</dt><dd>The physician and Vanderbilt faculty (citations, sources first); families who already trust paper.</dd>
+    <dt>Signals trust to</dt><dd>The physician and Vanderbilt faculty (citations, sources first); the HCA application-services director (an artifact their staff already process); families who already trust paper.</dd>
     <dt>Colors (ratios in the brief)</dt>
     <dd><ul class="swatches">
       <li><i style="background:#1B2430"></i>ink #1B2430</li><li><i style="background:#4A5361"></i>ink-2 #4A5361</li>
       <li><i style="background:#1F4FA3"></i>pen #1F4FA3</li><li><i style="background:#FFE45C"></i>highlighter #FFE45C</li>
       <li><i style="background:#EEF1F4"></i>desk #EEF1F4</li><li><i style="background:#8A93A0"></i>rule #8A93A0</li></ul></dd>
-    <dt>Intended type</dt><dd>IBM Plex Sans (Latin, Vietnamese, Cyrillic) + Plex Sans Arabic + Plex Sans Devanagari, 400/600, self-hosted. Chinese uses the phone's own CJK font (PingFang / Microsoft YaHei or JhengHei / Noto Sans CJK), no CJK webfont. Scale 14 / 16 / 19 / 23 / 28 px.</dd>
+    <dt>Intended type</dt><dd>IBM Plex Sans (Latin, Vietnamese, Cyrillic) + Plex Sans Arabic + Plex Sans Devanagari, 400/700, self-hosted. Chinese uses the phone's own CJK font (PingFang / Microsoft YaHei or JhengHei / Noto Sans CJK), no CJK webfont. Scale 14 / 16 / 19 / 23 / 28 px.</dd>
     <dt>Signature</dt><dd>Policy-table excerpt with your row highlighted; numbered footnote citations; the highlighter in exactly two places: your row and the deadline.</dd>
   </dl>
 
@@ -173,12 +175,12 @@ bdi, .num { unicode-bidi: isolate; }
       <p class="lead">A household of <span class="num">4</span> with <span class="num">$38,000</span> a year is at about <span class="num">115%</span> of the 2026 federal poverty guideline.<sup><a href="#">1</a></sup></p>
       <p class="excerpt-head">From the hospital's policy, page 1<sup><a href="#">2</a></sup></p>
       <table>
-        <tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr>
-        <tr class="yours"><td>Up to 200% <span class="you">You: 115%</span></td><td>Free care (100% discount)</td></tr>
-        <tr><td>Above 200% up to 300%</td><td>75% discount</td></tr>
-        <tr><td>Above 300% up to 400%</td><td>50% discount</td></tr>
-        <tr><td>Above 400%</td><td>Payment plan</td></tr>
-      </table>
+        <thead><tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr></thead><tbody>
+        <tr class="yours" aria-current="true"><th scope="row">Up to 200% <span class="you">You: 115%</span></th><td>Free care (100% discount)</td></tr>
+        <tr><th scope="row">Above 200% up to 300%</th><td>75% discount</td></tr>
+        <tr><th scope="row">Above 300% up to 400%</th><td>50% discount</td></tr>
+        <tr><th scope="row">Above 400%</th><td>Not eligible under this policy - payment plan available</td></tr>
+      </tbody></table>
       <p class="deadline">Apply by <mark><span class="num">2027-05-29</span></mark>.<sup><a href="#">3</a></sup></p>
       <p class="decide">This is an estimate from the hospital's published rules. The hospital makes the final decision.</p>
       <div class="notes"><ol>
@@ -193,7 +195,7 @@ bdi, .num { unicode-bidi: isolate; }
     </div>
   </div></div>
 
-  <p class="mock-label">Arabic, right-to-left</p>
+  <p class="mock-label">Arabic, right-to-left. Not shown in this mock but part of the build: the segmented step bar borrowed from Direction 2.</p>
   <div class="phone"><div class="d1" lang="ar" dir="rtl">
     <div class="bar"><strong>من الفاتورة إلى المساعدة</strong><span class="synthetic-tag" lang="en" dir="ltr">SYNTHETIC DEMO</span></div>
     <p class="step">الخطوة <span class="num">4</span> من <span class="num">5</span>: نتيجتك</p>
@@ -202,12 +204,12 @@ bdi, .num { unicode-bidi: isolate; }
       <p class="lead">أسرة من <span class="num">4</span> أفراد بدخل <bdi class="num">$38,000</bdi> في السنة تعادل تقريبًا <bdi class="num">115%</bdi> من الحد الفيدرالي للفقر لعام <span class="num">2026</span>.<sup><a href="#">1</a></sup></p>
       <p class="excerpt-head">من سياسة المستشفى، صفحة <span class="num">1</span> (النص الأصلي بالإنجليزية)<sup><a href="#">2</a></sup></p>
       <table lang="en" dir="ltr">
-        <tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr>
-        <tr class="yours"><td>Up to 200% <span class="you" lang="ar" dir="rtl">أنت: <bdi>115%</bdi></span></td><td>Free care (100% discount)</td></tr>
-        <tr><td>Above 200% up to 300%</td><td>75% discount</td></tr>
-        <tr><td>Above 300% up to 400%</td><td>50% discount</td></tr>
-        <tr><td>Above 400%</td><td>Payment plan</td></tr>
-      </table>
+        <thead><tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr></thead><tbody>
+        <tr class="yours" aria-current="true"><th scope="row">Up to 200% <span class="you" lang="ar" dir="rtl">أنت: <bdi>115%</bdi></span></th><td>Free care (100% discount)</td></tr>
+        <tr><th scope="row">Above 200% up to 300%</th><td>75% discount</td></tr>
+        <tr><th scope="row">Above 300% up to 400%</th><td>50% discount</td></tr>
+        <tr><th scope="row">Above 400%</th><td>Not eligible under this policy - payment plan available</td></tr>
+      </tbody></table>
       <p class="deadline">قدّم الطلب قبل <mark><bdi class="num">2027-05-29</bdi></mark>.<sup><a href="#">3</a></sup></p>
       <p class="decide">هذا تقدير من قواعد المستشفى المنشورة. المستشفى هو من يتخذ القرار النهائي.</p>
       <div class="notes"><ol>
@@ -231,12 +233,12 @@ bdi, .num { unicode-bidi: isolate; }
       <p class="lead"><span class="num">4</span> 口之家年收入 <bdi class="num">$38,000</bdi>，约为 <span class="num">2026</span> 年联邦贫困线的 <bdi class="num">115%</bdi>。<sup><a href="#">1</a></sup></p>
       <p class="excerpt-head">摘自医院政策第 <span class="num">1</span> 页（政策文本按医院原文以英文显示）<sup><a href="#">2</a></sup></p>
       <table lang="en" dir="ltr">
-        <tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr>
-        <tr class="yours"><td>Up to 200% <span class="you" lang="zh-CN">您：<bdi>115%</bdi></span></td><td>Free care (100% discount)</td></tr>
-        <tr><td>Above 200% up to 300%</td><td>75% discount</td></tr>
-        <tr><td>Above 300% up to 400%</td><td>50% discount</td></tr>
-        <tr><td>Above 400%</td><td>Payment plan</td></tr>
-      </table>
+        <thead><tr><th scope="col">Household income (% of poverty line)</th><th scope="col">Result</th></tr></thead><tbody>
+        <tr class="yours" aria-current="true"><th scope="row">Up to 200% <span class="you" lang="zh-CN">您：<bdi>115%</bdi></span></th><td>Free care (100% discount)</td></tr>
+        <tr><th scope="row">Above 200% up to 300%</th><td>75% discount</td></tr>
+        <tr><th scope="row">Above 300% up to 400%</th><td>50% discount</td></tr>
+        <tr><th scope="row">Above 400%</th><td>Not eligible under this policy - payment plan available</td></tr>
+      </tbody></table>
       <p class="deadline">截止日期：<mark><bdi class="num">2027-05-29</bdi></mark><sup><a href="#">3</a></sup></p>
       <p class="decide">这是根据医院公布的规则所做的估算。最终由医院决定。</p>
       <div class="notes"><ol>

@@ -45,3 +45,29 @@ English (for the provider).
 - Wave 1: Spanish (es), Chinese (zh-CN + zh-TW), Arabic (ar, RTL), Vietnamese (vi).
 - Hindi: additional option, OCI Generative AI only; mark its output as not
   back-translation-checked.
+
+## 2026-10-17 ~14:00 CDT - Tiers revised (Evan) and support re-verified
+- Evan: Chinese (zh-CN, zh-TW) moves to tier 1 (translated interface) with
+  en, es, ar. Tier 2 = "the rest of the US top 10" per a list Evan pasted
+  (source not named): Spanish ~42M, Chinese ~3.5M, Tagalog ~1.7M,
+  Vietnamese ~1.5M, Arabic ~1.3-1.4M, French (incl. French Creole and
+  Cajun) ~1.2M, Korean ~1.1M, Russian ~1M, German. Its top 5 match the
+  Census 2019 story above; ranks 6-9 are from Evan's paste only.
+- Tier 2 built: vi, fr, ko, ru, de (+ hi from the earlier decision).
+- Support, read 2026-10-17 from vendor pages:
+  - OCI Language (31 languages,
+    https://docs.oracle.com/en-us/iaas/language/using/translate.htm): has
+    ar, zh-CN, zh-TW, es, vi, fr, ko, ru, de; NOT Tagalog, Hindi, Haitian
+    Creole, Farsi, Kurdish, Somali, Swahili, Burmese, Amharic, Nepali.
+  - Cohere Command A (23 languages, https://docs.cohere.com/docs/command-a):
+    English, French, Spanish, Italian, German, Portuguese, Polish, Czech,
+    Dutch, Romanian, Greek, Ukrainian, Russian, Japanese, Korean, Chinese,
+    Vietnamese, Indonesian, Hindi, Arabic, Hebrew, Persian, Turkish. NOT
+    Tagalog. (Oracle's own Command A page names no languages.)
+- Gap stated, not built: Tagalog (#3 in the US list) - neither service.
+  The "French" census group includes Haitian Creole, which is unsupported;
+  our French is French only.
+- Risk to test live: machine translation into fr/de/ru/es may reformat
+  numbers ("4.812,40", "4 812,40"); the number lock then rejects the text
+  and falls back to English. If that happens often, protect numbers with
+  placeholders before translating.

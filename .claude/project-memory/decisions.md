@@ -114,3 +114,12 @@ Standing decisions (what is decided NOW). History lives in the record.
   blur-test before claiming "left it blank", synthetic policy page for
   citations, home page via browser storage after the 5 PM gate, dashboard as
   slide mockup. Decided by: Evan ("adopt with fixes"), chat 2026-10-17.
+- 2026-10-17 13:57 CDT - Languages: two tiers (Evan chose option 1). Tier 1
+  en/es/ar with a translated interface; tier 2 zh-CN, zh-TW, vi, hi with the
+  explanation and cover letter in the language and the interface in English.
+  Restores Evan's own Wave 1 (languages.md, 2026-10-17), which plan rev 2 had
+  silently cut to es/ar - Claude missed that when listing rev 2's issues.
+  Every non-English explanation is labeled as AI-written and number-checked;
+  Hindi letters use Command A (no OCI Language support), so no back-check.
+  Kurdish, Somali, Burmese, Amharic, Nepali: stated as a known gap. Decided
+  by: Evan, chat 2026-10-17.

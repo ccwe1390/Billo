@@ -46,3 +46,36 @@ Standing decisions (what is decided NOW). History lives in the record.
   in English, then OCI Language translates it, so the back-translation check
   uses the same service. Specific hosting service not chosen (PRD).
   Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 - Stack: TypeScript everywhere - Next.js + the OCI TypeScript
+  SDK (Evan picked B). Claude recommended A (Python FastAPI + plain HTML/JS),
+  reasons: shortest readable rules engine and accuracy test, fewer moving
+  parts, easier for Evan to explain every line. Dissent recorded per Evan's
+  disagreement protocol; Evan's call stands. Consequence: hosting must run a
+  Node server. Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 - Hosting: one OCI Compute VM running the Next.js Node server
+  behind a reverse proxy (Evan picked A, matching Claude's recommendation).
+  Reasons: possibly $0 under Always Free (unverified), keeps credits for AI
+  calls; instance principals may let the VM call AI services with no API key
+  on disk (unverified). Rejected: Container Instances (hourly credit burn),
+  OKE (overkill), static export + Functions (breaks Next.js server features).
+  Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 - Synthetic bills: Synthea as the source + our own bill/EOB
+  printer and error planter (Evan picked B; Claude had recommended A, our own
+  generator). Checked after the pick (Synthea CSV data dictionary): Synthea
+  DOES export billing data - claims_transactions.csv has CHARGE / PAYMENT /
+  ADJUSTMENT rows with amounts and payer, claims.csv has patient-owed
+  (OutstandingP). That corrects Claude's pre-pick claim "its records are
+  clinical, not billing" - B is stronger than Claude described. Gaps we fill:
+  procedure codes are SNOMED-CT, not CPT/HCPCS, so we map a small code set
+  ourselves; Synthea data is clean, so we still plant errors and write the
+  answer key. Decided by: Evan, chat 2026-10-17.
+- 2026-10-17 - Errors to plant (Evan: "1-6 + 7 stretch", matching Claude's
+  recommendation). Core: (1) duplicate charge; (2) bill patient balance >
+  EOB patient responsibility; (3) billed for the contractual adjustment the
+  EOB writes off; (4) insurer payment not credited; (5) charge dated outside
+  the stay; (6) math error (unit x qty != line, or lines != total).
+  Stretch: (7) units above CMS MUE per-code daily limit (MUE table public -
+  unverified). Excluded: upcoding (needs clinical judgment, touches
+  important.md 1) and unbundling (CPT-based code-pair tables, licensing
+  unclear). Every planted error carries a dollar value. Decided by: Evan,
+  chat 2026-10-17.

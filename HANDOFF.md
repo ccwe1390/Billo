@@ -46,13 +46,14 @@ flags; the person decides what to do.
   treatment advice; no immigration status, SSN, or ID asked; nothing stored
   after a session; $500 OCI credits are the whole budget.
 
-## Current state - Planned, not built: mission set, no code
+## Current state - PRD written, no code
 
 **Last updated: 2026-10-17** - this file is the only live snapshot; history
-lives in the record (Phase 0, Appendices A-F).
+lives in the record (Phase 0, Appendices A-G).
 
-> **2026-10-17 - Mission and scope set (record Appendix B).** Bill Decoder is
-> the one module. No code, no PRD yet. Repo: private
+> **2026-10-17 - PRD written (record Appendix G).** Stack Next.js + OCI
+> TypeScript SDK; one OCI Compute VM; Synthea-based bills with planted errors
+> 1-6. Next task: PRD M0. Repo: private
 > `github.com/Evan-Daruwalla/TNHacks26`, branch `main`.
 
 ### What is known vs missing
@@ -67,7 +68,9 @@ lives in the record (Phase 0, Appendices A-F).
 | Team roster and roles | **MISSING** | - |
 | OCI | **Partly known**: mandatory; $500 credits; account, expiry, and service coverage MISSING | Evan, chat 2026-10-17 |
 | Candidate OCI services | Document Understanding, Generative AI, Language - from Oracle docs, untested | services.md |
-| Code, PRD | **None yet** | - |
+| Stack, hosting, data, errors | **Decided** (PRD_ROADMAP.md section 4) | record Appendix G |
+| Code | **None yet** | - |
+| Java (needed for Synthea) | **Not installed** | checked 2026-10-17 |
 
 ### Track requirements (from the pasted text, 2026-10-17)
 
@@ -85,17 +88,18 @@ lives in the record (Phase 0, Appendices A-F).
 - `.claude/project-memory/` - binned memory; `important.md` first, then
   `INDEX.md`. DIRECTORY.md skipped (no source files yet).
 - `.claude/pm-cadence.json` - local cadence-hook state, gitignored.
-- No `PRD_ROADMAP.md` yet: next to write.
+- `PRD_ROADMAP.md` - the standing plan (M0-M7). Source of truth for what to
+  build and in what order.
 
 ## BLOCKED-ON-EVAN
+- Approve a JDK install OR a prebuilt Synthea sample download (PRD M0.2).
 - Event dates, submission deadline, rules/judging
   link, team roster.
 - OCI: whose account holds the $500, expiry, and whether Generative AI,
   Document Understanding, and Language are covered.
 
 ## Next actions
-1. Write `PRD_ROADMAP.md` from the Goal above (grill any open design forks
-   first: stack, hosting, synthetic-bill generator, error types to plant).
-2. Evan supplies event facts and OCI account access.
-3. First build task once OCI works: a tiny paid-call smoke test with a budget
-   alert set first (important.md 5).
+1. PRD M0: Evan confirms OCI account + sets a budget alert (M0.1) and
+   approves the Synthea route (M0.2); then the extraction spike (M0.3).
+2. M1-M2 can start before M0.1-M0.2 clear: scaffold, code map, rules, eval.
+3. Evan supplies event facts (dates, rules, team).

@@ -13,11 +13,11 @@ Knowledge:
 - disclosure.md - what may leave the project (updated 2026-10-17)
 
 Running systems:
-- operations.md - website hosted on OCI (service TBD); no jobs/backups by design (updated 2026-10-17)
+- operations.md - one OCI Compute VM for Next.js; no jobs/backups by design (updated 2026-10-17)
 - services.md - candidate OCI services (Document Understanding, Generative AI, Language), unverified in use (updated 2026-10-17)
 
 Output:
-- experiments.md - hypotheses, preregs, results, ruled out (updated 2026-10-17)
+- experiments.md - planned headline metric: per-type precision/recall on planted errors (updated 2026-10-17)
 - writing.md - venues, style/voice, citations, submission status (updated 2026-10-17)
 
 Physical:
@@ -26,10 +26,10 @@ Physical:
 Code:
 - architecture.md - none yet (updated 2026-10-17)
 - conventions.md - none yet (updated 2026-10-17)
-- dependencies.md - libraries + versions + why; other projects read from (updated 2026-10-17)
+- dependencies.md - OCI TypeScript SDK packages (2.143.0 seen 2026-10-17), not installed (updated 2026-10-17)
 - testing.md - framework, layout, coverage/frozen rules (updated 2026-10-17)
 - tooling.md - build/lint/format/CI + required commands (updated 2026-10-17)
-- data.md - schema/migration + API/interface contracts (updated 2026-10-17)
+- data.md - Synthea CSV files we use, SNOMED->CPT gap, Java missing (updated 2026-10-17)
 - security.md - none yet (updated 2026-10-17)
 - features.md - none yet (updated 2026-10-17)
 - performance.md - none yet (updated 2026-10-17)
@@ -38,7 +38,7 @@ Code:
 Project-specific bins:
 - languages.md - language ranking evidence + OCI Language support per language (updated 2026-10-17)
 
-Stubs (first line STATUS: N/A or empty): gotchas, people, timeline, experiments, writing, hardware, architecture, conventions, dependencies, testing, tooling, data, security, features, performance
+Stubs (first line STATUS: N/A or empty): gotchas, people, timeline, writing, hardware, architecture, conventions, testing, tooling, security, features, performance
 
 Map (not a bin - see SKILL section 5.1):
 - DIRECTORY.md - skipped: no source files yet (needs >15)

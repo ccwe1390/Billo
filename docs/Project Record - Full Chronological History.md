@@ -40,6 +40,7 @@ the dated entry, not the digest.
 - [D - Two-step flow (request itemized bill first); user sends letters, demo-only send](#appendix-d---two-step-flow-request-itemized-bill-first-user-sends-letters-demo-only-send-2026-10-17-1105-cdt) (10-17)
 - [E - Website hosted on OCI, OCI Language translates; website profile applied](#appendix-e---website-hosted-on-oci-oci-language-translates-website-profile-applied-2026-10-17-1113-cdt) (10-17)
 - [F - Hindi fallback to OCI Generative AI confirmed](#appendix-f---hindi-fallback-to-oci-generative-ai-confirmed-2026-10-17-1114-cdt) (10-17)
+- [G - PRD grill (stack, hosting, data, errors) and PRD_ROADMAP.md written](#appendix-g---prd-grill-stack-hosting-data-errors-and-prd_roadmapmd-written-2026-10-17-1130-cdt) (10-17)
 
 ---
 
@@ -208,3 +209,44 @@ Evan confirmed the Hindi reading from Appendix E: Hindi falls back to OCI
 Generative AI. Every other language goes through OCI Language. This closes the
 Appendix E open item "Hindi fallback reading is unconfirmed". The choice of
 hosting service is still open.
+
+# Appendix G - PRD grill (stack, hosting, data, errors) and PRD_ROADMAP.md written (2026-10-17, ~11:30 CDT)
+**WHAT:** PRD grill, four questions, one at a time, each with a recommended
+answer. Then `PRD_ROADMAP.md` was written (M0-M7, GOAL block, SCOPE GUARD).
+HANDOFF, decisions.md, data.md, dependencies.md, operations.md, and
+experiments.md were updated.
+
+| # | Question | Claude recommended | Evan picked |
+|---|---|---|---|
+| 1 | Stack | A: Python FastAPI + plain HTML/JS | **B: Next.js + OCI TypeScript SDK** |
+| 2 | Hosting | A: one OCI Compute VM | **A** |
+| 3 | Synthetic bills | A: own TypeScript generator | **B: Synthea + our printer/planter** |
+| 4 | Errors to plant | 1-6 core, 7 stretch | **1-6 + 7 stretch** |
+
+**Dissent recorded (Evan's disagreement protocol):** on Q1 Claude favored
+Python, for the shortest readable rules engine and eval, fewer moving parts,
+and an easier line-by-line explanation in judging. Evan's call stands.
+
+**Fact checks made during the grill:**
+- `npm view` shows OCI TypeScript packages for all three services
+  (`oci-aidocument`, `oci-generativeaiinference`, `oci-ailanguage`), each at
+  2.143.0 on 2026-10-17.
+- Synthea's CSV data dictionary shows billing data (`claims_transactions.csv`
+  CHARGE/PAYMENT/ADJUSTMENT rows; `claims.csv` OutstandingP). That
+  **corrects** Claude's pre-pick claim on Q3 that Synthea is "clinical, not
+  billing". Its procedure codes are SNOMED-CT, so a SNOMED -> CPT/HCPCS map
+  is needed.
+- `java -version` returned "command not found": no JDK is installed, so
+  Synthea cannot run yet.
+
+**PRD shape:** riskiest-first. M0 tests OCI access, the budget alert,
+Synthea data, and whether Document Understanding can read a bill table,
+before any pipeline work. M1-M2 need no OCI calls and can run while M0's
+blocked items wait.
+
+**HONEST OPEN ITEM (not fixed):** M0.1 (OCI account + budget alert) and M0.2
+(JDK install or Synthea sample download) are BLOCKED-ON-EVAN. The demo-only
+send design (M6.2) is open. Per-task commits are not authorized in the PRD;
+commits stay on request. Unverified: Always Free VM coverage, instance
+principals for the AI services, the public MUE table, CPT descriptor
+licensing.

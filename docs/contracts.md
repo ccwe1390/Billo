@@ -130,3 +130,31 @@ Rules that apply to all four:
     file signature (415 otherwise).
   - `/extract`, `/explain` and `/packet` return 429 after 40 requests per 60 s
     from one client IP.
+
+- 2026-10-17 18:30 CDT, F10 (branch f10; additive, no version bump). Fixed
+  BEFORE the agents start; agents code against exactly these names.
+  - app/data/demo_bills.json: `{"synthetic": true, "note_en": str, "bills":
+    [{"id": str, "label_en": str, "fields": BillFields.fields}]}`; every field
+    has `confirmed: true`, `confidence: null`. Five bills (PRD F10.1).
+  - Policy JSON adds `coverage_period`: `{"days_before_application": 240,
+    "days_after_approval": 180, "text_en": str, "citation": {..., "url":
+    "/policy-cumberland.html#page-3", "page": 3}}` and top-level
+    `"rules_review_by": "2027-01-13"`.
+  - `POST /household` in: `{"answers": HouseholdAnswers, "bill": BillFields
+    or null}` (the user's confirmed bill, optional). Out: `{contract_version,
+    as_of, eligible, tier: {id, label_en, discount_percent, eligible,
+    citation}, percent_of_fpl, bills: [{id, label_en, source: "demo"|"yours",
+    hospital_name, statement_date, date_of_service, amount_due_cents,
+    reduction_cents, deadline: {date, text_en, citation}}], estimate_cents,
+    estimate_text_en, one_application_covers_all, coverage: {text_en,
+    citation}, earliest_deadline: {date, text_en, citation}, contacts,
+    locked_numbers}`. reduction_cents = amount_due_cents x discount_percent
+    // 100. estimate_text_en = "Up to $X could be reduced if the hospital
+    approves." (X formatted like amounts, 2 decimals), or "Not eligible under
+    this policy." when not eligible. as_of = the server's local date.
+  - `GET /stats` out: `{contract_version, since (server start, UTC, minute
+    precision), counts: {photos_read, results_free_care, results_discount,
+    results_not_eligible, packets, fallbacks, household_views}, languages:
+    {code: n}, rules: [{rule_en, source, page, effective_date}],
+    rules_review_by}`. Every count under 10 is the string "<10". Not rate
+    limited. Counts live in server memory only and reset on restart.

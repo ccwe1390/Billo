@@ -459,3 +459,135 @@ chooses to save, bills stay on their own phone."~~ There is no save feature,
 so that sentence would claim an unbuilt feature. Keep "Nothing is stored on
 our server" until a save exists. Line-by-line pitch, demo and judge-answer
 corrections: docs/2026-10-17_pitch-corrections.md (draft for Evan).
+
+### F10. DRAFT (2026-10-17 18:12 CDT) - the five F9 features, specified
+
+**Status: APPROVED by Evan 2026-10-17 ~18:35 CDT with D1a, D2b, HTTPS included,
+QR via a vendored JS library, and the product renamed "BillScan". Building on
+branch `f10`; nothing deploys until Evan says go (Dipayan's React PR #1 is out
+of scope). Plan: ~/.claude/task-plans/tnhacks26-f10.md.** (was: DRAFT) Written by
+Claude after the audit fixes went live (c4a28f0, record AB). Scope: the demo
+app only; the presentation belongs to other team members. Where this section
+and F9 disagree, F10 wins once Evan approves it.
+
+**Two decisions for Evan (defaults are Claude's recommendations):**
+- D1 Saving bills: **(a) default** - seeded synthetic bills plus the current
+  bill kept in page memory only; nothing is saved. (b) opt-in browser storage
+  (localStorage) - breaks ui.md hard rule 4 unless Evan approves it.
+- D2 Dashboard: **(a) default** - a labeled slide mockup, made by teammates.
+  (b) a live page of counts kept in server memory (no personal data, no disk,
+  wiped on restart); the privacy line becomes "counts only".
+
+**Rules for every F10 feature:**
+- Synthetic only: every new bill, rule and page carries SYNTHETIC; nothing
+  imitates a real hospital.
+- The engine decides. Every number on a new screen comes from engine output
+  and is in `locked_numbers` if generated text can repeat it.
+- New UI strings get en/es/ar/zh-CN/zh-TW with `// TODO-REVIEW es+ar+zh`;
+  English policy text stays left-to-right (`bdiEn`, `englishOnly`).
+- Each feature is its own commit, its own deploy, and a live journey after
+  it. Rollback target = the commit before it. Contract changes are additive
+  and dated in docs/contracts.md.
+- Feature freeze ~23:00 Sat (F6). A feature not passing its done-check by
+  then is cut, not rushed.
+
+#### F10.1 Home "Dad's bills" (rev2 beat 1:24) - size L, about 2 h
+
+- **What the user sees:** after the Result screen, a "See all of Dad's bills"
+  button opens a Home screen: 5 bills from one emergency visit, each row with
+  hospital, statement date, amount due, deadline and tier, plus one headline:
+  "Up to $X could be reduced if the hospital approves. Estimate. Synthetic
+  bills. The hospital decides." Never the word "saved".
+- **Data:** `app/data/demo_bills.json`, 5 SYNTHETIC Cumberland General bills,
+  fields already confirmed. Two match the existing images: bill-01 ($4,812.40,
+  statement 2026-10-01, service 2026-09-12) and bill-02 ($1,858.50, statement
+  2026-10-05, service 2026-09-20). Three new fixtures (amounts are fiction):
+  clinic follow-up $642.00 (statement 2026-10-09, service 2026-09-26), lab
+  $318.75 (statement 2026-10-12, service 2026-09-26), imaging follow-up
+  $1,206.00 (statement 2026-10-14, service 2026-10-02). Total $8,837.65.
+- **Server:** `POST /household` with the household answers (and, under D1a,
+  the user's current confirmed bill) returns, per bill, the engine result,
+  plus `estimate_cents` = sum over bills of amount_due x tier
+  `discount_percent` / 100, rounded down to the cent, and an
+  `estimate_text_en`. The engine gains `evaluate_many(bills, answers, policy,
+  fpl)`; `estimate_cents` formatted is added to `locked_numbers`. Not a paid
+  endpoint (no model call), so no rate limit.
+- **Saving:** D1a - the user's bill joins the list for this page session
+  only, labeled "(your bill)". D1b - a "Save to this phone" button writes the
+  confirmed fields only (never the photo) to localStorage, with a "Delete my
+  saved bills" button; off until the user taps it.
+- **Done-check:** a test_engine case for evaluate_many (free care at 115%:
+  estimate = $8,837.65; not eligible: estimate = $0 and the headline says
+  "not eligible under this policy"); a test_api case for /household; a
+  browser check in en and ar at 375 px (no sideways scroll, rtl, the headline
+  number equals the engine's); live journey passes.
+
+#### F10.2 One approval covers several bills - size S, about 20 min
+
+- **Policy (ours, synthetic):** add page 3 to policy-cumberland.html and a
+  rule to the policy JSON: "An approved application covers every Cumberland
+  General bill for services from 240 days before the application date
+  through 180 days after the approval date." Cited like every other rule.
+- **Engine:** `evaluate_many` takes `as_of` (the server's date, passed in so
+  the engine stays pure) and reports `one_application_covers_all` = every
+  bill's date of service is on or after as_of - 240 days.
+- **What the user sees:** on Home, "One approval may cover all 5 bills" with
+  its footnote, shown only when that flag is true.
+- **Done-check:** test_engine: true for the 5 fixtures with as_of
+  2026-10-17; false when one service date is 241 days before as_of;
+  test_policy_page still passes and page 3 exists.
+
+#### F10.3 Reminders - size S, about 30 min (after F10.1)
+
+- **What the user sees:** a Reminders card on Home: "Apply by <earliest
+  deadline>"; "30 days after you apply: if you have no decision, call
+  <phone>"; "New bill from this hospital? Your answers are reused" (in page
+  memory only).
+- **Calendar file:** an "Add to my calendar" button builds an `.ics` file in
+  the browser (two events: the deadline and today + 30 days) and downloads
+  it. Nothing goes to the server. Event titles in the chosen tier-1
+  language; dates and the phone number unchanged.
+- **Done-check:** a node check that the generated .ics has 2 VEVENTs with
+  DTSTART equal to the deadline and today + 30; browser check that the
+  download fires; the button makes no network request.
+
+#### F10.4 QR entry (rev2 beat 0:00) - size S-M, about 45 min
+
+- **App:** on load, `?hospital=cumberland_synthetic` shows a chip on the
+  Start screen: "Cumberland General Hospital (SYNTHETIC) selected"; any other
+  value is ignored. Nothing else changes (there is one policy).
+- **Bill:** a QR code printed on bill-02 ("Scan to check for financial
+  assistance - SYNTHETIC demo") encoding the final public URL with the
+  parameter; bill-02 PNGs re-rendered.
+- **Needs:** a QR generator - either a small MIT JavaScript library vendored
+  under app/static/vendor (a download that needs Evan's OK) or one image made
+  once and committed. Build after any HTTPS change, because the URL is baked
+  into the image.
+- **Done-check:** scanning the printed bill with a phone opens the live app
+  with the chip shown (Evan, real phone); a test that an unknown parameter
+  value shows no chip.
+
+#### F10.5 Partner dashboard - D2a mockup (no code) or D2b live, size M
+
+- **D2a:** no app work; teammates mock it on a slide, labeled "mockup".
+- **D2b:** `/dashboard.html` (labeled "Demo dashboard - synthetic data,
+  counts since the last restart") reading `GET /stats`:
+  - counts kept in server memory under a lock: photos read, results by tier,
+    languages chosen, packets made, English fallbacks; any count under 10 is
+    shown as "<10" (rev2 rule); no request content, IPs or timestamps kept;
+  - "Rules health": each policy rule with its source, page, effective date
+    and a `review_by` date added to the policy JSON; red when past.
+- **Done-check (D2b):** test_api: counters move after evaluate/packet calls
+  and /stats has no field that holds request content; restart clears them;
+  the page renders "<10" for small counts.
+
+**Build order and cut order:**
+- Order: F10.2 (smallest; F10.1 uses its fields) -> F10.1 -> F10.3 -> F10.4
+  -> F10.5 (D2b only).
+- Cut first if late: F10.5 -> F10.4 -> the .ics download in F10.3 -> F10.2.
+  F10.1 is the one worth the evening; if it is not passing its done-check by
+  ~22:00, cut it too and keep the live app as it is.
+- Agent split (plan-split rule): server + engine + data + tests to one
+  Sonnet agent, app.js/style.css to another (sequential within app.js:
+  F10.1 -> F10.3 -> F10.4); D2b's new files can run in parallel. Opus
+  reviews each diff on disk and runs the checks before any deploy.

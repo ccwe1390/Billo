@@ -56,6 +56,7 @@ the dated entry, not the digest.
 - [T - Language tiers built and reviewed; null-render bug fixed](#appendix-t---language-tiers-built-and-reviewed-null-render-bug-fixed-2026-10-17-1406-cdt) (10-17)
 - [U - Gate 1 passed from code; blur test passed; JSON-fence bug fixed](#appendix-u---gate-1-passed-from-code-blur-test-passed-json-fence-bug-fixed-2026-10-17-1424-cdt) (10-17)
 - [V - Deployed to OCI VM; 5 PM gate passed; number-safe translation](#appendix-v---deployed-to-oci-vm-5-pm-gate-passed-number-safe-translation-2026-10-17-1511-cdt) (10-17)
+- [W - Paper Trail design built and deployed (GO at 15:40)](#appendix-w---paper-trail-design-built-and-deployed-go-at-1540-2026-10-17-1541-cdt) (10-17)
 
 ---
 
@@ -756,3 +757,45 @@ line in an entry body may start with three backticks.
 **Also since:** pre-mortem written (docs/2026-10-17_pre-mortem.md, 18
 risks, 5 launch-blocking); placeholder Tennessee card removed (145c8af)
 and redeployed from the commit at 15:06 CDT.
+
+# Appendix W - Paper Trail design built and deployed (GO at 15:40) (2026-10-17 15:41 CDT)
+**What happened:** The "Paper Trail" design (docs/research/2026-10-17_design-
+system-brief.md, Direction 1) was built, reviewed and deployed in about 20
+minutes of wall clock (15:22-15:40 CDT), far ahead of the 21:00 go/no-go.
+Evan chose option A and approved the asset downloads.
+
+**Steps and commits (all pushed):**
+
+| Commit | What | Who |
+|---|---|---|
+| eb520a9 | Finished brief: cold assessment overturned "Plex is distinctive" (it is an AI-prompt default); CJK uses system fonts | research agent |
+| c2ed698 | Engine returns the full tier table (`tiers`, `current` by position); contracts.md; 11 hard UI rules in ui.md (adapted from Dipayan's frontend/CLAUDE.md) | Agent E (Sonnet) + Opus |
+| 35bfe4d | Vendored assets: Web Awesome 3.14.0 CSS, IBM Plex (Latin/Viet/Cyrillic, Arabic, Devanagari), 6 Phosphor icons; fonts.css maps 12 faces to 'BillPlex'; license inventory | Opus |
+| c689291 | Restyle: answer-first Result, policy table with your row highlighted, footnotes, step bar, named loading steps, "estimate / hospital decides" line, not-affiliated footer | Agent F (Sonnet) + Opus fixes |
+
+**Bug caught in review:** the brief said Web Awesome needs 7 CSS files.
+Following the @import graph found 13 (color/variants.css and 5 variant
+files). With 7, every page load would 404. All 13 were hash-verified.
+
+**Opus review fixes on Agent F's work:** removed the now-dead cite();
+added the Result-screen line "This is an estimate. The hospital makes the
+final decision." (ui.md rule 1 was unmet - also missing before the
+restyle).
+
+**Verification:**
+- Asset download: 36 files, every sha256 and size matched jsDelivr's
+  listing.
+- 4 test files ALL PASS. The four API calls are byte-identical to before.
+- Browser (fake mode): en/ar/zh-CN/zh-TW at 375px and en/ar/zh-CN at 320px.
+  No horizontal scroll on any of the 5 screens; exactly one aria-current
+  row; no "null"; nothing under 44px; 0 off-site requests; 0 console
+  errors; the packet iframe loads; Arabic mirrors correctly.
+- Live: deployed from c689291; assets 200; real-AI journey 11.4 s with the
+  Spanish packet passing the number check.
+
+**Not done / open:** no axe or Lighthouse audit (neither installed - the
+brief's done-check wants one saved); no real-phone check (pre-mortem T3);
+Traditional Chinese labels render in a lighter system
+face; Devanagari and Arabic fonts load for every visitor because the
+language buttons show those scripts (~120 KB); all new es/ar/zh strings are
+AI drafts (TODO-REVIEW); Font Awesome Free license page unread.

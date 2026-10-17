@@ -18,5 +18,7 @@ assert policy["tiers"][0]["citation"]["effective_date"] in html, "missing effect
 assert "SYNTHETIC" in html, "missing SYNTHETIC"
 assert 'id="page-1"' in html, "missing id page-1"
 assert 'id="page-2"' in html, "missing id page-2"
+assert 'id="page-3"' in html, "missing id page-3"
+assert policy["coverage_period"]["text_en"] in html, "missing coverage text_en"
 
 print("ALL PASS")

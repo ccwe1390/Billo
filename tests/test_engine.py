@@ -152,6 +152,72 @@ def test_statement_date_strict():
     assert run(3_800_000, statement="2026-10-01")["deadline"]["date"] == "2027-05-29"
 
 
+def many_bills(service_override=None):
+    rows = [
+        ("b1", 481240, "2026-10-01", "2026-09-12"),
+        ("b2", 185850, "2026-10-05", "2026-09-20"),
+        ("b3", 64200, "2026-10-09", "2026-09-26"),
+        ("b4", 31875, "2026-10-12", "2026-09-26"),
+        ("b5", 120600, "2026-10-14", "2026-10-02"),
+    ]
+    out = []
+    for i, (bid, amount, stmt, service) in enumerate(rows):
+        if service_override and i == 2:
+            service = service_override
+
+        def f(v):
+            return {"value": v, "confidence": None, "confirmed": True}
+        out.append({"id": bid, "label_en": "Bill " + bid, "source": "demo", "fields": {
+            "hospital_name": f("Cumberland General Hospital (SYNTHETIC)"),
+            "statement_date": f(stmt),
+            "date_of_service": f(service),
+            "amount_due_cents": f(amount),
+        }})
+    return out
+
+
+def test_evaluate_many():
+    from datetime import date, timedelta
+    as_of = date(2026, 10, 17)
+    r = engine.evaluate_many(many_bills(), answers(3_800_000), POLICY, FPL, as_of)
+    assert "contract_version" not in r
+    assert r["as_of"] == "2026-10-17"
+    assert r["eligible"] is True and r["tier"]["id"] == "free_care"
+    assert r["percent_of_fpl"] == 115
+    assert r["estimate_cents"] == 883765, r["estimate_cents"]
+    assert r["estimate_text_en"] == "Up to $8,837.65 could be reduced if the hospital approves."
+    assert r["one_application_covers_all"] is True
+    assert r["earliest_deadline"]["date"] == "2027-05-29"
+    assert [b["reduction_cents"] for b in r["bills"]] == [481240, 185850, 64200, 31875, 120600]
+    assert r["bills"][0]["deadline"]["date"] == "2027-05-29"
+    assert r["bills"][0]["date_of_service"] == "2026-09-12"
+    assert r["coverage"]["text_en"] == POLICY["coverage_period"]["text_en"]
+    assert r["contacts"]["phone"] == "(615) 555-0100"
+    ln = r["locked_numbers"]
+    assert len(ln) == len(set(ln)), ln
+    for want in ("115", "8,837.65", "4,812.40", "1,858.50", "642.00", "318.75", "1,206.00",
+                 "2027-05-29", "2027-06-02", "2027-06-06", "2027-06-09", "2027-06-11", "180"):
+        assert want in ln, (want, ln)
+
+    r = engine.evaluate_many(many_bills(), answers(20_000_000), POLICY, FPL, as_of)
+    assert r["eligible"] is False and r["estimate_cents"] == 0
+    assert r["estimate_text_en"] == "Not eligible under this policy."
+
+    # exactly 240 days before as_of is covered, 241 is not
+    assert date(2026, 2, 18) == as_of - timedelta(days=241)
+    r = engine.evaluate_many(many_bills("2026-02-18"), answers(3_800_000), POLICY, FPL, as_of)
+    assert r["one_application_covers_all"] is False
+    r = engine.evaluate_many(many_bills("2026-02-19"), answers(3_800_000), POLICY, FPL, as_of)
+    assert r["one_application_covers_all"] is True
+
+    try:
+        engine.evaluate_many([], answers(3_800_000), POLICY, FPL, as_of)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("empty bills should raise ValueError")
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

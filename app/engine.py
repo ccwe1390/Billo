@@ -179,3 +179,70 @@ def evaluate(bill_fields, answers, policy, fpl):
             str(window["days_from_statement"]),
         ],
     }
+
+
+def _field_value(fields, name):
+    f = fields.get(name)
+    return f.get("value") if isinstance(f, dict) else None
+
+
+def evaluate_many(bills, answers, policy, fpl, as_of):
+    """Several confirmed bills under one set of answers: the /household response
+    (docs/contracts.md) without `contract_version`. `as_of` is a date, passed in."""
+    if not bills:
+        raise ValueError("no bills")
+    coverage = policy["coverage_period"]
+    cutoff = as_of - timedelta(days=coverage["days_before_application"])
+
+    results = [evaluate({"fields": b["fields"]}, answers, policy, fpl) for b in bills]
+    first = results[0]
+    discount = first["tier"]["discount_percent"]
+
+    rows = []
+    covered = True
+    for b, r in zip(bills, results):
+        amount = _field_value(b["fields"], "amount_due_cents")
+        service = _field_value(b["fields"], "date_of_service")
+        rows.append({
+            "id": b["id"],
+            "label_en": b["label_en"],
+            "source": b["source"],
+            "hospital_name": _field_value(b["fields"], "hospital_name"),
+            "statement_date": _field_value(b["fields"], "statement_date"),
+            "date_of_service": service,
+            "amount_due_cents": amount,
+            "reduction_cents": amount * discount // 100,
+            "deadline": r["deadline"],
+        })
+        if not isinstance(service, str) or date.fromisoformat(service) < cutoff:
+            covered = False
+
+    estimate_cents = sum(row["reduction_cents"] for row in rows)
+    eligible = first["tier"]["eligible"]
+    if eligible:
+        estimate_text_en = "Up to $%s could be reduced if the hospital approves." % _fmt_amount_due(estimate_cents)
+    else:
+        estimate_text_en = "Not eligible under this policy."
+    earliest = min((row["deadline"] for row in rows), key=lambda d: d["date"])
+
+    locked = list(first["locked_numbers"])
+    locked.append(_fmt_amount_due(estimate_cents))
+    locked.extend(_fmt_amount_due(row["amount_due_cents"]) for row in rows)
+    locked.extend(row["deadline"]["date"] for row in rows)
+    locked.append(str(coverage["days_after_approval"]))
+    locked = list(dict.fromkeys(locked))
+
+    return {
+        "as_of": as_of.isoformat(),
+        "eligible": eligible,
+        "tier": first["tier"],
+        "percent_of_fpl": first["percent_of_fpl"],
+        "bills": rows,
+        "estimate_cents": estimate_cents,
+        "estimate_text_en": estimate_text_en,
+        "one_application_covers_all": covered,
+        "coverage": {"text_en": coverage["text_en"], "citation": copy.deepcopy(coverage["citation"])},
+        "earliest_deadline": earliest,
+        "contacts": copy.deepcopy(policy["contacts"]),
+        "locked_numbers": locked,
+    }

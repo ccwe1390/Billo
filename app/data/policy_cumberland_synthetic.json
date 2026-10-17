@@ -101,6 +101,18 @@
       }
     }
   ],
+  "coverage_period": {
+    "days_before_application": 240,
+    "days_after_approval": 180,
+    "text_en": "An approved application covers every Cumberland General Hospital bill for services from 240 days before the application date through 180 days after the approval date.",
+    "citation": {
+      "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+      "url": "/policy-cumberland.html#page-3",
+      "page": 3,
+      "effective_date": "2026-01-13"
+    }
+  },
+  "rules_review_by": "2027-01-13",
   "contacts": {
     "phone": "(615) 555-0100",
     "email": "financial.assistance@example.org",

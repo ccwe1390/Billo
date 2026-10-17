@@ -1,4 +1,4 @@
-"""Bill to Help - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
+"""BillScan - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
 
 Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet; static UI at /.
 """
@@ -34,7 +34,7 @@ MultiPartParser.spool_max_size = MAX_IMAGE_BYTES + 1024 * 1024  # uploads stay i
 ALLOWED_MIME = ("image/png", "image/jpeg")
 NOTICE_EN = "This is a draft you choose to send. The hospital makes the final decision."
 
-app = FastAPI(title="Bill to Help", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="BillScan", docs_url=None, redoc_url=None, openapi_url=None)
 
 
 @app.middleware("http")

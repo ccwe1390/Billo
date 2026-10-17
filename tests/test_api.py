@@ -479,6 +479,25 @@ assert engine._fmt_dollars(3800050) == main._dollars(3800050) == "38,000.50"
 assert engine._fmt_dollars(3800000) == main._dollars(3800000) == "38,000"
 assert engine._fmt_amount_due(481240) == main._amount_due(481240) == "4,812.40"
 
+# ---- R1: translate_genai_many runs 3 at a time, keeps order, leaves text unchanged
+_saved = (oci_client.is_fake, oci_client._env, oci_client._chat)
+try:
+    oci_client.is_fake = lambda: False
+    oci_client._env = lambda name: "x"
+
+    def _slow_chat(model_id, parts, json_mode, max_tokens=600):
+        time.sleep(0.3)
+        return parts[0].text.split("Text:\n", 1)[1]
+    oci_client._chat = _slow_chat
+    _texts = ["one 1", "two 2", "three 3", "four 4"]
+    _t0 = time.time()
+    _out = oci_client.translate_genai_many(_texts, "hi")
+    _dt = time.time() - _t0
+finally:
+    oci_client.is_fake, oci_client._env, oci_client._chat = _saved
+assert _out == _texts, _out
+assert _dt < 0.9, _dt
+
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)
 

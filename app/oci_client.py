@@ -197,9 +197,10 @@ def translate_genai_many(texts, target_lang, keep=()):
     """
     if is_fake():
         return ["[%s draft] %s" % (target_lang.upper(), t) for t in texts]
+    from concurrent.futures import ThreadPoolExecutor
     from oci.generative_ai_inference import models as m
-    out = []
-    for text in texts:
+
+    def one(text):
         masked, nums = protect_numbers(text, keep)
         prompt = (
             "Translate the text below into %s. The text contains placeholders like {0} and {1}: copy every "
@@ -208,8 +209,11 @@ def translate_genai_many(texts, target_lang, keep=()):
             % (LANGUAGE_NAMES[target_lang], masked))
         reply = _chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False,
                       max_tokens=2000).strip()
-        out.append(restore_numbers(reply, nums))
-    return out
+        return restore_numbers(reply, nums)
+
+    # 3 at a time; executor.map keeps the order and re-raises a worker's error here.
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        return list(executor.map(one, texts))
 
 
 def translate(text, target_lang):

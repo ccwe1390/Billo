@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 17:00 CDT** - this file is the only live
+**Last updated: 2026-10-17 18:04 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-Y).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -72,7 +72,8 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
 ## BLOCKED-ON-EVAN
 - Review docs/2026-10-17_pitch-corrections.md and give it to the presenters
   (rev2's pitch still says QR, VUMC, PDF, Dad's bills, a database).
-- V1 chatbot results: needed to fill the pitch brackets ([x], [N], ...).
+- Interview / task-comparison results ([N], [x], [y] in the pitch); V1 is done
+  (record AC: 13/13 raise assistance, 0/13 give the window or a letter).
 - Project LICENSE (legal call); TLS needs a domain.
 - Budget alert: still UNCONFIRMED (the VM is E5.Flex, a paid shape).
 - Delete the downloaded Terraform state JSON from Downloads (it holds the SSH key).
@@ -91,7 +92,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
    hospital stands unless Evan says otherwise.
 4. Submission = teammates' presentation with a LIVE demo of the site (Evan,
    ~15:49). Keep the live URL stable; record a backup video before it.
-5. Open: T2 V1 chatbot test (prompt + score sheet given in chat; Evan runs),
+5. DONE 18:03: T2 V1 chatbot test (record AC). Open:
    T3 real-phone test (Evan, later), budget alert. Done: MySQL/HeatWave
    deleted (record X), axe audit clean (docs/2026-10-17_accessibility-audit.md),
    reviewer screenshots sent (ar, zh-CN, zh-TW).
@@ -136,7 +137,7 @@ OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
 Next, in order: (1) presenters adopt docs/2026-10-17_pitch-corrections.md;
-(2) pre-mortem T1/T2/T3/T8 (Evan: organizers, V1 test, phone test, budget
-alert); (3) fluent review of es/ar/zh strings
+(2) pre-mortem T1/T3/T8 (Evan: organizers, phone test, budget alert); V1
+done (record AC); (3) fluent review of es/ar/zh strings
 (TODO-REVIEW in app.js); feature freeze ~23:00 Sat.
 ```

@@ -59,3 +59,36 @@
   (116d631), live run n=1 each: ar, zh-CN, zh-TW, es, fr, de, ru, ko, vi all
   kept the name verbatim and passed the number check; no "app" wording in
   ar/zh-CN/zh-TW; zh-TW kept the office name.
+- 2026-10-17 (run by Evan, logged 18:03 CDT) - V1 chatbot test (pre-mortem
+  T2/E1). Raw answers: docs/AI Test.txt. Input: spikes/synthetic-bill/bill-01
+  image (Cumberland General, SYNTHETIC) + the rev2 prompt; ARA runs used the
+  Arabic prompt and then a follow-up "also give responses in english" (a
+  deviation; scored on content, which matched). Free tiers: Gemini (Auto),
+  Claude (Sonnet 5.5, medium effort), ChatGPT (free model, name not
+  recorded). 14 runs started, 13 complete: Gemini 3 EN + 3 AR (AR run 5
+  truncated mid-answer, scored N/A), Claude 3 EN + 3 AR, ChatGPT 2 EN (EN
+  run 3 hit the free upload cap, "wait 23 hours"; 0 AR runs). Scored by
+  Claude on the revised sheet (rev2 checks 2 and 4 named VUMC, which no
+  chatbot can pass on a fictional hospital):
+
+  | Check (complete answers) | Gemini | Claude | ChatGPT | Total |
+  |---|---|---|---|---|
+  | c1 raises financial assistance unprompted | 5/5 | 6/6 | 2/2 | 13/13 |
+  | c2 asks for or uses household size AND income | 0/5 | 0/6 | 2/2 | 2/13 |
+  | c3 gives the assistance APPLICATION window (strict) | 0/5 | 0/6 | 0/2 | 0/13 |
+  | c3 lenient: an action deadline (always the 10/31 payment due date) | 4/5 | 6/6 | 0/2 | 10/13 |
+  | c4a invents hospital-specific limits or documents | 0/5 | 0/6 | 0/2 | 0/13 |
+  | c4b points to the hospital's own written policy or income cutoffs | 0/5 | 6/6 | 1/2 | 7/13 |
+  | c5 produces a filled application or ready-to-send letter | 0/5 | 0/6 | 0/2 | 0/13 |
+
+  Also seen: no answer estimated eligibility or named the 240-day window
+  (our app: free care up to 200% FPL, deadline 2027-05-29); every dated
+  answer treated the payment due date as THE deadline; Claude 6/6 and
+  ChatGPT 2/2 raised TennCare, Gemini 0/5; Gemini gave generic "50-100%"
+  reduction and "20-60%" self-pay ranges; the SYNTHETIC watermark was noted
+  by ChatGPT 2/2, Claude 1/6, Gemini 0/5; Gemini offered to draft a letter
+  or script, and Gemini AR run 6 wrote a call script (not a letter).
+  Scoring calls (Claude's, Evan may override): c2 needs the answer to ask
+  the user or compute, not just name the factors; c3 strict excludes the
+  payment due date. Limits: n=13, one bill, one evening, free tiers that
+  change week to week, unequal ChatGPT sample, one scorer.

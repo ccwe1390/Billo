@@ -55,3 +55,20 @@ Verified 2026-10-17 by Claude against the Federal Register notice
 (2026-00755, published 2026-01-15, effective 2026-01-13): the 2026 poverty
 guidelines $15,960 for 1 person, $33,000 for 4, +$5,680 per person (the
 engine's formula matches the table for every size 1-8).
+
+## V1 result (Evan's runs, scored 2026-10-17 18:03 CDT; experiments.md)
+
+Slide 3 grid: rows Gemini / Claude / ChatGPT; columns "mentions financial
+assistance", "estimates eligibility", "gives the application window",
+"invents the hospital's rules", "ready-to-send letter"; cells from the
+experiments.md table. Bracket fills (draft wording):
+
+- rev2 346 [result of task 1]: "all 13 answers told her to ask for financial
+  assistance, but none estimated whether her dad qualifies, none gave the
+  application window - they all pointed at the payment due date - and none
+  handed her a finished application or letter."
+- Judge Q1 [task 1 result]: same sentence; add "13 answers from three free
+  assistants, English and Arabic, one synthetic bill."
+- Pre-mortem E1 is half true: chatbots DO raise financial assistance, so do
+  not claim they don't. The pitch line "Any chatbot can explain a bill.
+  Nobody hands you the next step" holds.

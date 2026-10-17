@@ -62,6 +62,7 @@ the dated entry, not the digest.
 - [Z - Full audit: 5 highs, mostly claims that outlived the code](#appendix-z---full-audit-5-highs-mostly-claims-that-outlived-the-code-2026-10-17-1643-cdt) (10-17)
 - [AA - Every audit fix built and verified; not deployed (SSH refused)](#appendix-aa---every-audit-fix-built-and-verified-not-deployed-ssh-refused-2026-10-17-1655-cdt) (10-17)
 - [AB - Audit fixes deployed (c4a28f0); live journey 10.7 s](#appendix-ab---audit-fixes-deployed-c4a28f0-live-journey-107-s-2026-10-17-1700-cdt) (10-17)
+- [AC - V1 chatbot test: 13/13 raise assistance, 0/13 give the window or a letter](#appendix-ac---v1-chatbot-test-1313-raise-assistance-013-give-the-window-or-a-letter-2026-10-17-1803-cdt) (10-17)
 
 ---
 
@@ -1022,3 +1023,30 @@ service active.
 
 **Docs:** operations.md deploy entry; HANDOFF now says the audit fixes are
 live. Rollback target: 116d631.
+
+# Appendix AC - V1 chatbot test: 13/13 raise assistance, 0/13 give the window or a letter (2026-10-17, 18:03 CDT)
+**What happened:** Evan ran the V1 chatbot test (pre-mortem T2/E1) and saved
+the raw answers in docs/AI Test.txt. Claude read all 553 lines and scored
+them on a revised sheet: rev2's checks 2 and 4 asked for VUMC's limits and
+documents, which no chatbot can match for a fictional hospital, so they
+were replaced by "asks for or uses household size and income" and "invents
+hospital-specific rules / points to the hospital's own policy".
+
+**Sample:** 14 runs started, 13 complete (Gemini 5, Claude 6, ChatGPT 2).
+ChatGPT hit its free upload cap after 2 English runs; one Gemini Arabic
+answer was cut off. Arabic runs had an extra "also give responses in
+english" follow-up.
+
+**Result (13 complete answers):** financial assistance raised unprompted
+13/13; asked for household size and income 2/13 (ChatGPT only);
+application window given 0/13 (every dated answer used the 10/31 payment
+due date instead, 10/13); hospital-specific rules invented 0/13; pointed to
+the hospital's own written policy or cutoffs 7/13 (Claude 6/6); a filled
+application or ready-to-send letter 0/13. Table: experiments.md.
+
+**What it means:** the pre-mortem's elephant E1 is half true. Chatbots DO
+raise financial assistance, so the pitch must not claim they don't. They
+stop there: no eligibility estimate, no application window, no finished
+packet. Slide-3 text and bracket fills are in
+docs/2026-10-17_pitch-corrections.md (draft). Scoring calls are Claude's;
+one scorer, n=13, free tiers, one evening.

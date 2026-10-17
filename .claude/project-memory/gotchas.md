@@ -17,3 +17,7 @@
 - 2026-10-17 - SSH key file name/location (Evan): save the starter kit's
   generated key as `C:\Users\daruw\.ssh\HackTN26.pem` - outside the repo so it
   can never be committed. Use that path in the icacls/ssh commands above.
+- 2026-10-17 - Python on Evan's laptop: use `py` (Python 3.14.7, pip 26.2.1).
+  `python`/`python3` hit the Microsoft Store alias and fail. This corrects
+  earlier "no Python" claims (record Appendix O). The `oci` package is NOT
+  installed locally.

@@ -1,0 +1,11 @@
+{
+  "year": 2026,
+  "base_cents": 1596000,
+  "per_extra_cents": 568000,
+  "citation": {
+    "source": "HHS 2026 Poverty Guidelines",
+    "url": "https://aspe.hhs.gov/poverty-guidelines",
+    "page": null,
+    "effective_date": "2026-01-13"
+  }
+}

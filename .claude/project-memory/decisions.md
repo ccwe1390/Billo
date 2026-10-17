@@ -87,3 +87,11 @@ Standing decisions (what is decided NOW). History lives in the record.
   the draft plan is written in Python. Arabic PDF risk: use a printable HTML
   page (the browser does RTL shaping), not server-side PDF. Decided by:
   Evan, chat 2026-10-17.
+- 2026-10-17 13:36 CDT - Engine review (Agent A build, tests re-run by Opus:
+  ALL PASS). Kept: deadline.date, contacts.payment_plan_phone, evaluate
+  accepts bare or wrapped fields, every bill field must be confirmed (even
+  ones /evaluate ignores). Changed: added tier.discount_percent, and the
+  discount percent plus the 240-day window to locked_numbers, so explain text
+  that repeats the tier label or deadline text is not flagged. Contacts never
+  go through the model; dates in generated text must be YYYY-MM-DD. Decided
+  by: Claude (review); open to Evan's override.

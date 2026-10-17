@@ -1,0 +1,115 @@
+{
+  "hospital_id": "cumberland_synthetic",
+  "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+  "synthetic": true,
+  "tiers": [
+    {
+      "id": "free_care",
+      "max_percent": 200,
+      "discount_percent": 100,
+      "label_en": "Free care (100% discount)",
+      "eligible": true,
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 1,
+        "effective_date": "2026-01-13"
+      }
+    },
+    {
+      "id": "discount",
+      "max_percent": 300,
+      "discount_percent": 75,
+      "label_en": "75% discount",
+      "eligible": true,
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 1,
+        "effective_date": "2026-01-13"
+      }
+    },
+    {
+      "id": "discount",
+      "max_percent": 400,
+      "discount_percent": 50,
+      "label_en": "50% discount",
+      "eligible": true,
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 1,
+        "effective_date": "2026-01-13"
+      }
+    },
+    {
+      "id": "not_eligible",
+      "max_percent": null,
+      "discount_percent": 0,
+      "label_en": "Not eligible under this policy - payment plan available",
+      "eligible": false,
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 1,
+        "effective_date": "2026-01-13"
+      }
+    }
+  ],
+  "application_window": {
+    "days_from_statement": 240,
+    "text_template_en": "Apply by {date}. The application window is 240 days from the first billing statement date.",
+    "citation": {
+      "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+      "url": "",
+      "page": 2,
+      "effective_date": "2026-01-13"
+    }
+  },
+  "documents": [
+    {
+      "id": "proof_income",
+      "label_en": "Proof of income for the last 30 days (pay stubs, or a signed statement of cash income)",
+      "required_if": "always",
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 2,
+        "effective_date": "2026-01-13"
+      }
+    },
+    {
+      "id": "tax_return",
+      "label_en": "Most recent federal tax return",
+      "required_if": "files_tax_return",
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 2,
+        "effective_date": "2026-01-13"
+      }
+    },
+    {
+      "id": "bill_copy",
+      "label_en": "A copy of this bill",
+      "required_if": "always",
+      "citation": {
+        "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+        "url": "",
+        "page": 2,
+        "effective_date": "2026-01-13"
+      }
+    }
+  ],
+  "contacts": {
+    "phone": "(615) 555-0100",
+    "email": "financial.assistance@example.org",
+    "payment_plan_phone": "(615) 555-0100",
+    "citation": {
+      "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
+      "url": "",
+      "page": 2,
+      "effective_date": "2026-01-13"
+    }
+  }
+}

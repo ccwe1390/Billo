@@ -48,6 +48,8 @@ the dated entry, not the digest.
 - [L - Event facts, rubric, and draft pivot plan (bill to financial assistance packet) received](#appendix-l---event-facts-rubric-and-draft-pivot-plan-bill-to-financial-assistance-packet-received-2026-10-17-1256-cdt) (10-17)
 - [M - Pivot adopted - bill to financial assistance packet; Python stack; deadline Sun 1:00 PM; PRD forked](#appendix-m---pivot-adopted---bill-to-financial-assistance-packet-python-stack-deadline-sun-100-pm-prd-forked-2026-10-17-1310-cdt) (10-17)
 - [N - Starter-kit apply failed (A1 out of capacity); E5 fallback; synthetic test bill](#appendix-n---starter-kit-apply-failed-a1-out-of-capacity-e5-fallback-synthetic-test-bill-2026-10-17-1314-cdt) (10-17)
+- [O - Gate 1 passed in Playground; contracts drafted; vision extract spike written (not run)](#appendix-o---gate-1-passed-in-playground-contracts-drafted-vision-extract-spike-written-not-run-2026-10-17-1324-cdt) (10-17)
+- [P - Rules engine built and reviewed; revised plan received](#appendix-p---rules-engine-built-and-reviewed-revised-plan-received-2026-10-17-1339-cdt) (10-17)
 
 ---
 
@@ -479,3 +481,47 @@ final").
 - `docs/The_Hacker_Toolkit_TEMPLATE_AND_EXAMPLES_ONLY.pdf` is gitignored: it is a copyrighted 4.7 MB worksheet set, not needed in the repo.
 
 **HONEST OPEN ITEM (not fixed):** no VM yet; the Generative AI call is untested; the budget alert is unconfirmed.
+
+# Appendix O - Gate 1 passed in Playground; contracts drafted; vision extract spike written (not run) (2026-10-17, ~13:24 CDT)
+**WHAT:**
+
+- **Gate 1 passed** (~13:17 CDT, n=1). In the OCI Playground, Cohere Command A Vision read `spikes/synthetic-bill/bill-01.png` with all 6 fields correct, in strict JSON (experiments.md).
+- **Contracts drafted:** `docs/contracts.md` for team agreement - money in integer cents, dates as YYYY-MM-DD, eligibility comparing cents rather than rounded percents, a locked-numbers list.
+- **Playground "View code" is text-only:** Evan pasted it; it uses the v1 CohereChatRequest with no image. Claude checked the oracle/oci-python-sdk source (gh api) for the vision request classes - CohereChatRequestV2, CohereUserMessageV2, CohereTextContentV2, CohereImageContentV2, CohereImageUrlV2, CohereResponseJsonFormat; api_format COHEREV2; response at chat_response.message.content - and wrote `spikes/extract/extract_bill.py`.
+
+**HONEST OPEN ITEM (not fixed):**
+- `extract_bill.py` has NOT been run: no Python on this laptop, and no VM yet. Whether OCI accepts a base64 data URI for the image is unverified.
+- The model ID was not shown ("---" in the pasted code).
+- The E5 re-apply result is unknown.
+
+# Appendix P - Rules engine built and reviewed; revised plan received (2026-10-17 13:39 CDT)
+**What happened:** First code. Under the plan-split rule, two Sonnet agents
+were dispatched at ~13:35 CDT on disjoint files (plan in
+`~/.claude/task-plans/tnhacks26-build.md`). Agent A built the rules engine:
+`app/engine.py`, `app/data/fpl_2026.json`,
+`app/data/policy_cumberland_synthetic.json`, `tests/test_engine.py`. Agent B
+(FastAPI app, OCI client with FAKE_OCI mode, number lock, static screens) was
+still running at the time of this entry.
+
+**Review (Opus re-ran the check, did not trust the report):**
+`py tests/test_engine.py` -> ALL PASS, exit 0 (13:36 CDT). The tests cover FPL
+sizes 1/4/8, the five size-4 tier boundaries (6,600,000 cents = exactly 200%
+stays free care; 6,600,100 drops to 75%), the demo case (115%, free care),
+deadline 2026-10-01 -> 2027-05-29, the tax-return document rule, and refusal
+of unconfirmed fields.
+
+**Change made in review:** `locked_numbers` lacked the discount percent and
+the 240-day window, which appear in the tier label and deadline text. Any
+generated explanation repeating them would have been flagged and replaced by
+the English template. Added both, plus `tier.discount_percent`. Tests re-run:
+ALL PASS. `docs/contracts.md` example updated (still a draft, no version
+bump). Agent B told: dates in generated text as YYYY-MM-DD, no phone numbers
+or emails through the model.
+
+**Also on 2026-10-17 ~13:38 CDT:** Evan pasted a revised plan with mentor
+additions (home "Dad's bills", reminders, partner dashboard, QR entry, pitch,
+demo script). Not adopted yet; review of conflicts given in chat.
+
+**Status:** engine done and verified on synthetic policy only. Nothing
+committed. OCI extraction still not run from code (waiting on Evan's API key
+config and model ID).

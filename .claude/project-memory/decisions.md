@@ -95,3 +95,14 @@ Standing decisions (what is decided NOW). History lives in the record.
   that repeats the tier label or deadline text is not flagged. Contacts never
   go through the model; dates in generated text must be YYYY-MM-DD. Decided
   by: Claude (review); open to Evan's override.
+- 2026-10-17 ~13:55 CDT - App-shell review (Agent B build; all 3 test files
+  re-run by Opus: ALL PASS; fake-mode server served / with 200). Found and
+  fixed: /explain and /packet trusted the engine result sent back by the
+  browser (a $999,000 income with a client-sent "10%, free care" result got a
+  free-care packet). Both now recompute the result with the engine; the
+  client's `result` is ignored. Regression test added to tests/test_api.py.
+  Accepted from the agent: confidence is null when the model reports none (no
+  invented scores); not-eligible gets no packet, only the payment-plan
+  contact; model failure or number mismatch falls back to English. Open: OCI
+  Language translate never run live; TN protections card has no sourced text;
+  es/ar UI strings need a human reviewer. Decided by: Claude (review).

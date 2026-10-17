@@ -96,3 +96,8 @@ Rules that apply to all four:
 - `source` is `"bill" | "answers" | "policy"`.
 - The response is rendered as a printable HTML page (no server PDF).
 - Nothing is stored after the response.
+
+- 2026-10-17 ~13:55 CDT: `confidence` is `null` when the model gives no
+  per-field score (Command A Vision gives none) and `0.0` when the value is
+  null. `/explain` and `/packet` take BillFields + HouseholdAnswers and
+  recompute the EngineResult on the server; a client-sent `result` is ignored.

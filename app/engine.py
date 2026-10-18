@@ -166,8 +166,12 @@ def evaluate(bill_fields, answers, policy, fpl):
     ]
 
     window = policy["application_window"]
+    # The policies count from the FIRST bill after discharge, which is never before the date of service; this
+    # statement may be a later one. Counting from the service date can only move "Apply by" earlier, never too late.
+    from_service = service is not None and date.fromisoformat(service) < statement_date
+    anchor = date.fromisoformat(service) if from_service else statement_date
     try:
-        deadline_date = (statement_date + timedelta(days=window["days_from_statement"])).isoformat()
+        deadline_date = (anchor + timedelta(days=window["days_from_statement"])).isoformat()
     except OverflowError:
         raise ValueError("statement_date is out of range")
 
@@ -209,7 +213,8 @@ def evaluate(bill_fields, answers, policy, fpl):
         "tiers": tiers,
         "deadline": {
             "date": deadline_date,
-            "text_en": window["text_template_en"].format(date=deadline_date),
+            "counted_from": "date_of_service" if from_service else "statement_date",
+            "text_en": window["service_template_en" if from_service else "text_template_en"].format(date=deadline_date),
             "citation": copy.deepcopy(window["citation"]),
         },
         "documents": documents,

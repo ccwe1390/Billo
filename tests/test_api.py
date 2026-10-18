@@ -93,7 +93,7 @@ expect_http(422, main.evaluate, main.EvaluateIn(bill=main.BillIn(**bill), answer
 bill = confirm_all(bill)
 res = main.evaluate(main.EvaluateIn(bill=main.BillIn(**bill), answers=answers()))
 assert res["percent_of_fpl"] == 115 and res["tier"]["id"] == "free_care" and res["tier"]["eligible"]
-assert res["locked_numbers"] == ["115", "4", "38,000", "33,000", "4,812.40", "2027-05-29", "100", "240"], res["locked_numbers"]
+assert res["locked_numbers"] == ["115", "4", "38,000", "33,000", "4,812.40", "2027-05-10", "100", "240"], res["locked_numbers"]
 
 # ---- privacy: no way to send extra personal fields
 try:
@@ -763,7 +763,7 @@ main.evaluate(main.EvaluateIn(bill=main.BillIn(**nodate), answers=answers()))
 facts_rich = main._facts_en(B, rich, res2)
 assert facts_rich.splitlines()[2] == "Not eligible for the income tiers - catastrophic assistance may apply.", facts_rich
 assert "Apply" not in facts_rich and "2027" not in facts_rich
-assert "2027-05-29" in main._facts_en(B, answers(), res)             # eligible families still get the deadline
+assert "2027-05-10" in main._facts_en(B, answers(), res)             # eligible families still get the deadline
 ex_rich_en = main.explain(main.ResultIn(bill=B, answers=answers(language="en", annual_income_cents=13200100)))
 assert "Apply" not in ex_rich_en["text"] and "catastrophic assistance" in ex_rich_en["text"]
 assert h3["one_application_covers_all"] is False and h3["eligible"] is False
@@ -781,7 +781,7 @@ assert hv["bills"][-1]["amount_due_cents"] == 5000000
 _van_old = copy.deepcopy(_van_bill)
 _van_old["fields"]["statement_date"]["value"] = "2026-03-01"   # its "deadline" would be earliest; it must not count
 hv2 = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_van_old)))
-assert hv2["earliest_deadline"]["date"] == hv["earliest_deadline"]["date"] == "2027-05-29", hv2["earliest_deadline"]
+assert hv2["earliest_deadline"]["date"] == hv["earliest_deadline"]["date"] == "2027-05-10", hv2["earliest_deadline"]
 
 # ---- fix 9: a user bill with a demo bill's account number replaces that bill's values (whitespace ignored)
 _mine = confirm_all(main.normalize_bill({"hospital_name": "Cumberland General Hospital (SYNTHETIC)",

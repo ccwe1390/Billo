@@ -91,6 +91,26 @@ def test_deadline():
     assert r["deadline"]["date"] == "2027-05-29"
     assert "2027-05-29" in r["deadline"]["text_en"]
     assert r["deadline"]["citation"]["source"]
+    assert r["deadline"]["counted_from"] == "statement_date" and r["deadline"]["text_en"] == POLICY["application_window"]["text_template_en"].format(date="2027-05-29")
+
+
+def test_deadline_counts_from_date_of_service():
+    """Flaw 2: the policies count from the FIRST bill after discharge; a known, earlier date of service anchors the
+    deadline so "Apply by" can only move earlier, never too late."""
+    def with_service(service, statement="2026-10-01"):
+        b = bill(statement=statement)
+        b["fields"]["date_of_service"] = {"value": service, "confidence": 0.9, "confirmed": True}
+        return engine.evaluate(b, answers(3_800_000), POLICY, FPL)["deadline"]
+    d = with_service("2026-09-12")
+    assert d["date"] == "2027-05-10" and d["counted_from"] == "date_of_service", d
+    assert d["text_en"] == POLICY["application_window"]["service_template_en"].format(date="2027-05-10")
+    assert "date of service" in d["text_en"] and "this date or later" in d["text_en"]
+    for same_or_after in ("2026-10-01", "2026-10-05"):  # not earlier than the statement: the statement anchors
+        d = with_service(same_or_after)
+        assert d["date"] == "2027-05-29" and d["counted_from"] == "statement_date", (same_or_after, d)
+    for pid in ("vumc", "ascension_saint_thomas", "cumberland_synthetic"):
+        w = engine.load_policy(os.path.join(DATA, "policy_%s.json" % pid))["application_window"]
+        assert "{date}" in w["service_template_en"] and str(w["days_from_statement"]) in w["service_template_en"], pid
 
 
 def test_documents():
@@ -224,16 +244,16 @@ def test_evaluate_many():
     assert r["estimate_cents"] == 883765, r["estimate_cents"]
     assert r["estimate_text_en"] == "Up to $8,837.65 could be reduced if the hospital approves."
     assert r["one_application_covers_all"] is True
-    assert r["earliest_deadline"]["date"] == "2027-05-29"
+    assert r["earliest_deadline"]["date"] == "2027-05-10"  # counted from b1's date of service 2026-09-12 (flaw 2)
     assert [b["reduction_cents"] for b in r["bills"]] == [481240, 185850, 64200, 31875, 120600]
-    assert r["bills"][0]["deadline"]["date"] == "2027-05-29"
+    assert r["bills"][0]["deadline"]["date"] == "2027-05-10" and r["bills"][0]["deadline"]["counted_from"] == "date_of_service"
     assert r["bills"][0]["date_of_service"] == "2026-09-12"
     assert r["coverage"]["text_en"] == POLICY["coverage_period"]["text_en"]
     assert r["contacts"]["phone"] == "(615) 555-0100"
     ln = r["locked_numbers"]
     assert len(ln) == len(set(ln)), ln
     for want in ("115", "8,837.65", "4,812.40", "1,858.50", "642.00", "318.75", "1,206.00",
-                 "2027-05-29", "2027-06-02", "2027-06-06", "2027-06-09", "2027-06-11", "180"):
+                 "2027-05-10", "2027-05-18", "2027-05-24", "2027-05-30", "180"):
         assert want in ln, (want, ln)
 
     r = engine.evaluate_many(many_bills(), answers(20_000_000), POLICY, FPL, as_of)
@@ -463,7 +483,7 @@ def test_evaluate_many_real_policies():
                              "citation": VUMC["coverage_period"]["citation"]}
     assert "None" not in r["locked_numbers"] and all(isinstance(x, str) for x in r["locked_numbers"])
     assert len(r["locked_numbers"]) == len(set(r["locked_numbers"]))
-    for want in ("115", "8,837.65", "4,812.40", "2027-05-29", "100", "240"):
+    for want in ("115", "8,837.65", "4,812.40", "2027-05-10", "100", "240"):
         assert want in r["locked_numbers"], want
     assert "182" not in r["locked_numbers"]                                  # null days_after_approval is not locked
     # no lower limit: a very old service date is still covered

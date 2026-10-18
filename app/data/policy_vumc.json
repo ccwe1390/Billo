@@ -62,6 +62,7 @@
   "application_window": {
     "days_from_statement": 240,
     "text_template_en": "Apply by {date} if this is your first bill after leaving the hospital; if not, your deadline is earlier. VUMC's application period is 240 days after the first post-discharge billing statement.",
+    "service_template_en": "Apply by {date}. To be safe we counted 240 days from your date of service. VUMC counts 240 days from the first bill after you left the hospital, so your real deadline is this date or later.",
     "citation": {
       "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
       "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=3",

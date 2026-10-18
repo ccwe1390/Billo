@@ -208,3 +208,12 @@ Rules that apply to all four:
   is now listed and NOT counted, like a false row: excluded from estimate_cents,
   one_application_covers_all and earliest_deadline. Supersedes "null = unknown, no warning" in the
   2026-10-17 23:30 addendum; Home shows the no-name note on that row.
+
+## Addendum 2026-10-18 10:29 CDT - deadline anchor (feature review flaw 2)
+- deadline.date counts days_from_statement from the bill's date_of_service when it is known and earlier
+  than statement_date, else from statement_date. The policies count from the FIRST bill after discharge,
+  which is never before the date of service, so the date can only move earlier, never too late.
+- deadline gains "counted_from": "date_of_service" | "statement_date"; text_en uses the policy's new
+  application_window.service_template_en ("To be safe we counted ... your real deadline is this date or
+  later") or the existing text_template_en ("if not, your deadline is earlier"). /household rows and
+  earliest_deadline follow. The bill-01 example date above becomes 2027-05-10 (service 2026-09-12).

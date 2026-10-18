@@ -90,6 +90,7 @@
   "application_window": {
     "days_from_statement": 240,
     "text_template_en": "Apply by {date} if this is your first bill after leaving the hospital; if not, your deadline is earlier. Ascension's policy counts 240 days from the first discharge bill.",
+    "service_template_en": "Apply by {date}. To be safe we counted 240 days from your date of service. Ascension's policy counts 240 days from the first discharge bill, so your real deadline is this date or later.",
     "citation": {
       "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
       "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=2",

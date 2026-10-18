@@ -59,6 +59,7 @@
   "application_window": {
     "days_from_statement": 240,
     "text_template_en": "Apply by {date}. The application window is 240 days from the first billing statement date.",
+    "service_template_en": "Apply by {date}. To be safe we counted 240 days from your date of service. The application window is 240 days from the first billing statement date, so your real deadline is this date or later.",
     "citation": {
       "source": "Cumberland General Hospital Financial Assistance Policy (SYNTHETIC, demo only)",
       "url": "/policy-cumberland.html#page-2",

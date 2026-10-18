@@ -198,3 +198,13 @@ Rules that apply to all four:
 - /stats gains "policies" [{hospital_id, hospital_name, rules_review_by}]; rules_review_by is the
   earliest across policies; "rules" still lists the default policy.
 - /packet?format=json returns the Packet shape (the default is HTML).
+
+## Addendum 2026-10-18 10:19 CDT - no hospital name (f6b6f05, f2c2135; audit 4 B2, landing check)
+- EngineResult (/evaluate) gains "hospital_name_missing" (bool): true when the bill shows no hospital
+  name (blank, whitespace or not text); then hospital_matches_policy is false (no estimate, /explain
+  makes no OCI call). /packet returns 422 "No application packet: the bill shows no hospital name."
+  (checked before the no-policy 422).
+- /household rows keep hospital_matches_policy null for a bill with no hospital name, but such a row
+  is now listed and NOT counted, like a false row: excluded from estimate_cents,
+  one_application_covers_all and earliest_deadline. Supersedes "null = unknown, no warning" in the
+  2026-10-17 23:30 addendum; Home shows the no-name note on that row.

@@ -9,6 +9,7 @@ import functools
 import html
 import json
 import logging
+import math
 import os
 import re
 import threading
@@ -18,7 +19,8 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Any, Dict, Literal, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.formparsers import MultiPartParser
@@ -33,7 +35,9 @@ POLICY_PATH = os.path.join(BASE_DIR, "data", "policy_cumberland_synthetic.json")
 FPL_PATH = os.path.join(BASE_DIR, "data", "fpl_2026.json")
 LANGUAGES_PATH = os.path.join(BASE_DIR, "data", "languages.json")
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
-MultiPartParser.spool_max_size = MAX_IMAGE_BYTES + 1024 * 1024  # uploads stay in memory: nothing is spooled to disk
+MultiPartParser.spool_max_size = MAX_IMAGE_BYTES  # an allowed upload stays in memory; bigger ones are refused by Content-Length first
+MAX_BODY_BYTES = MAX_IMAGE_BYTES + 64 * 1024  # image plus multipart framing
+TOO_BIG = "Image is empty or larger than 8 MB."
 ALLOWED_MIME = ("image/png", "image/jpeg")
 NOTICE_EN = "This is a draft you choose to send. The hospital makes the final decision."
 
@@ -41,6 +45,26 @@ with open(LANGUAGES_PATH, encoding="utf-8") as _f:
     LANGS = {x["code"]: x for x in json.load(_f)}  # the one language list (app/data/languages.json)
 
 app = FastAPI(title="BillScan", docs_url=None, redoc_url=None, openapi_url=None)
+
+
+@app.exception_handler(RequestValidationError)
+async def invalid_request(request, exc):
+    # The default 422 body echoes each rejected input back; NaN, Infinity or a lone surrogate there cannot be
+    # serialised and turned the 422 into a 500. Send only where it failed and why.
+    errors = [{"loc": [str(p).encode("utf-8", "replace").decode("utf-8") for p in e["loc"]],
+               "msg": e["msg"], "type": e["type"]} for e in exc.errors()]
+    return JSONResponse({"detail": errors}, status_code=422)
+
+
+@app.middleware("http")
+async def refuse_big_upload(request, call_next):
+    # Runs before FastAPI parses the multipart body, so an oversize file is never spooled to disk.
+    # shortcut: a chunked upload with no Content-Length skips this; the 413 in extract() still catches it.
+    if request.method == "POST" and request.url.path == "/extract":
+        declared = request.headers.get("content-length", "")
+        if declared.isdigit() and int(declared) > MAX_BODY_BYTES:
+            return JSONResponse({"detail": TOO_BIG}, status_code=413)
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -54,9 +78,14 @@ async def security_headers(request, call_next):
 
 # ---------------------------------------------------------------- rate limit (paid endpoints only)
 
-RATE_LIMIT = 40
+# shortcut: 60 per IP per minute because a venue's Wi-Fi NAT shares one bucket; a 422 still consumes it (FastAPI
+# parses the body before this dependency runs), so the global cap below is the real cost guard.
+RATE_LIMIT = 60
 RATE_WINDOW_S = 60
+GLOBAL_LIMIT_PER_HOUR = 600
+GLOBAL_WINDOW_S = 3600
 _hits = {}
+_global_hits = collections.deque()
 _hits_lock = threading.Lock()
 
 
@@ -78,7 +107,12 @@ def _rate_limit(request: Request):
         q = _hits.setdefault(ip, collections.deque())
         if len(q) >= RATE_LIMIT:
             raise HTTPException(429, "Too many requests. Wait a minute and try again.")
+        while _global_hits and now - _global_hits[0] > GLOBAL_WINDOW_S:
+            _global_hits.popleft()
+        if len(_global_hits) >= GLOBAL_LIMIT_PER_HOUR:
+            raise HTTPException(429, "Too many requests. Wait a minute and try again.")
         q.append(now)
+        _global_hits.append(now)
 
 
 # ---------------------------------------------------------------- in-memory counters
@@ -102,6 +136,9 @@ def _count(key, lang=None):
 
 # ---------------------------------------------------------------- models
 
+_CONTROL = re.compile("[\x00-\x1f\x7f\ud800-\udfff]")  # ASCII control characters and lone surrogates
+
+
 class FieldIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     value: Any = None
@@ -110,9 +147,15 @@ class FieldIn(BaseModel):
 
     @field_validator("value")
     @classmethod
-    def _value_not_too_long(cls, v):
-        if isinstance(v, str) and len(v) > 200:
-            raise ValueError("field value is too long")
+    def _value_is_plain(cls, v):
+        if v is not None and not isinstance(v, (str, int, float, bool)):
+            raise ValueError("field value must be text or a number")
+        if isinstance(v, float) and not math.isfinite(v):
+            raise ValueError("field value must be a finite number")
+        if isinstance(v, str):
+            v = re.sub(" {2,}", " ", _CONTROL.sub(" ", v))  # newlines and tabs too: a value is one line
+            if len(v) > 200:
+                raise ValueError("field value is too long")
         return v
 
 
@@ -152,6 +195,7 @@ class AnswersIn(BaseModel):
 
 
 class EvaluateIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     bill: BillIn
     answers: AnswersIn
 
@@ -163,6 +207,7 @@ class HouseholdIn(BaseModel):
 
 
 class ResultIn(EvaluateIn):
+    model_config = ConfigDict(extra="forbid")
     # Accepted for compatibility but never trusted: /explain and /packet
     # recompute the result with the engine (a client could send any numbers).
     result: Optional[Dict[str, Any]] = None
@@ -265,7 +310,7 @@ async def extract(file: UploadFile):
         raise HTTPException(415, "Upload a PNG or JPEG image.")
     data = await file.read(MAX_IMAGE_BYTES + 1)
     if not data or len(data) > MAX_IMAGE_BYTES:
-        raise HTTPException(413, "Image is empty or larger than 8 MB.")
+        raise HTTPException(413, TOO_BIG)
     if not data.startswith(b"\x89PNG\r\n\x1a\n" if mime == "image/png" else b"\xff\xd8\xff"):
         raise HTTPException(415, "Upload a PNG or JPEG image.")
     try:
@@ -321,6 +366,10 @@ def _people(n):
 def _facts_en(bill, answers, result):
     """The three fixed English lines. Every number in them comes from the engine or a confirmed field."""
     n = answers.household_size
+    if result["tier"]["eligible"]:
+        last = "%s. %s" % (result["tier"]["label_en"], result["deadline"]["text_en"])
+    else:  # no "Apply by": an ineligible family is pointed to the payment-plan contact instead
+        last = "%s." % result["tier"]["label_en"]
     return "\n".join([
         "This bill is from %s. The statement date is %s and the amount due is $%s."
         % (_val(bill, "hospital_name") or "the hospital", _val(bill, "statement_date"),
@@ -329,7 +378,7 @@ def _facts_en(bill, answers, result):
         "so your income is %d%% of it."
         % (_people(n), _dollars(answers.annual_income_cents), result["fpl"]["year"], _people(n),
            _dollars(result["fpl"]["amount_cents"]), result["percent_of_fpl"]),
-        "%s. %s" % (result["tier"]["label_en"], result["deadline"]["text_en"]),
+        last,
     ])
 
 
@@ -385,7 +434,7 @@ def _letter_en(bill, answers, result):
     lines.append("Statement date: %s" % _val(bill, "statement_date"))
     lines.append("Amount due: $%s" % _amount_due(_val(bill, "amount_due_cents")))
     lines.append("")
-    lines.append("My household has %s and a yearly income of $%s. By my estimate this is %d%% of the %d "
+    lines.append("My household has %s and a yearly income of $%s. By my estimate this is about %d%% of the %d "
                  "federal poverty guideline." % (_people(n), _dollars(answers.annual_income_cents),
                                                  result["percent_of_fpl"], result["fpl"]["year"]))
     lines.append("I am sending the documents on your checklist. Please review my application and tell me your "
@@ -553,16 +602,17 @@ def household(body: HouseholdIn):
     bills = [dict(b) for b in _demo_bills()]
     if body.bill is not None:
         fields = body.bill.model_dump()["fields"]
-        acct = fields.get("account_number", {}).get("value")
-        match = [b for b in bills if acct is not None and b["fields"]["account_number"]["value"] == acct]
-        if match:
+        acct = str(fields.get("account_number", {}).get("value") or "").strip()
+        match = [b for b in bills if acct and str(b["fields"]["account_number"]["value"]).strip() == acct]
+        if match:  # the user's confirmed values win over the demo bill with the same account
+            match[0]["fields"] = fields
             match[0]["source"] = "yours"
         else:
             bills.append({"id": "yours", "label_en": "Your bill", "source": "yours", "fields": fields})
     try:
         result = engine.evaluate_many(bills, body.answers.model_dump(), policy, fpl, date.today())
-    except ValueError as e:
-        raise HTTPException(422, str(e))
+    except ValueError:  # no Python exception text goes to the client
+        raise HTTPException(422, "A date or amount is not valid.")
     _count("household_views")
     return {"contract_version": CONTRACT_VERSION, **result}
 

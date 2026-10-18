@@ -31,11 +31,29 @@ NAMED = re.compile(r"\{([A-Za-z_]\w*)\}")
 BATCH = 20  # documents per OCI Language call
 # Machine translations whose meaning flipped when translated back to English (OCI Language,
 # 2026-10-17): left out so the app shows the English line instead.
-DROP = {
-    "th": ["notice", "r_decides"],  # notice came back as "the information you entered has been saved"
-    "cs": ["r_decides"], "ja": ["r_decides"], "tr": ["r_decides"], "vi": ["r_decides"],  # "the hospital made the final decision"
-    "he": ["r_decides", "home_estimate"],
-    "hr": ["home_estimate"], "it": ["home_estimate"], "ru": ["home_estimate"], "sk": ["home_estimate"],  # "reduce TO {amt}"
+DROP = {  # meaning changed on back-translation to English (OCI Language, 2026-10-17; audit 2)
+    'cs': ['home_not_eligible', 'p_sub', 'r_decides', 'r_no_packet', 'rem_follow'],
+    'da': ['home_not_eligible'],
+    'de': ['r_deadline', 'r_no_packet', 'r_packet'],
+    'fi': ['ai_note', 'home_not_eligible', 'r_no_packet', 'r_packet', 'rem_apply'],
+    'fr': ['notice'],
+    'fr-CA': ['r_no_packet', 'r_packet'],
+    'he': ['home_estimate', 'p_sub', 'r_decides', 'theme_auto', 'theme_dark', 'theme_light'],  # theme: 'tag' (seen in browser)
+    'hr': ['home_estimate', 'home_not_eligible', 'r_no_packet', 'theme_auto'],
+    'hu': ['home_not_eligible', 'r_no_packet'],
+    'it': ['home_estimate', 'notice'],
+    'ja': ['home_estimate_note', 'p_sub', 'r_decides'],
+    'ko': ['home_estimate_note', 'notice', 'q_minus'],
+    'no': ['f_service'],
+    'pt': ['r_packet'],
+    'pt-BR': ['home_estimate_note', 'r_packet'],
+    'ru': ['home_estimate', 'r_fallback', 'theme_auto'],
+    'sk': ['home_bill_deadline', 'home_estimate'],
+    'sl': ['home_bill_deadline', 'r_packet', 'rem_apply', 'rem_follow', 'theme_auto'],
+    'sv': ['r_no_packet', 'r_packet'],
+    'th': ['f_service', 'home_estimate_note', 'ins_insured', 'notice', 'p_sub', 'r_deadline', 'r_decides', 'rem_follow'],
+    'tr': ['ai_note', 'p_sub', 'r_decides'],
+    'vi': ['f_service', 'home_estimate_note', 'notice', 'p_sub', 'r_contact', 'r_decides', 'r_packet', 'rem_follow'],
 }
 
 
@@ -82,13 +100,28 @@ def build(code, en):
 
 
 def main():
-    en = json.load(open(sys.argv[1], encoding="utf-8"))
+    args = sys.argv[1:]
+    only = None  # --keys k1,k2: translate just these keys and merge them into the existing files
+    if "--keys" in args:
+        i = args.index("--keys")
+        only = args[i + 1].split(",")
+        del args[i:i + 2]
+    en = json.load(open(args[0], encoding="utf-8"))
+    if only:
+        en = {k: en[k] for k in only}
     langs = json.load(open(os.path.join(ROOT, "app", "data", "languages.json"), encoding="utf-8"))
-    codes = sys.argv[2:] or [l["code"] for l in langs if l["code"] not in INLINE]
+    codes = args[1:] or [l["code"] for l in langs if l["code"] not in INLINE]
     outdir = os.path.join(ROOT, "app", "static", "i18n")
     os.makedirs(outdir, exist_ok=True)
     for code in codes:
         result, dropped = build(code, en)
+        if only:
+            path = os.path.join(outdir, code + ".json")
+            merged = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {}
+            merged.update(result)
+            for k in DROP.get(code, ()):
+                merged.pop(k, None)
+            result = merged
         with open(os.path.join(outdir, code + ".json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(result, f, ensure_ascii=False, indent=0, sort_keys=True)
             f.write("\n")

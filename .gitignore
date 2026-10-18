@@ -12,3 +12,10 @@ __pycache__/
 # local-only review artifacts (never deployed)
 review-screens/
 app/static/axe.min.js
+
+# secrets - never commit (audit 2 #19)
+*.pem
+*.key
+*.tfstate*
+*tfState*.json
+.env

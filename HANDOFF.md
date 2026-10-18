@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 20:52 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AK).
+**Last updated: 2026-10-17 23:32 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AL).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -54,9 +54,11 @@ snapshot; history lives in the record (Phase 0, Appendices A-AK).
   JSON file (app/data/policy_cumberland_synthetic.json); no database
   (MySQL/HeatWave was never used and is deleted).
 - Number lock on all generated text; printable HTML packet (no server PDF).
-- Limits: text fields <= 200 chars; 40 paid requests (/extract, /explain,
-  /packet) per 60 s per client IP (last X-Forwarded-For entry; if Apache does
-  not add it, the 40/min cap is shared by everyone); uploads stay in memory.
+- Limits (on f10 since record AL): field values are text or numbers only,
+  control characters removed, <= 200 chars; 60 paid requests (/extract,
+  /explain, /packet) per 60 s per client IP (last X-Forwarded-For entry) AND
+  600 paid requests per hour in total; an /extract body over 8 MiB + 64 KiB
+  is refused (413) before it is read, so it is never spooled to disk.
 
 ## Documentation
 - `PRD_ROADMAP.md` - CURRENT DIRECTION fork at the end is the plan.
@@ -87,8 +89,9 @@ snapshot; history lives in the record (Phase 0, Appendices A-AK).
   rollback-remote.sh, https.ps1, https-remote.sh). Rollback target now: cc3c333.
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on
   bill-02); the rollback was not rehearsed live.
-- AUDIT 2 (record AJ, docs/2026-10-17_audit-2.md): 5 high / 18 med / 10 low,
-  fixes await Evan (fix order in section 7). Do first: Evan deletes the
+- AUDIT 2 (record AJ, docs/2026-10-17_audit-2.md): 5 high / 18 med / 10 low.
+  FIXED on f10 (record AL; not deployed): all highs and Tier A - see the
+  report's "Status after fixes"; NEXT: Evan deploys the f10 head. Do first: Evan deletes the
   tfState file in Downloads (holds the VM key); do NOT hand presenters
   docs/2026-10-17_pitch-corrections.md until it is updated (it says to cut
   features that are live). PRD F11 (personal app) is a DRAFT, roadmap only.
@@ -154,12 +157,12 @@ zh-CN/zh-TW). On f10, not deployed: 32 languages with a dropdown (record AI). Py
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
 instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
 gate passed (rendered blur-3 PNG -> cited result -> Spanish packet, 9.7 s gate run; 11.8 s re-run).
-5 test files ALL PASS. SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
+6 test files ALL PASS (5 py + node tests/test_app_js.js). SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
 opc@207.211.181.174. UI on main/live and f10:
 Dipayan's design system ported (record AF; light/dark, Atkinson
 Hyperlegible, no Web Awesome); policy table with your row highlighted and
 footnoted citations kept. Record is
-current through Appendix AK. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AL. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if

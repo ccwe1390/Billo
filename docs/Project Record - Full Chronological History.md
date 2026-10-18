@@ -71,6 +71,7 @@ the dated entry, not the digest.
 - [AI - All 29 Oracle Translate languages (31 codes) + Hindi: dropdown, machine-translated interface, safety-line guard](#appendix-ai---all-29-oracle-translate-languages-31-codes--hindi-dropdown-machine-translated-interface-safety-line-guard-2026-10-17-2013-cdt) (10-17)
 - [AJ - Whole-project audit 2 (8 agents: 6 code, 2 docs) + F11 PRD draft](#appendix-aj---whole-project-audit-2-8-agents-6-code-2-docs--f11-prd-draft-2026-10-17-2049-cdt) (10-17)
 - [AK - Docs sync after audit 2: stale live-doc statements corrected](#appendix-ak---docs-sync-after-audit-2-stale-live-doc-statements-corrected-2026-10-17-2051-cdt) (10-17)
+- [AL - Audit 2 fixes on f10: cost caps, ineligible flow, races, translation back-check, browser tests](#appendix-al---audit-2-fixes-on-f10-cost-caps-ineligible-flow-races-translation-back-check-browser-tests-2026-10-17-2331-cdt) (10-17)
 
 ---
 
@@ -1413,3 +1414,61 @@ live docs, each against the evidence in docs/2026-10-17_audit-2.md:
 **Not done here (await Evan, audit 2 fix order):** every code finding; the
 untranslated or garbled machine strings; the remaining low doc items (record
 front matter, glossary, people.md commit count).
+
+# Appendix AL - Audit 2 fixes on f10: cost caps, ineligible flow, races, translation back-check, browser tests (2026-10-17 23:31 CDT)
+**When:** 2026-10-17 23:05-23:31 CDT, branch f10, NOT deployed (live is
+still c30be63). Past the ~23:00 feature freeze: bug, cost and safety fixes
+only. Evan chose (23:05): Tier A + browser tests, a global cap of 600 paid
+calls per hour, a back-translation check of every machine string, and one
+deploy of everything.
+
+**How:** plan-split. Sonnet agents: S (main.py, engine.py, test_api.py,
+test_engine.py), U (app.js, style.css), T (new tests/test_app_js.js, which
+loads app.js unmodified into a fake DOM and runs it in Node). Opus: the
+back-translation check, build_i18n.py --keys, .gitignore, review, browser
+pass, small follow-up fixes.
+
+**Fixed (audit 2 numbers):** 1 field values text/number only, control
+characters stripped, 200-char cap (a 50,000-item list now 422); 2 global cap
+600 paid calls/hour; 6 ineligible families get no "Apply by", no one-approval
+line, no reminders or calendar file (server and Home); 8 another hospital's
+bill is listed with a "Different hospital" note but excluded from the
+estimate, coverage and earliest deadline; 9 a user bill with a demo account
+number replaces that demo bill; 10 stale submit replies can no longer
+overwrite the newer result; 11 a slow language load no longer sends the user
+back to Start; 14 "about N%" in the letter; 15 /extract bodies over
+8 MiB + 64 KiB refused before parsing (no temp file); 17 per-IP limit 60/min;
+19 .gitignore secret patterns; 20/31 inline-link hit areas, underlined
+footnote marks, stepper bar contrast; 22 tests for rate-limit expiry, global
+cap, headers over raw ASGI, counters; 24 a blank hospital name is unknown,
+the match is anchored (a leading "The" allowed); 25 extra keys rejected, 422
+bodies no longer echo input (NaN/surrogates used to turn them into 500s);
+26 amount cap 10^12, date_of_service validated; 27/28 non-JSON replies,
+restart language; 30 .ics lines folded at 75 octets.
+
+**Translations:** every string of the 26 OCI-Language files (3,056) was
+translated back to English with OCI Language and flagged by a negation
+mismatch or low similarity (188 flagged); Opus read all 188 and the
+safety/call-to-action keys. 57 more strings had a changed meaning (e.g.
+"Create my application packet" -> "app package" in 8 languages; "not
+eligible" -> "this policy is not valid" or "ask your doctor"; "the hospital
+made the final decision"; "Theme: auto" -> "Subject: Car"), plus 3 Hebrew
+theme labels seen in the browser: 72 dropped strings in total now show
+English (DROP in build_i18n.py). SAFETY_KEYS gained r_packet, r_no_packet,
+home_not_eligible, rem_follow; a "Machine translated by Oracle AI" note shows
+under the dropdown for machine languages (machine_note, built with
+build_i18n.py --keys). Hindi was not back-checked (OCI Language has no Hindi).
+
+**Verification:** 6 test files ALL PASS (5 py + node tests/test_app_js.js,
+26 node tests; against the pre-fix app.js the node file fails 10). Agent S:
+20 of 21 server mutants caught. Browser (fake mode, 375 px): German with an
+other-hospital bill (warning row, estimate excludes it), Hebrew ineligible
+Home (rtl, no Apply-by, English line under "not eligible"), Thai machine
+note; 0 console errors; no sideways scroll. Landing-check (fresh agent):
+SAFE TO COMMIT, all 20 fix claims TRUE; it found 3 more flaws, fixed with
+tests (leading "The" in the hospital name; a --keys merge restoring a dropped
+string; "Up to $0.00" when every bill is another hospital's).
+
+**Open:** deploy (Evan runs deploy.ps1 with the f10 head); audit 2 #3, #4,
+#7 (Evan deletes the tfState file), #12, #16, #32, #33; human review of all
+machine translations.

@@ -72,3 +72,8 @@
 - 2026-10-17 20:52 CDT - SUPERSEDES the Hindi line above: since c4a28f0 the Hindi
   path masks numbers and the hospital name like every language
   (oci_client.translate_genai_many -> protect_numbers/restore_numbers).
+- 2026-10-17 23:30 CDT - SUPERSEDES the spool note above: spool_max_size is now
+  MAX_IMAGE_BYTES and a middleware refuses /extract bodies whose
+  Content-Length exceeds 8 MiB + 64 KiB before FastAPI parses them; the old
+  "raise the spool above the cap" let 9-10 MiB bodies reach a temp file
+  (audit 2 #15). A chunked upload with no Content-Length still parses first.

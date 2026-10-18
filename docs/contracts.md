@@ -160,3 +160,26 @@ Rules that apply to all four:
     {code: n}, rules: [{rule_en, source, page, effective_date}],
     rules_review_by}`. Every count under 10 is the string "<10". Not rate
     limited. Counts live in server memory only and reset on restart.
+
+- 2026-10-17 23:30 CDT - audit 2 fixes (record AL; docs/2026-10-17_audit-2.md):
+  - `hospital_matches_policy` (EngineResult and every /household bill row) is
+    true, false or null; null = the bill names no hospital (unknown, no
+    warning). A match needs the bill name (after an optional leading "The")
+    to start with the policy hospital name.
+  - /household rows with `hospital_matches_policy` false are listed but not
+    counted: excluded from `estimate_cents`, `one_application_covers_all` and
+    `earliest_deadline`. `one_application_covers_all` is also false when the
+    household is not eligible or no row was counted. A user bill whose
+    account number (trimmed) equals a demo bill's replaces that demo bill's
+    fields.
+  - /explain line 3 for a not-eligible tier has no deadline sentence; the
+    letter says "about N%".
+  - Field `value` is null, text or a number only (lists/objects -> 422);
+    control characters become spaces; `amount_due_cents` <= 10^12;
+    `date_of_service`, when present, must be YYYY-MM-DD. EvaluateIn and
+    ResultIn reject unknown top-level keys.
+  - 422 bodies are `{"detail": [{loc, msg, type}]}` (no input echo); a
+    /household 422 detail is "A date or amount is not valid."
+  - Limits: 429 after 60 paid requests per 60 s per client IP or 600 paid
+    requests per hour in total; /extract with Content-Length over 8 MiB +
+    64 KiB -> 413 before parsing. Supersedes "40 requests per 60 s" above.

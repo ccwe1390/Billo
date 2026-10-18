@@ -1,0 +1,542 @@
+"use strict";
+// Executes app/static/app.js (unmodified) inside a minimal fake DOM and tests its logic.
+// Run: node tests/test_app_js.js     Plain Node, no npm packages. Prints ALL PASS and exits 0, or exits 1.
+// Not a browser: layout, CSS, real events and real fetch are not covered (that stays a manual/phone check).
+// Tests tagged "fix N" check the audit-2 fixes (docs/2026-10-17_audit-2.md); on an app.js without that fix they fail.
+const assert = require("node:assert");
+const fs = require("node:fs");
+const path = require("node:path");
+
+// ---------- fake DOM
+class FakeNode {
+  constructor(tag) {
+    this.tag = tag; this.children = []; this.attrs = {}; this.listeners = {}; this.parent = null;
+    this.hidden = false; this.disabled = false; this.checked = false; this.className = "";
+    this._text = ""; this._v = undefined; this.dataset = {}; this.style = {};
+    const self = this;
+    this.classList = {
+      add(c) { const a = self.className.split(/\s+/).filter(Boolean); if (!a.includes(c)) a.push(c); self.className = a.join(" "); },
+      remove(c) { self.className = self.className.split(/\s+/).filter(x => x && x !== c).join(" "); },
+      contains(c) { return self.className.split(/\s+/).includes(c); },
+      toggle(c, on) { if (on === undefined) on = !this.contains(c); if (on) this.add(c); else this.remove(c); return on; },
+    };
+  }
+  get id() { return this.attrs.id || ""; }
+  set id(v) { this.attrs.id = String(v); }
+  get value() {
+    if (this._v !== undefined) return this._v;
+    if (this.tag === "select") {
+      const sel = this.children.find(o => o.attrs.selected !== undefined);
+      if (sel) return sel.attrs.value || "";
+    }
+    return this.attrs.value !== undefined ? this.attrs.value : "";
+  }
+  set value(v) { this._v = String(v); }
+  setAttribute(k, v) {
+    this.attrs[k] = String(v);
+    if (k === "hidden") this.hidden = true;
+    if (k === "disabled") this.disabled = true;
+    if (k === "class") this.className = String(v);
+  }
+  removeAttribute(k) {
+    delete this.attrs[k];
+    if (k === "hidden") this.hidden = false;
+    if (k === "disabled") this.disabled = false;
+  }
+  getAttribute(k) { return this.attrs[k] === undefined ? null : this.attrs[k]; }
+  _adopt(k) {
+    if (k instanceof FakeNode) { if (k.parent) k.remove(); return k; }
+    const n = new FakeNode("#text"); n._text = String(k); return n;
+  }
+  append(...ks) { for (const k of ks) { const n = this._adopt(k); n.parent = this; this.children.push(n); } }
+  prepend(...ks) { for (const k of [...ks].reverse()) { const n = this._adopt(k); n.parent = this; this.children.unshift(n); } }
+  remove() { if (this.parent) { this.parent.children = this.parent.children.filter(c => c !== this); this.parent = null; } }
+  replaceChildren(...ks) { for (const c of this.children) c.parent = null; this.children = []; this.append(...ks); }
+  set textContent(v) { for (const c of this.children) c.parent = null; this.children = []; this._text = String(v); }
+  get textContent() { return this._text + this.children.map(c => c.textContent).join(""); }
+  addEventListener(type, fn) { (this.listeners[type] = this.listeners[type] || []).push(fn); }
+  dispatch(type, ev) { return Promise.all((this.listeners[type] || []).map(f => f(Object.assign({target: this}, ev || {})))); }
+  click() { for (const f of (this.listeners.click || [])) f({target: this}); }
+  focus() { document.activeElement = this; }
+  all() { return this.children.flatMap(c => [c, ...c.all()]); }
+  querySelector(sel) {
+    const toks = sel.replace(":scope > ", "").trim().split(/\s+/);
+    let scopes = [this];
+    for (const tok of toks) {
+      const next = [];
+      for (const s of scopes) for (const n of s.all()) if (matchTok(n, tok)) next.push(n);
+      scopes = next;
+    }
+    return scopes[0] || null;
+  }
+}
+function matchTok(n, tok) {
+  if (tok.startsWith("#")) return n.id === tok.slice(1);
+  if (tok.startsWith(".")) return n.classList.contains(tok.slice(1));
+  return n.tag === tok;
+}
+const root = new FakeNode("root");
+const docEl = new FakeNode("html");
+const body = new FakeNode("body");
+const mk = (tag, id, attrs) => { const n = new FakeNode(tag); n.attrs.id = id; Object.assign(n, attrs || {}); root.append(n); return n; };
+["app-title", "theme-btn", "stepper", "steps", "step-cap", "main", "status", "alert", "foot"].forEach(id => mk("div", id));
+for (let i = 1; i <= 6; i++) mk("section", "s" + i);
+const doc = {
+  activeElement: null, body, documentElement: docEl,
+  createElement: tag => new FakeNode(tag),
+  getElementById: id => root.all().find(n => n.id === id) || null,
+  querySelector: sel => root.querySelector(sel),
+  querySelectorAll: sel => root.all().filter(n => matchTok(n, sel)),
+};
+
+// ---------- fake browser globals
+const fetchQueue = []; // pending requests: {url, opts, resolve, reject}
+function fakeResponse(body, status) {
+  status = status || 200;
+  return {ok: status >= 200 && status < 300, status,
+          json: async () => { if (typeof body === "string") throw new SyntaxError("not json"); return body; },
+          text: async () => typeof body === "string" ? body : JSON.stringify(body)};
+}
+function take(urlPart) { // remove and return the oldest pending request whose url contains urlPart
+  const i = fetchQueue.findIndex(r => r.url.includes(urlPart));
+  if (i < 0) throw new Error("no pending fetch for " + urlPart + " (pending: " + fetchQueue.map(r => r.url).join(", ") + ")");
+  return fetchQueue.splice(i, 1)[0];
+}
+const respond = (req, body, status) => req.resolve(fakeResponse(body, status));
+const flush = async () => { for (let i = 0; i < 6; i++) await new Promise(r => setImmediate(r)); };
+
+let lastBlob = null;
+const timers = [];
+Object.assign(globalThis, {
+  document: doc,
+  window: {matchMedia: () => ({matches: false}), addEventListener() {}},
+  location: {search: "", origin: "http://x"},
+  confirm: () => true,
+  fetch: (url, opts) => new Promise((resolve, reject) => { fetchQueue.push({url: String(url), opts, resolve, reject}); }),
+  setTimeout: (fn, ms) => { timers.push({fn, ms}); return timers.length; }, // never fires: keeps the process short-lived
+});
+Object.defineProperty(globalThis, "navigator", {value: {language: "en-US"}, configurable: true, writable: true});
+URL.createObjectURL = blob => { lastBlob = blob; return "blob:fake"; };
+URL.revokeObjectURL = () => {};
+
+// ---------- load app.js unmodified; export its top-level names by appending one statement
+const NAMES = ["S", "T", "I18N", "LANGS", "SAFETY_KEYS", "t", "tSafe", "tNodes", "machineTranslated", "dirOf", "dollarsToCents",
+               "money", "buildIcs", "downloadIcs", "submitAnswers", "show", "restart", "loadLang"];
+const src = fs.readFileSync(process.env.APP_JS || path.join(__dirname, "..", "app", "static", "app.js"), "utf8"); // APP_JS: test another copy (e.g. a mutant)
+const exportSrc = "\n;globalThis.__app = {" +
+  NAMES.map(n => `get ${n}() { return typeof ${n} !== "undefined" ? ${n} : undefined; }`).join(",") +
+  ", get curScreen() { return curScreen; }};\n";
+try {
+  new Function(src + exportSrc)();
+} catch (e) {
+  console.log("FAIL: app.js did not load in the fake DOM: " + (e && e.stack || e));
+  process.exit(1);
+}
+const A = globalThis.__app;
+const {S, T, I18N} = A;
+for (const n of ["S", "T", "I18N", "LANGS", "t", "tSafe", "dirOf", "dollarsToCents", "money", "buildIcs", "downloadIcs",
+                 "submitAnswers", "show", "restart", "loadLang"]) {
+  if (A[n] === undefined) { console.log("FAIL: app.js no longer defines " + n); process.exit(1); }
+}
+
+// ---------- helpers
+const CITE = {source: "Policy", page: 3, effective_date: "2026-01-01", url: "http://u"};
+function makeResult(pct, eligible) {
+  return {policy_hospital_name: "H", hospital_matches_policy: true, percent_of_fpl: pct, fpl: {year: 2026, citation: CITE},
+    tier: {eligible: eligible !== false, label_en: "Tier", citation: CITE},
+    tiers: [{min_percent_exclusive: null, max_percent: 200, label_en: "A", current: true}],
+    deadline: {date: "2099-01-01", text_en: "Apply by 2099-01-01", citation: CITE},
+    documents: [{label_en: "ID", citation: CITE}],
+    contacts: {email: "a@b.com", phone: "(555) 123-4567", payment_plan_phone: "(555) 999-0000", citation: CITE}};
+}
+const makeExplain = tag => ({fallback_used: false, text_en: "EXPLAIN-" + tag, text: "EXPLAIN-" + tag});
+function resetApp() {
+  fetchQueue.length = 0;
+  for (const k of Object.keys(I18N)) delete I18N[k];
+  Object.assign(S, {lang: "en", view: "en", forWhom: "self", theme: "auto"});
+  A.restart();
+  S.bill = null;
+}
+function fullBill() { // every field present and confirmed, so screen 2 renders if a test goes Back
+  const f = {};
+  for (const n of ["hospital_name", "statement_date", "account_number", "amount_due_cents", "date_of_service", "insurance_status"])
+    f[n] = {value: n === "amount_due_cents" ? 100000 : "x", confidence: 1, confirmed: true};
+  return {contract_version: 1, fields: f};
+}
+function setupQuestions() { // the state a user has when they tap "See my result"
+  S.bill = fullBill();
+  S.size = "3"; S.income = "38,000"; S.tax = true; S.lang = "en"; S.view = "en";
+  A.show(3);
+}
+const byId = id => doc.getElementById(id);
+const textOf = n => typeof n === "string" ? n : n.textContent;
+const nodesText = nodes => nodes.map(textOf).join("");
+const bodyOf = req => JSON.parse(req.opts.body);
+const THAI = "ครอบครัวของคุณสามารถยื่นขอความช่วยเหลือทางการเงินจากโรงพยาบาลได้ภายในวันนี้".repeat(5).slice(0, 150);
+const icsEscape = s => s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,");
+const unfold = s => s.replace(/\r\n[ \t]/g, "");
+
+// ---------- test runner
+const tests = [];
+const test = (name, fix, fn) => tests.push({name, fix, fn});
+
+// a. dollarsToCents
+test("a. dollarsToCents", "", () => {
+  const d = A.dollarsToCents;
+  const cases = [["38000", 3800000], ["38,000.50", 3800050], ["٣٨٠٠٠", 3800000], ["３８０００", 3800000], ["۳۸۰۰۰", 3800000],
+    ["$4,812.4", 481240], ["4812.40", 481240], ["0", 0], ["0.05", 5], ["١٢٫٥", 1250], [" 12 ", 1200],
+    ["abc", null], ["", null], [null, null], [undefined, null], ["-5", null], ["1e3", null], ["1,23", null], ["38000.999", null],
+    ["12 345", null], ["99999999999999999999", null], ["$", null], [".50", null]];
+  for (const [input, want] of cases) assert.strictEqual(d(input), want, "dollarsToCents(" + JSON.stringify(input) + ")");
+});
+
+// b. money
+test("b. money", "", () => {
+  const m = A.money;
+  assert.strictEqual(m(481240), "$4,812.40");
+  assert.strictEqual(m(0), "$0.00");
+  assert.strictEqual(m(5), "$0.05");
+  assert.strictEqual(m(99999), "$999.99");
+  assert.strictEqual(m(100000), "$1,000.00");
+  assert.strictEqual(m(123456789), "$1,234,567.89");
+});
+
+// c. buildIcs: 2 events, CRLF, folding at 75 octets
+test("c1. buildIcs shape: 2 VEVENT, CRLF only, DTSTAMP", "fix 30", () => {
+  const ics = A.buildIcs([{date: "20270529", summary: "one, two; three"}, {date: "20261116", summary: "second"}], new Date("2026-10-17T12:00:00Z"));
+  assert.strictEqual(ics.split("BEGIN:VEVENT").length - 1, 2, "BEGIN:VEVENT count");
+  assert.strictEqual(ics.split("END:VEVENT").length - 1, 2, "END:VEVENT count");
+  assert.strictEqual(ics.split("BEGIN:VCALENDAR").length - 1, 1);
+  assert.ok(ics.startsWith("BEGIN:VCALENDAR\r\n") && ics.endsWith("END:VCALENDAR\r\n"), "starts/ends with CRLF-terminated calendar lines");
+  const noCrlf = ics.replace(/\r\n/g, "");
+  assert.ok(!/[\r\n]/.test(noCrlf), "a bare CR or LF is present");
+  assert.ok(ics.includes("DTSTAMP:20261017T120000Z\r\n"), "DTSTAMP");
+  assert.ok(ics.includes("DTSTART;VALUE=DATE:20270529\r\n") && ics.includes("DTSTART;VALUE=DATE:20261116\r\n"), "DTSTART");
+  assert.ok(unfold(ics).includes("SUMMARY:one\\, two\\; three\r\n"), "TEXT escaping of , and ;");
+});
+test("c2. buildIcs folds every line to <= 75 octets (long Thai summary)", "fix 30", () => {
+  const summary = THAI + ", end; x\\y";
+  const ics = A.buildIcs([{date: "20270529", summary}, {date: "20261116", summary: "short"}], new Date("2026-10-17T12:00:00Z"));
+  const lines = ics.split("\r\n");
+  assert.strictEqual(lines.pop(), "", "output ends with CRLF");
+  const longest = Math.max(...lines.map(l => Buffer.byteLength(l, "utf8")));
+  assert.ok(longest <= 75, "longest line is " + longest + " octets (limit 75)");
+  assert.ok(lines.some(l => l.startsWith(" ")), "no continuation line starts with a space: nothing was folded");
+  assert.ok(unfold(ics).includes("SUMMARY:" + icsEscape(summary) + "\r\n"), "unfolded SUMMARY differs from the original text");
+  assert.strictEqual(ics.split("BEGIN:VEVENT").length - 1, 2, "VEVENT count after folding");
+});
+test("c3. buildIcs fold never splits a UTF-8 character (4-byte emoji)", "fix 30", () => {
+  const summary = "\u{1F600}".repeat(40); // 160 octets, 80 UTF-16 units
+  const ics = A.buildIcs([{date: "20270529", summary}], new Date("2026-10-17T12:00:00Z"));
+  for (const line of ics.split("\r\n")) {
+    assert.ok(Buffer.byteLength(line, "utf8") <= 75, "line over 75 octets: " + Buffer.byteLength(line, "utf8"));
+    assert.ok(!/[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]/.test(line), "lone surrogate (a character was split)");
+  }
+  assert.ok(unfold(ics).includes("SUMMARY:" + summary + "\r\n"), "unfolded SUMMARY differs from the original text");
+  assert.strictEqual(Buffer.from(ics, "utf8").toString("utf8"), ics, "UTF-8 round trip changed the text");
+});
+test("c4. downloadIcs (real Home path) with a 150-char Thai ics_deadline", "fix 30", async () => {
+  resetApp();
+  S.view = "th"; I18N.th = {ics_deadline: THAI};
+  lastBlob = null;
+  A.downloadIcs({earliest_deadline: {date: "2027-05-29"}});
+  assert.ok(lastBlob, "downloadIcs did not create a Blob");
+  const ics = await lastBlob.text();
+  assert.strictEqual(ics.split("BEGIN:VEVENT").length - 1, 2, "VEVENT count");
+  assert.ok(ics.includes("DTSTART;VALUE=DATE:20270529"), "first event is the deadline date");
+  assert.ok(!/[\r\n]/.test(ics.replace(/\r\n/g, "")), "bare CR or LF");
+  const longest = Math.max(...ics.split("\r\n").map(l => Buffer.byteLength(l, "utf8")));
+  assert.ok(longest <= 75, "longest line is " + longest + " octets (limit 75)");
+  assert.ok(unfold(ics).includes("SUMMARY:" + THAI + "\r\n"), "unfolded deadline SUMMARY lost text");
+});
+
+// d. dirOf and the language table
+test("d. dirOf and LANGS", "", () => {
+  assert.strictEqual(A.dirOf("ar"), "rtl");
+  assert.strictEqual(A.dirOf("he"), "rtl");
+  assert.strictEqual(A.dirOf("en"), "ltr");
+  assert.strictEqual(A.dirOf("th"), "ltr");
+  assert.strictEqual(A.dirOf("zz"), "ltr", "unknown code defaults to ltr");
+  assert.deepStrictEqual(A.LANGS.filter(l => l.dir === "rtl").map(l => l.code).sort(), ["ar", "he"]);
+  assert.strictEqual(new Set(A.LANGS.map(l => l.code)).size, A.LANGS.length, "duplicate language code");
+  assert.strictEqual(A.LANGS.length, 32);
+  resetApp(); S.lang = S.view = "ar"; A.show(1);
+  assert.strictEqual(doc.documentElement.dir, "rtl", "applyDir did not set dir=rtl for ar");
+  assert.strictEqual(doc.documentElement.lang, "ar");
+  S.lang = S.view = "en"; A.show(1);
+  assert.strictEqual(doc.documentElement.dir, "ltr");
+});
+
+// e. t / tSafe / machineTranslated
+test("e1. t() fallbacks", "", () => {
+  resetApp();
+  assert.strictEqual(A.t("start"), "Start");
+  S.view = "es"; assert.strictEqual(A.t("start"), "Comenzar");
+  S.view = "da"; I18N.da = {start: "Start-da"};
+  assert.strictEqual(A.t("start"), "Start-da", "machine-translated string used");
+  assert.strictEqual(A.t("back"), "Back", "missing key falls back to English");
+  assert.strictEqual(A.t("no_such_key"), "no_such_key", "unknown key returns the key");
+  assert.strictEqual(A.t("step_of", {n: 2, total: 5}).replace(/\s+/g, " "), "Step 2 of 5");
+});
+test("e2. tSafe: machine language shows the English gloss under the translation", "", () => {
+  resetApp();
+  S.view = "da"; I18N.da = {r_decides: "Dansk tekst"};
+  assert.strictEqual(A.machineTranslated("r_decides"), true);
+  const nodes = A.tSafe("r_decides");
+  const text = nodesText(nodes);
+  assert.ok(text.includes("Dansk tekst"), "translation missing");
+  assert.ok(text.includes(T.r_decides.en), "English r_decides missing");
+  const gloss = nodes.find(n => typeof n !== "string" && n.classList.contains("en-gloss"));
+  assert.ok(gloss, "no .en-gloss node");
+  assert.strictEqual(gloss.getAttribute("lang"), "en");
+  assert.strictEqual(gloss.getAttribute("dir"), "ltr");
+  assert.strictEqual(gloss.textContent, T.r_decides.en);
+});
+test("e3. tSafe: inline languages and English get no gloss", "", () => {
+  resetApp();
+  for (const v of ["es", "en", "ar", "zh-CN"]) {
+    S.view = v;
+    const nodes = A.tSafe("r_decides");
+    assert.ok(!nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), v + ": unexpected English gloss");
+    assert.strictEqual(nodesText(nodes), T.r_decides[v], v + ": text");
+    assert.strictEqual(A.machineTranslated("r_decides"), false, v + ": machineTranslated");
+  }
+  S.view = "da"; I18N.da = {r_decides: "x"};
+  assert.strictEqual(A.machineTranslated("start"), false, "key absent from I18N.da is not machine translated");
+  assert.ok(!A.tSafe("start").some(n => typeof n !== "string" && n.classList.contains("en-gloss")), "non-safety key got a gloss");
+});
+test("e4. tSafe gloss covers the new safety keys (r_packet, r_no_packet, home_not_eligible, rem_follow; ics_deadline is plain .ics text, not DOM)", "audit-2 SAFETY_KEYS", () => {
+  resetApp();
+  S.view = "da";
+  for (const key of ["r_packet", "r_no_packet", "home_not_eligible", "rem_follow"]) {
+    I18N.da = {[key]: "DA-" + key};
+    const nodes = A.tSafe(key, {phone: "555"});
+    const text = nodesText(nodes);
+    assert.ok(text.includes("DA-" + key), key + ": translation missing");
+    assert.ok(nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), key + ": no English gloss (add it to SAFETY_KEYS)");
+  }
+});
+test("e5. machine_note key exists in the five inline languages", "audit-2 machine_note", () => {
+  const row = T.machine_note;
+  assert.ok(row, "T.machine_note is missing");
+  for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(typeof row[l] === "string" && row[l].length > 10, "machine_note." + l);
+  assert.ok(/machine/i.test(row.en) && /English/.test(row.en), "machine_note.en should say machine translated / English counts");
+});
+test("e6. every T row has English and consistent {placeholders}", "", () => {
+  const vars = s => [...String(s).matchAll(/\{(\w+)\}/g)].map(m => m[1]).sort().join(",");
+  for (const [key, row] of Object.entries(T)) {
+    assert.strictEqual(typeof row.en, "string", key + ": no English");
+    for (const [lang, s] of Object.entries(row)) assert.strictEqual(vars(s), vars(row.en), key + "." + lang + ": placeholders differ from English");
+  }
+});
+
+// f. submitAnswers: stale replies never land
+test("f0. submitAnswers happy path sends the right payload and lands the result", "", async () => {
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  const ev = take("/evaluate");
+  const b = bodyOf(ev);
+  assert.strictEqual(b.answers.household_size, 3);
+  assert.strictEqual(typeof b.answers.household_size, "number");
+  assert.strictEqual(b.answers.annual_income_cents, 3800000);
+  assert.strictEqual(b.answers.files_tax_return, true);
+  assert.strictEqual(b.answers.language, "en");
+  assert.strictEqual(b.answers.for_whom, "self");
+  respond(ev, makeResult(115)); await flush();
+  const ex = take("/explain");
+  assert.strictEqual(bodyOf(ex).result.percent_of_fpl, 115, "/explain must receive the /evaluate result");
+  respond(ex, makeExplain("A")); await p;
+  assert.strictEqual(S.result.percent_of_fpl, 115);
+  assert.strictEqual(A.curScreen, 4);
+  assert.strictEqual(S.busy, false);
+  const pct = byId("s4").all().find(n => n.className === "pct");
+  assert.ok(pct && pct.textContent === "115%", "result screen should show 115%");
+  assert.ok(byId("s4").textContent.includes("EXPLAIN-A"));
+});
+test("f1. a stale /evaluate reply (older submit) never replaces the newer result", "fix 10", async () => {
+  resetApp(); setupQuestions();
+  const p1 = A.submitAnswers();
+  const e1 = take("/evaluate"); // first submit: reply held back
+  A.show(2); A.show(3); // Back, then forward again: cancels submit 1
+  const p2 = A.submitAnswers();
+  const e2 = take("/evaluate");
+  respond(e2, makeResult(60)); await flush();
+  respond(take("/explain"), makeExplain("B")); await p2;
+  assert.strictEqual(S.result.percent_of_fpl, 60, "second submit did not land");
+  respond(e1, makeResult(115)); await p1; await flush(); // the older reply arrives last
+  assert.strictEqual(S.result.percent_of_fpl, 60, "stale /evaluate reply overwrote S.result (115 instead of 60)");
+  assert.strictEqual(S.explain.text_en, "EXPLAIN-B");
+  assert.strictEqual(A.curScreen, 4);
+  const pct = byId("s4").all().find(n => n.className === "pct");
+  assert.strictEqual(pct && pct.textContent, "60%", "screen shows the wrong percent");
+});
+test("f2. a stale /explain reply (older submit) never replaces the newer explanation", "fix 10", async () => {
+  resetApp(); setupQuestions();
+  const p1 = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  const x1 = take("/explain"); // first submit: explain reply held back
+  A.show(2); A.show(3);
+  const p2 = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(60)); await flush();
+  respond(take("/explain"), makeExplain("B")); await p2;
+  respond(x1, makeExplain("A")); await p1; await flush();
+  assert.strictEqual(S.explain.text_en, "EXPLAIN-B", "stale /explain reply overwrote S.explain");
+  assert.strictEqual(S.result.percent_of_fpl, 60, "S.result changed");
+  assert.ok(byId("s4").textContent.includes("EXPLAIN-B") && !byId("s4").textContent.includes("EXPLAIN-A"));
+});
+test("f3. submit cancelled by Back: a late reply does not move the user to the result", "fix 10", async () => {
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  const e = take("/evaluate");
+  A.show(2);
+  respond(e, makeResult(115)); await p; await flush();
+  assert.strictEqual(A.curScreen, 2, "late reply changed the screen");
+  assert.ok(S.result === null, "late reply stored a result after Back");
+});
+test("f4. errors: busy shows a message and stays on Questions; a stale error is silent", "", async () => {
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), {detail: "x"}, 429); await p;
+  assert.strictEqual(A.curScreen, 3);
+  assert.strictEqual(S.busy, false);
+  assert.strictEqual(byId("alert").hidden, false, "alert not shown");
+  assert.strictEqual(byId("alert").textContent, T.err_busy.en);
+  assert.strictEqual(byId("q-go").disabled, false, "See my result should be usable again");
+  resetApp(); setupQuestions();
+  const p2 = A.submitAnswers();
+  const e = take("/evaluate");
+  A.show(2);
+  respond(e, {detail: "server error text"}, 500); await p2; await flush();
+  assert.strictEqual(A.curScreen, 2);
+  assert.strictEqual(byId("alert").hidden, true, "a cancelled submit's error leaked onto another screen");
+});
+
+// g. language change mid-flow
+test("g1. slow language load does not pull the user back from screen 2 to Start", "fix 11", async () => {
+  resetApp(); A.show(1);
+  const sel = byId("lang-select");
+  assert.ok(sel, "no #lang-select on the Start screen");
+  sel.value = "th";
+  const done = sel.dispatch("change");
+  const req = take("i18n/th.json");
+  byId("start-btn").click(); // the user taps Start while the language file is loading
+  assert.strictEqual(A.curScreen, 2);
+  respond(req, {start: "TH-start"}); await done; await flush();
+  assert.strictEqual(A.curScreen, 2, "language load re-rendered the Start screen over screen 2");
+});
+test("g2. language change on Start applies the language and re-renders Start", "", async () => {
+  resetApp(); A.show(1);
+  const sel = byId("lang-select");
+  sel.value = "th";
+  const done = sel.dispatch("change");
+  respond(take("i18n/th.json"), {start: "TH-start", pick_lang: "TH-pick"}); await done; await flush();
+  assert.strictEqual(A.curScreen, 1);
+  assert.strictEqual(S.lang, "th"); assert.strictEqual(S.view, "th");
+  assert.strictEqual(doc.documentElement.lang, "th");
+  assert.strictEqual(byId("start-btn").textContent, "TH-start");
+});
+test("g3. a failed language load falls back to English with a message", "", async () => {
+  resetApp(); A.show(1);
+  const sel = byId("lang-select");
+  sel.value = "vi";
+  const done = sel.dispatch("change");
+  respond(take("i18n/vi.json"), {}, 404); await done; await flush();
+  assert.strictEqual(S.view, "en");
+  assert.strictEqual(byId("alert").hidden, false, "no error shown");
+});
+test("g4. a newer language pick cancels an older slow one", "", async () => {
+  resetApp(); A.show(1);
+  const sel = byId("lang-select");
+  sel.value = "th";
+  const d1 = sel.dispatch("change");
+  const req = take("i18n/th.json");
+  sel.value = "es"; // inline language: no fetch
+  await sel.dispatch("change"); await flush();
+  assert.strictEqual(S.lang, "es");
+  respond(req, {start: "TH-start"}); await d1; await flush();
+  assert.strictEqual(S.lang, "es", "the older pick (th) overwrote the newer one (es)");
+  assert.strictEqual(S.view, "es");
+});
+
+// h. questions screen gating (kills the income / tax / size mutants)
+test("h. questions screen: See my result needs size 1-12, a valid income and a tax answer", "", () => {
+  resetApp(); S.bill = fullBill(); A.show(3);
+  const go = () => byId("q-go");
+  const type = (id, v) => { const n = byId(id); n.value = v; n.listeners.input.forEach(f => f({target: n})); };
+  assert.strictEqual(go().disabled, true, "disabled with nothing entered");
+  type("q-size", "4"); type("q-income", "38,000.50");
+  assert.strictEqual(go().disabled, true, "disabled until a tax answer is chosen");
+  byId("tax-yes").click();
+  assert.strictEqual(S.tax, true, "Yes must set tax true");
+  assert.strictEqual(byId("tax-yes").getAttribute("aria-pressed"), "true");
+  assert.strictEqual(byId("tax-no").getAttribute("aria-pressed"), "false");
+  assert.strictEqual(byId("q-size").value, "4", "size lost on re-render");
+  assert.strictEqual(byId("q-income").value, "38,000.50", "income lost on re-render");
+  assert.strictEqual(go().disabled, false, "all three answered: should be enabled");
+  byId("tax-no").click();
+  assert.strictEqual(S.tax, false, "No must set tax false");
+  assert.strictEqual(byId("tax-no").getAttribute("aria-pressed"), "true");
+  for (const bad of ["13", "0", "", "-2", "abc"]) { type("q-size", bad); assert.strictEqual(go().disabled, true, "size " + JSON.stringify(bad) + " should disable"); }
+  type("q-size", "12"); assert.strictEqual(go().disabled, false); assert.strictEqual(byId("q-plus").disabled, true, "plus at 12");
+  type("q-size", "1"); assert.strictEqual(byId("q-minus").disabled, true, "minus at 1");
+  byId("q-plus").click(); assert.strictEqual(byId("q-size").value, "2", "plus from 1");
+  byId("q-minus").click(); assert.strictEqual(byId("q-size").value, "1", "minus from 2");
+  type("q-income", "abc");
+  assert.strictEqual(go().disabled, true, "invalid income should disable");
+  assert.strictEqual(byId("q-income-hint").hidden, false, "income hint should show");
+  type("q-income", "");
+  assert.strictEqual(go().disabled, true, "empty income should disable");
+});
+
+// i. Home screen: ineligible family is not told to apply
+function makeHome(eligible) {
+  return {eligible, estimate_cents: eligible ? 12345 : 0, one_application_covers_all: eligible,
+    bills: [{label_en: "Bill A", source: "yours", statement_date: "2026-10-01", amount_due_cents: 100000, reduction_cents: eligible ? 12345 : 0, deadline: {date: "2099-01-01"}},
+            {label_en: "Bill B", source: "demo", statement_date: "2026-10-02", amount_due_cents: 5000, reduction_cents: 0, deadline: {date: "2099-01-01"}}],
+    coverage: {text_en: "One application covers all bills.", citation: CITE},
+    earliest_deadline: {date: "2099-01-01"},
+    contacts: {email: "a@b.com", phone: "(555) 123-4567", payment_plan_phone: "(555) 999-0000", citation: CITE}};
+}
+test("i1. Home, eligible: shows estimate, one approval, reminders and calendar", "", () => {
+  resetApp(); S.answers = {}; S.bill = {}; S.home = makeHome(true); A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(txt.includes("$123.45"), "estimate");
+  assert.ok(txt.includes("One approval may cover all 2 bills"), "one approval line");
+  assert.ok(txt.includes("Reminders") && txt.includes("Add to my calendar"), "reminders and calendar button");
+  assert.ok(txt.includes("$1,000.00") && txt.includes("$50.00"), "bill amounts");
+});
+test("i2. Home, not eligible: no 'one approval', no reminders, no calendar; payment-plan contact shown", "fix 6", () => {
+  resetApp(); S.answers = {}; S.bill = {}; S.home = makeHome(false); A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(txt.includes("Not eligible"), "not-eligible headline");
+  assert.ok(!txt.includes("One approval"), "ineligible Home still says one approval may cover all bills");
+  assert.ok(!txt.includes("Reminders"), "ineligible Home still shows Reminders");
+  assert.ok(!txt.includes("Add to my calendar"), "ineligible Home still offers the calendar file");
+  assert.ok(txt.includes("(555) 999-0000"), "payment-plan phone missing on ineligible Home");
+});
+test("i3. Home, every bill from another hospital: no 'Up to $0.00', the different-hospital note instead", "audit 2 landing-check", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(true); h.estimate_cents = 0;
+  h.bills.forEach(b => { b.hospital_matches_policy = false; b.reduction_cents = 0; });
+  S.home = h; A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(!txt.includes("$0.00"), "Home shows an estimate of $0.00");
+  assert.ok(txt.includes("Different hospital"), "different-hospital note missing");
+});
+
+// ---------- run
+(async () => {
+  let failed = 0;
+  for (const tc of tests) {
+    try {
+      await tc.fn();
+      console.log("ok   " + tc.name);
+    } catch (e) {
+      failed++;
+      console.log("FAIL " + tc.name + (tc.fix ? "  [checks " + tc.fix + "]" : "") + "\n     " + String(e && e.message || e).split("\n").join("\n     "));
+    }
+  }
+  if (failed) { console.log(failed + " of " + tests.length + " tests FAILED"); process.exit(1); }
+  console.log("ALL PASS");
+  process.exit(0);
+})();

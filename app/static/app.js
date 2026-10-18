@@ -160,6 +160,7 @@ const T = {
   restart_q:   {en: "Start over? Your answers on this page will be cleared.", es: "¿Empezar de nuevo? Se borrarán sus respuestas en esta página.", ar: "هل تريد البدء من جديد؟ سيتم مسح إجاباتك في هذه الصفحة.", "zh-CN": "重新开始？此页面上的回答将被清除。", "zh-TW": "重新開始？此頁面上的回答將被清除。"}, // TODO-REVIEW es+ar+zh
   retry:       {en: "Try again", es: "Intentar de nuevo", ar: "حاول مرة أخرى", "zh-CN": "重试", "zh-TW": "重試"}, // TODO-REVIEW es+ar+zh
   confirmed_word:{en: "Confirmed", es: "Confirmado", ar: "تم التأكيد", "zh-CN": "已确认", "zh-TW": "已確認"}, // TODO-REVIEW es+ar+zh
+  machine_note:{en: "Machine translated by Oracle AI. The English line under important text is what counts.", es: "Traducido automáticamente por Oracle AI. Lo que cuenta es la línea en inglés bajo los textos importantes.", ar: "تمت الترجمة آليًا بواسطة Oracle AI. المعتمد هو السطر الإنجليزي أسفل النصوص المهمة.", "zh-CN": "由 Oracle AI 机器翻译。以重要文字下方的英文为准。", "zh-TW": "由 Oracle AI 機器翻譯。以重要文字下方的英文為準。"}, // TODO-REVIEW es+ar+zh
   steps_label: {en: "Progress", es: "Progreso", ar: "التقدّم", "zh-CN": "进度", "zh-TW": "進度"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
@@ -189,6 +190,10 @@ async function loadLang(code) {
     return false;
   }
 }
+// The language the interface is drawn in: the picked one when its strings are available (inline or fetched), else English.
+function viewFor(lang) { return (I18N[lang] || T.app_title[lang] !== undefined) ? lang : "en"; }
+// True when the interface is drawn in a machine-translated language (strings fetched from i18n/<code>.json, not inline).
+function isMachineView() { return !!I18N[S.view] && T.app_title[S.view] === undefined; }
 function t(key, vars) {
   const row = T[key];
   let s = (row && row[S.view]) || (I18N[S.view] && I18N[S.view][key]) || (row && row.en) || key;
@@ -313,10 +318,15 @@ async function post(path, body, asText) {
   if (!r.ok) {
     if (r.status === 429) throw new Error(t("err_busy"));
     let detail = "";
-    try { const j = await r.json(); detail = typeof j.detail === "string" ? j.detail : t("err_invalid"); } catch (e) { /* ignore */ }
+    try {
+      const j = await r.json();
+      // a 422 detail is English server text: outside English show the translated generic line instead
+      detail = (typeof j.detail === "string" && !(r.status === 422 && S.view !== "en")) ? j.detail : t("err_invalid");
+    } catch (e) { /* ignore */ }
     throw new Error(detail || t("err_generic"));
   }
-  return asText ? r.text() : r.json();
+  try { return await (asText ? r.text() : r.json()); } // a 200 that is not JSON (captive portal page) must not show a parser error
+  catch (e) { throw new Error(t("err_generic")); }
 }
 // "4812.40" or "$4,812.4" -> 481240 ; invalid -> null. String math, no floats.
 function dollarsToCents(s) {
@@ -351,7 +361,8 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 // language also show the English line under the translation: Oracle's translation changed their
 // meaning in some languages (back-translation check 2026-10-17), and the English is what counts.
 const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
-                     "home_estimate_note", "home_one_approval", "home_bill_reduction"];
+                     "home_estimate_note", "home_one_approval", "home_bill_reduction",
+                     "r_packet", "r_no_packet", "home_not_eligible", "rem_follow"];
 function machineTranslated(key) {
   return S.view !== "en" && !(T[key] && T[key][S.view]) && !!(I18N[S.view] && I18N[S.view][key]);
 }
@@ -434,6 +445,7 @@ function langSelect() { // one native dropdown with all languages, each named in
     const ok = await loadLang(code);
     if (mine !== langPick) return;
     S.lang = code; S.view = ok ? code : "en";
+    if (curScreen !== 1) { applyDir(); return; } // a slow load finished after the user moved on: switch the language, not the screen
     if (!ok) showMsg(t("err_generic"));
     show(1);
   });
@@ -464,7 +476,8 @@ function renderStart() {
     el("p", {class: "notice"}, ...tSafe("notice")),
     el("div", {class: "stack-3"},
       el("label", {for: "lang-select", class: "sr-only"}, t("pick_lang")),
-      langSelect()),
+      langSelect(),
+      isMachineView() ? el("p", {class: "muted"}, t("machine_note")) : null),
     el("div", {class: "stack-3"},
       el("h3", {id: "for-whom-label"}, t("for_whom")),
       el("div", {class: "grid-2", role: "group", "aria-labelledby": "for-whom-label"}, ...[["self", "me", "who-me"], ["family", "family", "who-family"]].map(([v, k, id]) =>
@@ -551,11 +564,11 @@ async function onFile(ev) {
     const bill = await r.json();
     if (seq !== S.extractSeq) return;
     S.bill = bill;
-    showMsg("");
+    if (curScreen === 2) showMsg(""); // the message box belongs to the screen the user is on
   } catch (e) {
     if (seq !== S.extractSeq) return;
     S.bill = blankBill();
-    showMsg(failMsg);
+    if (curScreen === 2) showMsg(failMsg);
   }
   S.extracting = false;
   renderBill();
@@ -662,17 +675,18 @@ async function submitAnswers() {
   setBusy(document.getElementById("q-go"), true);
   document.getElementById("q-why").hidden = true;
   try {
-    S.result = await post("/evaluate", {bill: S.bill, answers: S.answers});
+    const result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     if (seq !== S.submitSeq) return;
     showBusy(t("load_explain"));
-    S.explain = await post("/explain", {bill: S.bill, answers: S.answers, result: S.result});
+    const explain = await post("/explain", {bill: S.bill, answers: S.answers, result});
+    if (seq !== S.submitSeq) return; // checked BEFORE the assignments: a cancelled submit must not overwrite a newer result
+    S.result = result; S.explain = explain;
   } catch (e) {
     if (seq !== S.submitSeq) return;
     S.busy = false; showMsg(e.message); renderQuestions();
     return;
   }
-  if (seq !== S.submitSeq) return;
-  S.view = (I18N[S.lang] || T.app_title[S.lang] !== undefined) ? S.lang : "en"; showMsg(""); S.home = null; // new answers: recompute the all-bills totals
+  S.view = viewFor(S.lang); showMsg(""); S.home = null; // new answers: recompute the all-bills totals
   S.busy = false; show(4);
 }
 
@@ -694,6 +708,7 @@ function deadlineLine(d) { // the English sentence with its date highlighted
   if (i < 0) return englishOnly("mark", {class: "hl"}, d.text_en);
   return el("span", {lang: "en", dir: "ltr"}, d.text_en.slice(0, i), el("mark", {class: "hl"}, d.date), d.text_en.slice(i + d.date.length));
 }
+function phoneLink(p) { return el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "tel:" + String(p).replace(/[^\d+]/g, "")}, p)); }
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
   const english = S.view === "en";
@@ -732,7 +747,6 @@ function renderResult() {
   const docs = el("ol", {class: "docs"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, notes.mark(d.citation)))));
   const docsPanel = eligible ? panel("", el("h3", {class: "with-icon"}, icon("file"), t("r_docs")), docs) : null;
   const c = r.contacts;
-  const phoneLink = p => el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "tel:" + String(p).replace(/[^\d+]/g, "")}, p));
   const contactPanel = eligible
     ? panel("", el("h3", null, t("r_contact"), notes.mark(c.citation)),
         el("dl", {class: "kv"},
@@ -754,13 +768,13 @@ function renderResult() {
     showNative ? el("p", {class: "muted"}, ...tSafe("ai_note")) : null,
     fb && !english ? el("p", {class: "muted"}, t("r_fallback")) : null,
     el("div", {class: "grid-md-2"}, docsPanel, contactPanel),
-    eligible ? null : el("p", null, t("r_no_packet")),
+    eligible ? null : el("p", null, ...tSafe("r_no_packet")),
     notes.list(),
     actions([
       el("button", {type: "button", onclick: () => show(3)}, t("back")),
       el("button", {type: "button", onclick: () => show(6)}, t("home_open")),
       ghostRestart()],
-      eligible ? el("button", {type: "button", class: "primary", onclick: () => { show(5); loadPacket(); }}, t("r_packet")) : null)));
+      eligible ? el("button", {type: "button", class: "primary", onclick: () => { show(5); loadPacket(); }}, el("span", null, ...tSafe("r_packet"))) : null)));
 }
 
 // ---------- screen 6: home (all bills from this visit)
@@ -774,6 +788,19 @@ function icsText(s) { // RFC 5545 TEXT escaping
 function utcStamp(d) { // YYYYMMDDTHHMMSSZ
   return d.toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
 }
+// RFC 5545 line folding: at most 75 octets (UTF-8 bytes) per line, never inside a character; each continuation starts with one space.
+function foldLine(line) {
+  const out = [];
+  let cur = "", n = 0, limit = 75;
+  for (const ch of line) { // iterates code points, so a surrogate pair is never split
+    const cp = ch.codePointAt(0);
+    const bytes = cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+    if (n + bytes > limit) { out.push(cur); cur = ""; n = 0; limit = 74; } // the leading space counts toward 75
+    cur += ch; n += bytes;
+  }
+  out.push(cur);
+  return out.join("\r\n ");
+}
 // events: [{date: "YYYYMMDD", summary: text}] -> iCalendar text, CRLF line endings (pure: easy to test)
 function buildIcs(events, now) {
   const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//BillScan//Demo//EN"];
@@ -783,7 +810,7 @@ function buildIcs(events, now) {
       "DTSTART;VALUE=DATE:" + ev.date, "SUMMARY:" + icsText(ev.summary), "END:VEVENT");
   });
   lines.push("END:VCALENDAR");
-  return lines.join("\r\n") + "\r\n";
+  return lines.map(foldLine).join("\r\n") + "\r\n";
 }
 function downloadIcs(h) {
   const now = new Date();
@@ -824,29 +851,42 @@ function renderHome() {
     return;
   }
   const notes = makeNotes("home-fn"); // own anchor ids: the Result screen's notes stay in the DOM too
-  const headline = h.eligible
+  const eligible = h.eligible === true; // not eligible: no covers panel, no "Apply by", no reminders, no calendar file
+  const noneCounted = h.bills.length > 0 && h.bills.every(b => b.hospital_matches_policy === false);
+  const headline = eligible && noneCounted
+    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch")))
+    : eligible
     ? panel("hero",
         el("p", {class: "big-money", dir: "ltr"}, money(h.estimate_cents)),
         el("p", {class: "lead"}, ...tSafe("home_estimate", {amt: money(h.estimate_cents)})),
         el("p", {class: "muted"}, ...tSafe("home_estimate_note")))
-    : panel("hero", el("p", {class: "lead"}, t("home_not_eligible")));
-  const covers = h.one_application_covers_all
+    : panel("hero", el("p", {class: "lead"}, ...tSafe("home_not_eligible")));
+  const covers = eligible && h.one_application_covers_all
     ? panel("ok",
         el("p", null, ...tSafe("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
         englishOnly("p", {class: "muted"}, h.coverage.text_en))
     : null;
-  const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => el("li", {class: "panel"},
+  const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => {
+    const other = b.hospital_matches_policy === false; // null = unknown: no warning
+    return el("li", {class: "panel"},
     el("div", {class: "bill-top"},
       el("div", null,
         el("p", null, englishOnly("strong", null, b.label_en), b.source === "yours" ? " " + t("home_yours") : null),
         el("p", {class: "muted"}, t("f_statement") + ": ", bdiEn(b.statement_date))),
       el("span", {class: "bill-amt", dir: "ltr"}, money(b.amount_due_cents))),
-    el("p", {class: "bill-meta"}, ...tNodes("home_bill_deadline", {date: b.deadline.date}),
-      h.eligible ? " " : null, ...(h.eligible ? tSafe("home_bill_reduction", {amount: money(b.reduction_cents)}) : [])))));
-  const reminders = panel("",
+    other ? el("p", {class: "bill-warn", role: "note"}, t("r_mismatch_title")) : null,
+    // another hospital's bill: this policy's deadline and reduction do not apply to it
+    eligible && !other ? el("p", {class: "bill-meta"}, ...tNodes("home_bill_deadline", {date: b.deadline.date}),
+      " ", ...tSafe("home_bill_reduction", {amount: money(b.reduction_cents)})) : null);
+  }));
+  const c = h.contacts;
+  const payPlan = eligible ? null : panel("",
+    el("h3", null, t("r_payplan"), notes.mark(c.citation)),
+    el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
+  const reminders = !eligible ? null : panel("",
     el("h3", null, t("rem_title")),
     el("p", null, ...tNodes("rem_apply", {date: h.earliest_deadline.date})),
-    el("p", null, ...tNodes("rem_follow", {phone: h.contacts.phone})),
+    el("p", null, ...tSafe("rem_follow", {phone: h.contacts.phone})),
     el("p", null, t("rem_reuse")),
     el("div", null, el("button", {type: "button", onclick: () => downloadIcs(h)}, t("rem_ics"))));
   fill(root, el("div", {class: "stack-8"},
@@ -855,6 +895,7 @@ function renderHome() {
     covers,
     bills,
     reminders,
+    payPlan,
     notes.list(),
     homeActions()));
 }
@@ -897,7 +938,7 @@ function restart() {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
   // theme is deliberately not reset; every request counter is bumped (never reset to 0) so any
   // in-flight reply is dropped and cannot match the next request's number
-  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false,
+  Object.assign(S, {view: viewFor(S.lang), bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false,
                     extractSeq: S.extractSeq + 1, submitSeq: S.submitSeq + 1, home: null, homeSeq: S.homeSeq + 1, extracting: false, packetSeq: S.packetSeq + 1});
   showMsg(""); show(1);
 }

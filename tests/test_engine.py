@@ -139,7 +139,14 @@ def test_hospital_match():
     assert match("CUMBERLAND GENERAL HOSPITAL") is True
     assert match("Cumberland General") is True
     assert match("Vanderbilt University Medical Center") is False
-    assert match(None) is False
+    assert match(None) is None                       # no name on the bill: unknown, not a mismatch
+    for blank in ("", "   "):
+        assert match(blank) is None, blank
+    assert match("NOT Cumberland General Hospital") is False     # anchored: the name must start with the policy name
+    assert match("St Cumberland General") is False
+    assert match("Cumberland General Hospital Nashville") is True
+    assert match("The Cumberland General Hospital") is True       # a leading "The" (OCR, letterhead) still matches
+    assert engine._hospital_matches(123, "Cumberland General Hospital") is None
 
 
 def test_statement_date_strict():
@@ -150,6 +157,36 @@ def test_statement_date_strict():
             continue
         raise AssertionError("statement_date %r should raise ValueError" % (bad,))
     assert run(3_800_000, statement="2026-10-01")["deadline"]["date"] == "2027-05-29"
+
+
+def test_amount_and_date_limits():
+    assert run(3_800_000, amount=10**12)["locked_numbers"]
+    for bad in (10**12 + 1, 10**30, -1, 1.5, True, "5"):
+        try:
+            run(3_800_000, amount=bad)
+        except ValueError:
+            continue
+        raise AssertionError("amount %r should raise ValueError" % (bad,))
+    try:
+        run(10**12 + 1)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("income above the cap should raise ValueError")
+
+    def with_service(v):
+        b = bill()
+        b["fields"]["date_of_service"] = {"value": v, "confidence": None, "confirmed": True}
+        return engine.evaluate(b, answers(3_800_000), POLICY, FPL)
+    with_service(None)
+    with_service("2026-09-12")
+    for bad in ("2026-13-01", "20260912", "2026-W37-6", "not a date", "", 20260912, True):
+        try:
+            with_service(bad)
+        except ValueError as e:
+            assert "date_of_service" in str(e), e
+            continue
+        raise AssertionError("date_of_service %r should raise ValueError" % (bad,))
 
 
 def many_bills(service_override=None):
@@ -209,6 +246,33 @@ def test_evaluate_many():
     assert r["one_application_covers_all"] is False
     r = engine.evaluate_many(many_bills("2026-02-19"), answers(3_800_000), POLICY, FPL, as_of)
     assert r["one_application_covers_all"] is True
+
+    # one_application_covers_all needs an eligible family: a covered, not-eligible household gets False
+    r = engine.evaluate_many(many_bills(), answers(20_000_000), POLICY, FPL, as_of)
+    assert r["one_application_covers_all"] is False and r["eligible"] is False
+
+    # another hospital's bill is listed but not counted in the estimate or in "one application covers all"
+    other = many_bills()
+    other[1]["fields"]["hospital_name"]["value"] = "Vanderbilt University Medical Center"
+    other[1]["fields"]["date_of_service"]["value"] = "2025-01-01"           # would break coverage if it counted
+    r = engine.evaluate_many(other, answers(3_800_000), POLICY, FPL, as_of)
+    assert [b["hospital_matches_policy"] for b in r["bills"]] == [True, False, True, True, True]
+    assert len(r["bills"]) == 5 and r["bills"][1]["reduction_cents"] == 185850
+    assert r["estimate_cents"] == 883765 - 185850, r["estimate_cents"]
+    assert r["one_application_covers_all"] is True
+    assert r["estimate_text_en"] == "Up to $6,979.15 could be reduced if the hospital approves."
+
+    # a bill with no hospital name is unknown (None), still counted
+    blank = many_bills()
+    blank[0]["fields"]["hospital_name"]["value"] = None
+    r = engine.evaluate_many(blank, answers(3_800_000), POLICY, FPL, as_of)
+    assert r["bills"][0]["hospital_matches_policy"] is None and r["estimate_cents"] == 883765
+
+    # only other-hospital bills: nothing counted, so no "one application covers all"
+    for b in other:
+        b["fields"]["hospital_name"]["value"] = "Vanderbilt University Medical Center"
+    r = engine.evaluate_many(other, answers(3_800_000), POLICY, FPL, as_of)
+    assert r["estimate_cents"] == 0 and r["one_application_covers_all"] is False
 
     try:
         engine.evaluate_many([], answers(3_800_000), POLICY, FPL, as_of)

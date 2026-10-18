@@ -53,9 +53,12 @@ def _required(fields, name):
     return f["value"]
 
 
+MAX_CENTS = 10**12
+
+
 def _int_cents(value, name):
-    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
-        raise ValueError(f"{name} must be a non-negative integer (cents)")
+    if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= MAX_CENTS:
+        raise ValueError(f"{name} must be a non-negative integer (cents) up to {MAX_CENTS}")
     return value
 
 
@@ -66,23 +69,30 @@ def _name_core(s):
 
 
 def _hospital_matches(bill_name, policy_name):
+    """True / False, or None when the bill names no hospital (unknown, not a mismatch)."""
+    if not isinstance(bill_name, str) or not bill_name.strip():
+        return None
     core = _name_core(policy_name)
-    return bool(core) and isinstance(bill_name, str) and core in _name_core(bill_name)
+    bill_core = _name_core(re.sub(r"^\s*the\s+", "", bill_name, flags=re.I))  # "The Cumberland General ..." still matches
+    return bool(core) and bill_core.startswith(core)
 
 
-def _statement_date(value):
+def _iso_date(value, name):
     if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-        raise ValueError("statement_date must be YYYY-MM-DD")
+        raise ValueError(f"{name} must be YYYY-MM-DD")
     try:
         return date.fromisoformat(value)
     except ValueError:
-        raise ValueError("statement_date must be YYYY-MM-DD")
+        raise ValueError(f"{name} must be YYYY-MM-DD")
 
 
 def evaluate(bill_fields, answers, policy, fpl):
     fields = _confirmed_fields(bill_fields)
-    statement_date = _statement_date(_required(fields, "statement_date"))
+    statement_date = _iso_date(_required(fields, "statement_date"), "statement_date")
     amount_due_cents = _int_cents(_required(fields, "amount_due_cents"), "amount_due_cents")
+    service = _field_value(fields, "date_of_service")
+    if service is not None:
+        _iso_date(service, "date_of_service")
 
     size = answers.get("household_size")
     income_cents = _int_cents(answers.get("annual_income_cents"), "annual_income_cents")
@@ -200,6 +210,8 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
 
     rows = []
     covered = True
+    estimate_cents = 0
+    counted = 0
     for b, r in zip(bills, results):
         amount = _field_value(b["fields"], "amount_due_cents")
         service = _field_value(b["fields"], "date_of_service")
@@ -212,18 +224,24 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
             "date_of_service": service,
             "amount_due_cents": amount,
             "reduction_cents": amount * discount // 100,
+            "hospital_matches_policy": r["hospital_matches_policy"],
             "deadline": r["deadline"],
         })
+        if r["hospital_matches_policy"] is False:  # another hospital's bill: listed, never counted
+            continue
+        counted += 1
+        estimate_cents += rows[-1]["reduction_cents"]
         if not isinstance(service, str) or date.fromisoformat(service) < cutoff:
             covered = False
 
-    estimate_cents = sum(row["reduction_cents"] for row in rows)
     eligible = first["tier"]["eligible"]
     if eligible:
         estimate_text_en = "Up to $%s could be reduced if the hospital approves." % _fmt_amount_due(estimate_cents)
     else:
         estimate_text_en = "Not eligible under this policy."
-    earliest = min((row["deadline"] for row in rows), key=lambda d: d["date"])
+    # another hospital's bill has no deadline under this policy: the earliest is taken over counted rows
+    pool = [row for row in rows if row["hospital_matches_policy"] is not False] or rows
+    earliest = min((row["deadline"] for row in pool), key=lambda d: d["date"])
 
     locked = list(first["locked_numbers"])
     locked.append(_fmt_amount_due(estimate_cents))
@@ -240,7 +258,7 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
         "bills": rows,
         "estimate_cents": estimate_cents,
         "estimate_text_en": estimate_text_en,
-        "one_application_covers_all": covered,
+        "one_application_covers_all": covered and eligible and counted > 0,
         "coverage": {"text_en": coverage["text_en"], "citation": copy.deepcopy(coverage["citation"])},
         "earliest_deadline": earliest,
         "contacts": copy.deepcopy(policy["contacts"]),

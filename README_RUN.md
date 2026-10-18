@@ -56,10 +56,12 @@ py tests/test_numlock.py
 py tests/test_engine.py
 py tests/test_api.py
 py tests/test_policy_page.py
+py tests/test_answer_key.py
+node tests/test_app_js.js
 ```
 
 Each prints ALL PASS. The tests set FAKE_OCI=1 themselves.
 
-Privacy: nothing is written to disk (uploads stay in memory: the multipart
-spool limit is raised above the 8 MB cap) and request bodies are not logged;
+Privacy: nothing is written to disk (an upload over 8 MB is refused by its
+Content-Length before it is read; allowed uploads stay in memory) and request bodies are not logged;
 only the TYPE of a failed model call is logged (e.g. `ServiceError`).

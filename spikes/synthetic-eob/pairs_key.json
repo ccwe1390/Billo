@@ -1,0 +1,259 @@
+{
+  "not_eob_probe": "../synthetic-bill/bill-01.png",
+  "bill_date_of_service": "2026-09-12",
+  "pairs": {
+    "10": {
+      "bill": "bill-23.png",
+      "bill_date_of_service": "2026-09-12",
+      "eob_file": "eob-10.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "date_of_service": "2026-09-12",
+        "claim_number": "CLM-SYN-1023",
+        "claim_status": "paid",
+        "amount_billed_cents": 264000,
+        "plan_discount_cents": 119000,
+        "plan_paid_cents": 110000,
+        "patient_owes_cents": 35000,
+        "denial_reason": null,
+        "appeal_deadline": null,
+        "insurer_phone": "(800) 555-0150",
+        "service_lines": [
+          {
+            "date": "2026-09-12",
+            "description": "ER VISIT LVL 5",
+            "amount_billed_cents": 264000,
+            "patient_owes_cents": 35000
+          }
+        ]
+      },
+      "bill_lines": [
+        {
+          "description": "ED visit, high complexity",
+          "amount_cents": 264000
+        }
+      ],
+      "bill_total_charges_cents": 264000,
+      "bill_payments_cents": 229000,
+      "bill_amount_due_cents": 35000,
+      "expected_insurance_flags": [],
+      "expected_total_cents": 0
+    },
+    "06": {
+      "bill": "bill-20.png",
+      "bill_date_of_service": "2026-09-12",
+      "bill_lines": [
+        {
+          "description": "ED visit, high complexity",
+          "amount_cents": 264000
+        },
+        {
+          "description": "CT scan, head, without contrast",
+          "amount_cents": 138500
+        },
+        {
+          "description": "CT scan, head, without contrast",
+          "amount_cents": 138500
+        },
+        {
+          "description": "Blood test panel",
+          "amount_cents": 41240
+        }
+      ],
+      "bill_total_charges_cents": 582240,
+      "bill_payments_cents": 423740,
+      "bill_amount_due_cents": 158500,
+      "eob_file": "eob-06.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "date_of_service": "2026-09-12",
+        "claim_number": "CLM-SYN-0612",
+        "claim_status": "paid",
+        "amount_billed_cents": 443740,
+        "plan_discount_cents": 223740,
+        "plan_paid_cents": 200000,
+        "patient_owes_cents": 20000,
+        "denial_reason": null,
+        "appeal_deadline": null,
+        "insurer_phone": "(800) 555-0150",
+        "service_lines": [
+          {
+            "date": "2026-09-12",
+            "description": "ER VISIT LVL 5",
+            "amount_billed_cents": 264000,
+            "patient_owes_cents": 20000
+          },
+          {
+            "date": "2026-09-12",
+            "description": "CT HEAD W/O CONTRAST",
+            "amount_billed_cents": 138500,
+            "patient_owes_cents": 0
+          },
+          {
+            "date": "2026-09-12",
+            "description": "COMPREHENSIVE METABOLIC PANEL",
+            "amount_billed_cents": 41240,
+            "patient_owes_cents": 0
+          }
+        ]
+      },
+      "expected_insurance_flags": [
+        "charged_more",
+        "totals_mismatch",
+        "billed_more"
+      ],
+      "expected_total_cents": 138500
+    },
+    "07": {
+      "bill": "bill-13.png",
+      "bill_date_of_service": "2026-10-06",
+      "eob_file": "eob-07.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "Cumberland General Hospital (SYNTHETIC)",
+        "date_of_service": "2026-10-06",
+        "claim_number": "CLM-SYN-0713",
+        "claim_status": "pending",
+        "amount_billed_cents": null,
+        "plan_discount_cents": null,
+        "plan_paid_cents": null,
+        "patient_owes_cents": null,
+        "denial_reason": null,
+        "appeal_deadline": null,
+        "insurer_phone": "(800) 555-0150",
+        "service_lines": []
+      },
+      "bill_lines": [
+        {
+          "description": "Clinic visit, established patient",
+          "amount_cents": 41200
+        },
+        {
+          "description": "MRI, knee, without contrast",
+          "amount_cents": 142000
+        },
+        {
+          "description": "Blood test panel, basic",
+          "amount_cents": 16200
+        },
+        {
+          "description": "Physical therapy evaluation",
+          "amount_cents": 21200
+        }
+      ],
+      "bill_total_charges_cents": 220600,
+      "bill_payments_cents": 0,
+      "bill_amount_due_cents": 220600,
+      "expected_insurance_flags": [
+        "pending"
+      ],
+      "expected_total_cents": 0
+    },
+    "08": {
+      "bill": "bill-22.png",
+      "bill_date_of_service": "2026-09-20",
+      "eob_file": "eob-08.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "date_of_service": "2026-09-20",
+        "claim_number": "CLM-SYN-0822",
+        "claim_status": "denied",
+        "amount_billed_cents": 185850,
+        "plan_discount_cents": 0,
+        "plan_paid_cents": 0,
+        "patient_owes_cents": 185850,
+        "denial_reason": "Prior authorization was not obtained for this service.",
+        "appeal_deadline": "2027-03-18",
+        "insurer_phone": "(800) 555-0199",
+        "service_lines": [
+          {
+            "date": "2026-09-20",
+            "description": "MRI LUMBAR SPINE W/O CONTRAST",
+            "amount_billed_cents": 185850,
+            "patient_owes_cents": 185850
+          }
+        ]
+      },
+      "bill_lines": [
+        {
+          "description": "MRI, lower back, without contrast",
+          "amount_cents": 185850
+        }
+      ],
+      "bill_total_charges_cents": 185850,
+      "bill_payments_cents": 0,
+      "bill_amount_due_cents": 185850,
+      "expected_insurance_flags": [
+        "denied"
+      ],
+      "expected_total_cents": 0
+    },
+    "09": {
+      "bill": "bill-20.png",
+      "bill_date_of_service": "2026-09-12",
+      "bill_lines": [
+        {
+          "description": "ED visit, high complexity",
+          "amount_cents": 264000
+        },
+        {
+          "description": "CT scan, head, without contrast",
+          "amount_cents": 138500
+        },
+        {
+          "description": "CT scan, head, without contrast",
+          "amount_cents": 138500
+        },
+        {
+          "description": "Blood test panel",
+          "amount_cents": 41240
+        }
+      ],
+      "bill_total_charges_cents": 582240,
+      "bill_payments_cents": 423740,
+      "bill_amount_due_cents": 158500,
+      "eob_file": "eob-09.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "date_of_service": "2026-08-02",
+        "claim_number": "CLM-SYN-0609",
+        "claim_status": "paid",
+        "amount_billed_cents": 443740,
+        "plan_discount_cents": 223740,
+        "plan_paid_cents": 200000,
+        "patient_owes_cents": 20000,
+        "denial_reason": null,
+        "appeal_deadline": null,
+        "insurer_phone": "(800) 555-0150",
+        "service_lines": [
+          {
+            "date": "2026-08-02",
+            "description": "ER VISIT LVL 5",
+            "amount_billed_cents": 264000,
+            "patient_owes_cents": 20000
+          },
+          {
+            "date": "2026-08-02",
+            "description": "CT HEAD W/O CONTRAST",
+            "amount_billed_cents": 138500,
+            "patient_owes_cents": 0
+          },
+          {
+            "date": "2026-08-02",
+            "description": "COMPREHENSIVE METABOLIC PANEL",
+            "amount_billed_cents": 41240,
+            "patient_owes_cents": 0
+          }
+        ]
+      },
+      "expected_insurance_flags": [
+        "different_visit"
+      ],
+      "expected_total_cents": null
+    }
+  }
+}

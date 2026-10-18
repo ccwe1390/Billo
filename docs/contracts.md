@@ -286,3 +286,44 @@ Everything below is on branch f12 only. Live is 08265fa until f12 is deployed. c
 - There is no no_items flag; an empty or missing item list is reported only as lines_checked false.
 - The line rules (duplicate, lines_sum, due_mismatch) run whenever lines.confirmed is true, whether the lines
   were read or typed; when lines are null or not confirmed they do not run.
+
+## Addendum 2026-10-18 11:24 CDT - Phase 3 insurance check (EOB) (branch f13, not merged, not deployed)
+Everything below is on branch f13 only. contract_version stays 1 (all changes are additive).
+
+### POST /extract
+- New multipart fields: kind ("bill" default | "eob") and date_of_service (YYYY-MM-DD, optional; it fills the
+  EOB prompt). kind=eob returns an EOB object. A photo that is not an EOB -> 422 "This doesn't look like an
+  insurance summary." Any other kind value -> 422. Still a paid, rate-limited route.
+
+### EOB object
+- {contract_version: 1, fields: {insurer_name, provider_name, date_of_service, claim_number, claim_status
+  (paid | partially_paid | denied | pending | null), amount_billed_cents, plan_discount_cents,
+  plan_paid_cents, patient_owes_cents, denial_reason, appeal_deadline, insurer_phone}, lines}
+  - each field is {value, confidence, confirmed}. Unknown field names -> 422.
+  - lines: {items: [{date, description, amount_billed_cents, patient_owes_cents}] (at most 40 items,
+    description at most 120 chars), confirmed, read} | null.
+- Never read or stored: member ID, group number, names.
+
+### POST /check and POST /dispute
+- Both accept eob and eob_not_yet (bool). eob must be confirmed (every field, and the lines when present),
+  else 422.
+- /check returns {flags, total_to_ask_cents, lines_checked, insurer_letter}. Each flag gains kind: "bill" |
+  "insurance".
+- Insurance flag ids: pending, different_visit, denied, charged_more, not_on_eob, totals_mismatch,
+  credit_mismatch, billed_more.
+- Run order: pending stops the insurance rules. A different visit (date, or provider name not matching after
+  normalizing) stops them. denied (the bill asks the full amount) stops them. Then the line and total rules
+  run for paid / partially_paid.
+- Lines match by (date, amount), never by wording. A line with no date takes its document's date of service.
+
+### Merging with Phase 2
+- Phase 2's duplicate flag is dropped when charged_more covers the same lines. insurance_unpaid is dropped
+  when the EOB is paid / partially_paid / denied (kept for pending / not yet).
+- total_to_ask_cents: with a usable paid EOB, amount due - EOB patient owes when that is more than $1.00,
+  else 0; otherwise Phase 2's total. Never counted twice.
+
+### /dispute letter and stats
+- The billing-office letter lists each flag that has a letter line. When the claim was denied the page also
+  carries a fixed English letter to the insurer ("please reconsider"), translated beside it under the same
+  number lock, with the deadline and phone exactly as printed on the summary.
+- stats gains eobs_read.

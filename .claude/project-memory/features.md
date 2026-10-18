@@ -18,3 +18,6 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
 - 11:11 CDT - Phase 2 "Find errors" BUILT on f12, NOT live: charge lines read + confirmed, fixed-rule checks (duplicate,
   lines_sum, due_mismatch, insurance_unpaid, medicaid w/ 42 CFR 438.106), "Things to ask the hospital about" card, fixed
   English letter (/dispute). Product name is Billow (cbc815b, not deployed).
+- 2026-10-18 11:56 CDT - LIVE ba6d1f0: Phase 3 insurance check (EOB photo or "Not yet"; pending, different visit, denied,
+  charged more / not on EOB / totals / credit / billed more; insurer letter). Built, NOT live (a0684aa): Remove photo on the
+  Bill screen; Sources in a dropdown closed by default (records BE, BF).

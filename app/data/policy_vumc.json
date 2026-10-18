@@ -129,6 +129,15 @@
   },
   "conditions": [
     {
+      "text_en": "VUMC's help is for uninsured patients and \"underinsured\" ones: insured patients whose care is \"noncovered\" or has \"limited benefit coverage\" under their plan. If your insurance covered this care, ask VUMC whether your deductible or copay qualifies.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=4",
+        "page": 4,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
       "text_en": "Above 3.5 times the poverty guideline: VUMC may still help through Catastrophic Financial Assistance if your unreimbursed VUMC medical bills in one year are more than your household's yearly income.",
       "citation": {
         "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",

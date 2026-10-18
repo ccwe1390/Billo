@@ -1,4 +1,4 @@
-STATUS: pointer (2026-10-17 20:14 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 32 languages on f10 (record AI; live c30be63 has 11). Also built and LIVE (record AH): F10.1 Home/all bills, F10.2 coverage rule, F10.3 reminders + .ics, F10.4 QR chip + Start QR, F10.5 dashboard. Roadmap: PRD F11 (DRAFT).
+STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 32 languages LIVE since 2026-10-18 00:07 CDT (5af2f1f, record AR). Also built and LIVE (record AH): F10.1 Home/all bills, F10.2 coverage rule, F10.3 reminders + .ics, F10.4 QR chip + Start QR, F10.5 dashboard. Roadmap: PRD F11 (DRAFT).
 
 - 2026-10-18 00:05 CDT - Roadmap evidence (agent briefs, record AQ; not
   cold-assessed): docs/research/2026-10-17_customer-features-brief.md ranks

@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 00:37 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AQ).
+**Last updated: 2026-10-18 07:43 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AT).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -41,7 +41,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AQ).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (on f10 since record AI: 32 codes from app/data/languages.json, dropdown, no tiers; live c30be63 still has tier 1 en/es/ar/zh-CN/zh-TW + tier 2 vi/fr/ko/ru/de/hi); 5 test files ALL PASS; live with real OCI since 14:53; the live server runs c30be63 (F10 + UI port, deployed 19:41 CDT, record AH; c4a28f0 was the 16:58 build) | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs 5af2f1f (deployed by Evan 2026-10-18 00:07 CDT, record AR; 32 languages live) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -58,7 +58,8 @@ snapshot; history lives in the record (Phase 0, Appendices A-AQ).
   control characters removed, <= 200 chars; 60 paid requests (/extract,
   /explain, /packet) per 60 s per client IP (last X-Forwarded-For entry) AND
   600 paid requests per hour in total; an /extract body over 8 MiB + 64 KiB
-  is refused (413) before it is read, so it is never spooled to disk.
+  is refused (413) before it is read when Content-Length is declared (a chunked upload
+  without it is parsed first; audit 3 finding 17).
 
 ## Documentation
 - `PRD_ROADMAP.md` - CURRENT DIRECTION fork at the end is the plan.
@@ -71,61 +72,55 @@ snapshot; history lives in the record (Phase 0, Appendices A-AQ).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## F10 STATUS (19:43 CDT) - read this first
-- **00:37 CDT (record AS):** audit 3 done, docs/2026-10-18_audit-3.md - 4 highs (Result screen "Apply by" for ineligible; deploy check passes broken releases; presenter sheet says 11 languages; this file's older lines below are stale: live is 5af2f1f, rollback target c30be63). Fixes await Evan (report section 7).
-- **00:13 CDT (record AR) - READ FIRST:** LIVE = 5af2f1f on http + https (deployed by Evan 00:07; backup-before-5af2f1f.tar; rollback target c30be63). Live checks pass (es/he/th journey, extract, packets, app.js matches f10). origin/f10 = 5a7fd84; local main = 5af2f1f (not pushed; origin/main ff7a539). NEW: Result screen still shows "Apply by" to ineligible families (app.js:741) - not fixed. Cold assessments done: docs/research/2026-10-18_cold-assessments.md; pitch sheet 00:13 update says do NOT say $7B/$14B; policies brief has 3 factual errors not yet corrected.
-- **23:56 CDT (record AO; corrected 00:01):** a second session was still pushing f10 at the same time (origin/f10 reached 3da0602 by 00:01), so "not pushed" in AO was true only at 23:51; live still c30be63; deploy needs no push (deploy.ps1 archives app/ locally). tfState file appears gone from Downloads (Evan to confirm). New public PDFs in docs/ (VUMC CON CN2510-038, Dollar For "Bridging the Chasm", Oregon OHA prescreening summary), untracked, unread. Research: stats brief (b7f43ae), money-2 merge and other-systems (3da0602) saved by that session; mtn-census report + compiled census brief (268d9c7); cold assessment not done.
-- **00:04 CDT (record AQ):** f10 = 3da0602 on origin (f10 and ui-max) plus later docs commits; final landing check SAFE TO PUSH, all 6 test files ALL PASS. Research complete: docs/research/2026-10-18_middle-tn-hospital-policies.md (13 hospitals = 76.7% of Middle TN licensed beds, on 7 policies; compiled from 5 raw reports, NOT cold-assessed, sources not re-fetched by the orchestrator). Deploy scripts in deploy/.
-- **23:42 CDT SNAPSHOT (SUPERSEDED by the 23:56 and 00:04 lines - "pushed" and "research still running" were false/stale):** live = c30be63 (unchanged since 19:41).
-  f10 = the audit-2 fixes + 32 languages + docs (commit 5af2f1f is the code;
-  later commits are docs/research only), pushed, NOT deployed. Evan deploys
-  with `deploy.ps1 -Commit 5af2f1f` (or the f10 head) and the live checks run
-  after (he/th/es journey, /household ineligible, journal). Research in
-  docs/research/ (record AM): sustainability brief saved (partial + merge 1);
-  stats, features and Middle-TN hospital-policy research were still running
-  in the 23:3x session - re-run if their files are missing.
-- **LIVE (until 00:07 2026-10-18): c30be63 (main) on http AND https://207.211.181.174/** (record AH). Now 5af2f1f, see the 00:13 line.
-  F10 (Home, coverage rule, reminders + .ics, QR chip + Start QR,
-  dashboard /dashboard.html), R1-R3 (R1 parallel Hindi, R2 20-household answer key, R3 photo downscaling) and the UI port (record AF: Dipayan's
-  design system, light/dark, Atkinson) are all live. Live journeys pass on
-  both; Hindi packet ~5-7 s.
+## STATUS (2026-10-18 07:43 CDT) - read this first
+- **LIVE: 5af2f1f on http AND https://207.211.181.174/** (deployed by Evan
+  2026-10-18 00:07 CDT; live checks passed 00:09: es/he/th journeys, extract,
+  packets, app.js equal to f10; record AR). 32 language options live.
+  Rollback target: c30be63 (VM ~/backup-before-5af2f1f.tar).
+- **On f10, NOT deployed yet:** audit 3 code fixes (record AT): the Result
+  screen no longer shows "Apply by" to ineligible families; deadline lines get
+  the English line under machine translations; deploy-remote.sh now checks the
+  engine loads and /stats answers after restart, and exits FAILED otherwise.
+  NEXT: Evan runs `powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1
+  -Commit 984a537` from the repo root (984a537 = the fixes; later commits are
+  docs only); then Claude runs the live checks.
+- Presenter sheet docs/2026-10-17_pitch-corrections.md was rewritten at 07:40
+  to match the live app (audit 3 fix 3) and can be handed to presenters.
+- Audit 3 (docs/2026-10-18_audit-3.md, record AS): 4 high / 12 med / 21 low,
+  3 policy questions for Evan (A1 number lock is set-based; A2 "nothing is
+  stored" vs the Apache access log; A3 sheet). Fixed so far: 1, 2, 3, 4, 8, 11,
+  12, 13, 14. The rest is listed in its section 7.
 - HTTPS: Let's Encrypt IP certificate (lineage billscan-ip, expires
   2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
-  Apache conf.d files bill-to-help-acme.conf and bill-to-help-ssl.conf; no
-  redirect from http (both work).
-- Deploys are run by Evan in PowerShell 5.1 (the auto-mode classifier
-  refuses Claude's live restarts, record AG): deploy.ps1 -Commit <c>, and
-  deploy.ps1 -Commit <c> -Rollback restores the backup taken before <c>
-  (VM ~/backup-before-<c>.tar). Scripts are in the repo under deploy/
-  (deploy.ps1, deploy-remote.sh, rollback-remote.sh, https.ps1,
-  https-remote.sh; .sh kept LF by .gitattributes). From the repo root:
-  powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1 -Commit <c>. Rollback target now: cc3c333.
-- Open: Evan's phone checks (photo upload, https padlock, QR scan on
-  bill-02); the rollback was not rehearsed live.
-- AUDIT 2 (record AJ, docs/2026-10-17_audit-2.md): 5 high / 18 med / 10 low.
-  FIXED on f10 (record AL; not deployed): all highs and Tier A - see the
-  report's "Status after fixes"; NEXT: Evan deploys the f10 head. Do first: Evan deletes the
-  tfState file in Downloads (holds the VM key); do NOT hand presenters
-  docs/2026-10-17_pitch-corrections.md until it is updated (it says to cut
-  features that are live). PRD F11 (personal app) is a DRAFT, roadmap only. 23:59 (record AP): F11.7 push reminders DROPPED; nickname and F11.8 kept; no F11 code yet.
-- ON f10, NOT DEPLOYED (record AI): 32 languages (all 31 Oracle Translate
-  codes + Hindi) from app/data/languages.json; Start-screen dropdown; 27
-  machine-translated interface files app/static/i18n/<code>.json (built by
-  scripts/build_i18n.py, unreviewed); safety lines show English under a
-  machine translation (tSafe), and 72 meaning-flipped strings are English
-  only (build_i18n.py DROP). Tests ALL PASS; landing-check code SAFE.
-- If the team picks React: every server change is additive, so the React
-  app keeps working; the vanilla-only UI work (Home, reminders, QR chip,
-  downscaling) would not be in the demo.
+  Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf; no redirect
+  from http (both work).
+- Deploys are run by Evan in PowerShell 5.1 (the auto-mode classifier refuses
+  Claude's live restarts, record AG): deploy.ps1 -Commit <c>; deploy.ps1
+  -Commit <c> -Rollback restores ~/backup-before-<c>.tar. Scripts in deploy/
+  (.sh kept LF by .gitattributes). Re-running the same -Commit overwrites its
+  backup (audit 3 finding 10, open).
+- Git: origin/f10 = 5a7fd84; local f10 is ahead (docs + audit 3 fixes, not
+  pushed); local main = 5af2f1f (not pushed; origin/main ff7a539).
+- Open: Evan's phone checks (photo upload, https padlock, QR scan on bill-02);
+  the rollback was not rehearsed live; spikes/synthetic-bill/
+  phone-photo-bill-02.png is not a faithful photo (table rows offset; audit 3
+  finding 34) - do not use it as phone-test evidence.
+- PRD F11 (personal app) is a DRAFT, roadmap only; 23:59 (record AP): F11.7
+  push reminders DROPPED; nickname and F11.8 kept; no F11 code.
+- Research: docs/research/ (stats, features, sustainability, Middle TN
+  policies) + docs/research/2026-10-18_cold-assessments.md. The policies brief
+  still has 3 factual errors the assessment found (not corrected).
+- Older status lines (19:43 to 00:37) are in the record, Appendices AH-AS.
 
 ## BLOCKED-ON-EVAN
-- Review docs/2026-10-17_pitch-corrections.md and give it to the presenters
-  (rev2's pitch still says QR, VUMC, PDF, Dad's bills, a database).
+- Give docs/2026-10-17_pitch-corrections.md (rewritten 2026-10-18 07:40 to
+  match the live app) to the presenters.
 - Interview / task-comparison results ([N], [x], [y] in the pitch); V1 is done
   (record AC: 13/13 raise assistance, 0/13 give the window or a letter).
 - Project LICENSE (legal call). TLS is DONE (record AH: IP certificate, expires 2026-10-24, no auto-renewal).
 - Budget alert: still UNCONFIRMED (the VM is E5.Flex, a paid shape).
-- Delete the downloaded Terraform state JSON from Downloads (it holds the SSH key).
+- Confirm the Terraform state JSON is deleted (not found in Downloads, depth 2,
+  at 00:30; audit 3 finding 36).
 - Ask organizers: submission form, repo, video.
 - Team roster and who owns which role.
 - Any email to VUMC or Dollar For (outward-facing; Evan sends).

@@ -1,6 +1,6 @@
 # Cold assessments (research-brief stage 10.5) of the four 2026-10-17/18 briefs
 
-> Run 2026-10-18 00:08-00:2x CDT by four fresh agents (one per brief), each given
+> Run 2026-10-18 00:08-00:12 CDT by four fresh agents (one per brief), each given
 > only its brief (and, for the policies and sustainability briefs, their raw
 > reports in docs/research/raw/). Read-only; each re-fetched a few load-bearing
 > sources itself. Findings below are the assessors' reports, condensed by the
@@ -172,5 +172,5 @@ only (L79); add AGI vs gross income to Findings item 1.
   opinion/weak.
 - sustainability: downgraded the 0.7% claim (average, not per hospital);
   flagged H2's kill test never sought.
-- policies: corrected 3 factual errors (same county, 4 -> 5, VUMC 120/240) and
-  1 scope error (HCA 4% emergency only).
+- policies: found 3 factual errors (same county, 4 -> 5, VUMC 120/240) and
+  1 scope error (HCA 4% emergency only); not yet corrected in the brief.

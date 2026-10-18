@@ -111,3 +111,9 @@
   c30be63 (19:41). Backups on the VM: ~/backup-before-cc3c333.tar (=
   c4a28f0 app), ~/backup-before-c30be63.tar (= cc3c333 app). main =
   c30be63. Live journeys pass on http and https; journal clean.
+- 2026-10-18 00:07 CDT - Evan deployed 5af2f1f with deploy.ps1 (32 languages +
+  audit-2 fixes). Backup ~/backup-before-5af2f1f.tar (= c30be63 app); rollback
+  target c30be63. Live checks 00:09 (record AR) pass on http and https. Local
+  main = 5af2f1f (not pushed). 07:4x: deploy-remote.sh / rollback-remote.sh now
+  fail unless the engine loads (m._rules()) and /stats answers after restart
+  (984a537, record AT; first used on the next deploy).

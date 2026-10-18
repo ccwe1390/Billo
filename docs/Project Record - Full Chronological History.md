@@ -79,6 +79,7 @@ the dated entry, not the digest.
 - [AQ - All research in, hospital census brief, final landing check](#appendix-aq---all-research-in-hospital-census-brief-final-landing-check-2026-10-18-0004-cdt) (10-18)
 - [AR - Deploy 5af2f1f verified live, f10 pushed, main moved, cold assessments of 4 briefs](#appendix-ar---deploy-5af2f1f-verified-live-f10-pushed-main-moved-cold-assessments-of-4-briefs-2026-10-18-0013-cdt) (10-18)
 - [AS - Audit 3 (whole project, 2 workers): 4 highs on the Result screen, deploy check, presenter sheet, HANDOFF](#appendix-as---audit-3-whole-project-2-workers-4-highs-on-the-result-screen-deploy-check-presenter-sheet-handoff-2026-10-18-0037-cdt) (10-18)
+- [AT - Audit 3 pre-1PM fixes: presenter sheet, HANDOFF, Result-screen deadline, safety lines, deploy health check](#appendix-at---audit-3-pre-1pm-fixes-presenter-sheet-handoff-result-screen-deadline-safety-lines-deploy-health-check-2026-10-18-0744-cdt) (10-18)
 
 ---
 
@@ -1644,3 +1645,17 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **Cost:** 2 workers, 160 tool calls, ~641K subagent tokens, ~23 min.
 
 **Open:** every fix awaits Evan's approval (fix order in the report, section 7).
+
+# Appendix AT - Audit 3 pre-1PM fixes: presenter sheet, HANDOFF, Result-screen deadline, safety lines, deploy health check (2026-10-18, ~07:44 CDT)
+**When:** 2026-10-18 07:38-07:44 CDT (the laptop slept from about 00:40 to 07:38). Evan: "Do the pre-1PM fix order: 3, 4, 14, 11, 12, 13 (docs), then 2, 1, 8 (code), then I deploy. Commit as you go, don't push."
+
+**Docs (Opus):** presenter sheet docs/2026-10-17_pitch-corrections.md rewritten to the live app (32 language options, Home with 5 synthetic bills, QR on bill-02, dashboard live; Q6 Tennessee-statute and Q7 pricing rows added; number-check wording; "10 of the 13" due-date line; tiers wording) - 2007b90 (fixes 3, 11, 12, 13). HANDOFF status block replaced by one current block (live 5af2f1f, rollback c30be63, A-AT; older status lines live in AH-AS) (fix 4). cold-assessments.md "corrected" -> "found", run time 00:08-00:12 (fix 14). Bins: testing.md, features.md, operations.md dated lines (fix 15).
+
+**Code (plan-split: one Sonnet agent, fully specified; Opus reviewed the diff on disk and re-ran every check):** 984a537.
+- Fix 1: app.js Result screen renders the deadline panel only when eligible; new test f5 (fails on the mutant that reverts it, agent's run).
+- Fix 8: rem_apply, home_bill_deadline, r_deadline_passed added to SAFETY_KEYS and rendered with tSafe; test e4 covers them. r_deadline (a heading) left out on purpose: the deadline sentence under it is already English.
+- Fix 2: deploy-remote.sh import check now calls m._rules() (a broken engine.py now exits 1; before, "import check: ok"); after restart both scripts wait up to 10 s for /stats, then exit 1 with "FAILED" unless the service is active and /stats answers. curl exists on the VM (/usr/bin/curl; /stats 200 checked 07:39).
+
+**Verification:** 6 test files ALL PASS (Opus re-run: 5 py + node, 27 node tests); bash -n OK; .sh still LF; node --check OK. Browser (fake OCI, localhost:8765): household 1 person, $250,000 -> Result 1566%, not eligible, no "Apply by", no Deadline panel; 0 console errors.
+
+**Not done:** deploy (Evan: deploy.ps1 -Commit 984a537, then Claude's live checks); audit 3 items 5-7, 9, 10, 16-37 and A1-A3 decisions; nothing pushed.

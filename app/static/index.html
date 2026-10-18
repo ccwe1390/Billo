@@ -3,27 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141b1e">
 <title>BillScan</title>
-<link rel="stylesheet" href="vendor/webawesome/styles/themes/default.css">
-<link rel="stylesheet" href="vendor/webawesome/styles/native.css">
 <link rel="stylesheet" href="fonts/fonts.css">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1 id="app-title"></h1>
-  <p class="synthetic">SYNTHETIC DEMO</p>
+<header class="bar">
+  <div class="bar-in">
+    <h1 id="app-title"></h1>
+    <div class="bar-end">
+      <button type="button" id="theme-btn" class="ghost sm"></button>
+      <span class="synthetic" lang="en" dir="ltr">SYNTHETIC DEMO</span>
+    </div>
+  </div>
 </header>
-<main>
-  <ol id="steps" class="steps"></ol>
+<nav id="stepper" class="stepper">
+  <ol id="steps"></ol>
   <p id="step-cap" class="step-cap" aria-hidden="true"></p>
-  <section id="s1" class="screen" hidden></section>
-  <section id="s2" class="screen" hidden></section>
-  <section id="s3" class="screen" hidden></section>
-  <section id="s4" class="screen" hidden></section>
-  <section id="s5" class="screen" hidden></section>
-  <section id="s6" class="screen" hidden></section>
-  <p id="msg" role="status" aria-live="polite" class="msg" hidden></p>
+</nav>
+<main id="main" class="w-narrow">
+  <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+  <div id="alert" class="status err" role="alert" hidden></div>
+  <div class="card-main">
+    <section id="s1" class="screen" hidden></section>
+    <section id="s2" class="screen" hidden></section>
+    <section id="s3" class="screen" hidden></section>
+    <section id="s4" class="screen" hidden></section>
+    <section id="s5" class="screen" hidden></section>
+    <section id="s6" class="screen" hidden></section>
+  </div>
 </main>
 <footer id="foot" class="foot"></footer>
 <script src="vendor/qrcode-generator/qrcode.js"></script>

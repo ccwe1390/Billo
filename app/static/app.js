@@ -113,6 +113,18 @@ const T = {
   chip_selected:{en: "{name} selected", es: "{name} seleccionado", ar: "تم اختيار {name}", "zh-CN": "已选择 {name}", "zh-TW": "已選擇 {name}"}, // TODO-REVIEW es+ar+zh
   qr_alt:      {en: "QR code that opens BillScan on a phone", es: "Código QR que abre BillScan en un teléfono", ar: "رمز QR يفتح BillScan على الهاتف", "zh-CN": "可在手机上打开 BillScan 的二维码", "zh-TW": "可在手機上開啟 BillScan 的 QR 碼"}, // TODO-REVIEW es+ar+zh
   qr_caption:  {en: "Scan to open on a phone", es: "Escanee para abrir en un teléfono", ar: "امسح الرمز للفتح على الهاتف", "zh-CN": "扫码即可在手机上打开", "zh-TW": "掃描即可在手機上開啟"}, // TODO-REVIEW es+ar+zh
+  theme_auto:  {en: "Theme: auto", es: "Tema: automático", ar: "السمة: تلقائي", "zh-CN": "主题：自动", "zh-TW": "主題：自動"}, // TODO-REVIEW es+ar+zh
+  theme_light: {en: "Theme: light", es: "Tema: claro", ar: "السمة: فاتح", "zh-CN": "主题：浅色", "zh-TW": "主題：淺色"}, // TODO-REVIEW es+ar+zh
+  theme_dark:  {en: "Theme: dark", es: "Tema: oscuro", ar: "السمة: داكن", "zh-CN": "主题：深色", "zh-TW": "主題：深色"}, // TODO-REVIEW es+ar+zh
+  q_minus:     {en: "One fewer person", es: "Una persona menos", ar: "شخص واحد أقل", "zh-CN": "减少一人", "zh-TW": "減少一人"}, // TODO-REVIEW es+ar+zh
+  q_plus:      {en: "One more person", es: "Una persona más", ar: "شخص واحد إضافي", "zh-CN": "增加一人", "zh-TW": "增加一人"}, // TODO-REVIEW es+ar+zh
+  more_langs:  {en: "More languages (interface in English)", es: "Más idiomas (la interfaz queda en inglés)", ar: "المزيد من اللغات (تبقى الواجهة بالإنجليزية)", "zh-CN": "更多语言（界面保持英文）", "zh-TW": "更多語言（介面維持英文）"}, // TODO-REVIEW es+ar+zh
+  why_bill:    {en: "Confirm {n} more field(s) to continue", es: "Confirme {n} campo(s) más para continuar", ar: "أكّد {n} حقل (حقول) إضافية للمتابعة", "zh-CN": "还需确认 {n} 个字段才能继续", "zh-TW": "還需確認 {n} 個欄位才能繼續"}, // TODO-REVIEW es+ar+zh
+  why_q:       {en: "Answer all three questions to continue", es: "Responda las tres preguntas para continuar", ar: "أجب عن الأسئلة الثلاثة للمتابعة", "zh-CN": "请回答全部三个问题后继续", "zh-TW": "請回答全部三個問題後繼續"}, // TODO-REVIEW es+ar+zh
+  restart_q:   {en: "Start over? Your answers on this page will be cleared.", es: "¿Empezar de nuevo? Se borrarán sus respuestas en esta página.", ar: "هل تريد البدء من جديد؟ سيتم مسح إجاباتك في هذه الصفحة.", "zh-CN": "重新开始？此页面上的回答将被清除。", "zh-TW": "重新開始？此頁面上的回答將被清除。"}, // TODO-REVIEW es+ar+zh
+  retry:       {en: "Try again", es: "Intentar de nuevo", ar: "حاول مرة أخرى", "zh-CN": "重试", "zh-TW": "重試"}, // TODO-REVIEW es+ar+zh
+  confirmed_word:{en: "Confirmed", es: "Confirmado", ar: "تم التأكيد", "zh-CN": "已确认", "zh-TW": "已確認"}, // TODO-REVIEW es+ar+zh
+  steps_label: {en: "Progress", es: "Progreso", ar: "التقدّم", "zh-CN": "进度", "zh-TW": "進度"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = {en: "English", es: "Español", ar: "العربية", "zh-CN": "简体中文", "zh-TW": "繁體中文",
                     vi: "Tiếng Việt", fr: "Français", ko: "한국어", ru: "Русский", de: "Deutsch", hi: "हिन्दी"};
@@ -127,7 +139,8 @@ const REQUIRED = new Set(["statement_date", "amount_due_cents"]); // the engine 
 
 const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, answers: null,
           result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0,
-          home: null, homeSeq: 0, fromQr: false};
+          home: null, homeSeq: 0, fromQr: false,
+          extracting: false, packetSeq: 0, theme: "auto"}; // theme is in page memory only and survives restart()
 let firstShow = true, curScreen = 0;
 
 // ---------- helpers
@@ -152,16 +165,71 @@ function fill(node, ...kids) { node.replaceChildren(...kids.filter(k => k != nul
 function englishOnly(tag, attrs, text) { // policy text is English: keep it left-to-right
   return el(tag, Object.assign({lang: "en", dir: "ltr"}, attrs || {}), text);
 }
+function spinner() { return el("span", {class: "spin", "aria-hidden": "true"}); }
+function applyTheme() { // auto follows the phone; light and dark force a theme. In memory only.
+  if (S.theme === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", S.theme);
+  const b = document.getElementById("theme-btn");
+  b.textContent = t("theme_" + S.theme);
+  b.setAttribute("aria-label", t("theme_" + S.theme));
+}
 function applyDir() {
   document.documentElement.lang = S.view;
   document.documentElement.dir = S.view === "ar" ? "rtl" : "ltr";
   document.getElementById("app-title").textContent = t("app_title");
+  document.getElementById("stepper").setAttribute("aria-label", t("steps_label"));
+  applyTheme();
 }
+// Errors go to #alert (role=alert); progress and info go to #status (polite). Each call clears the other.
 function showMsg(text, info) {
-  const m = document.getElementById("msg");
-  m.textContent = text || "";
-  m.hidden = !text;
-  m.className = "msg" + (info ? " info" : "");
+  const st = document.getElementById("status"), al = document.getElementById("alert");
+  fill(st); fill(al); // fill() is the only place replaceChildren() is called
+  st.hidden = true; al.hidden = true;
+  if (!text) return;
+  const box = info ? st : al;
+  box.textContent = text;
+  box.hidden = false;
+}
+function showBusy(text) { // a named loading step: spinner plus words in #status
+  showMsg("");
+  const st = document.getElementById("status");
+  fill(st, spinner(), text);
+  st.hidden = false;
+}
+// A heading block: h2 (focus target on screen change) plus an optional sub line.
+function screenTitle(text, sub) {
+  return el("div", {class: "stack-3"}, el("h2", {tabindex: "-1"}, text), sub ? el("p", {class: "sub"}, sub) : null);
+}
+function panel(cls, ...kids) { // cls: "" or "warn" | "ok" | "hero"
+  return el("section", {class: ("panel " + (cls || "")).trim()}, ...kids);
+}
+function optionButton(label, pressed, onclick, attrs) { // a toggle choice: dot + words, state also in aria-pressed
+  return el("button", Object.assign({type: "button", class: "opt", "aria-pressed": String(!!pressed), onclick}, attrs || {}),
+    el("span", {class: "dot", "aria-hidden": "true"}), el("span", null, label));
+}
+function actions(secondary, primary) { // secondary: array of nodes; primary may be null
+  return el("div", {class: "actions"}, el("div", {class: "act-sec"}, ...secondary), primary);
+}
+function setBusy(btn, on) { // spinner before the label, button disabled while its request runs
+  if (!btn) return;
+  btn.classList.toggle("busy", on);
+  btn.disabled = on;
+  if (on) btn.setAttribute("aria-busy", "true"); else btn.removeAttribute("aria-busy");
+  const sp = btn.querySelector(":scope > .spin");
+  if (on && !sp) btn.prepend(spinner());
+  else if (!on && sp) sp.remove();
+}
+function restartAsk() { // every Start over button: confirm first, then clear everything
+  if (!confirm(t("restart_q"))) return;
+  restart();
+}
+function ghostRestart() { return el("button", {type: "button", class: "ghost", onclick: restartAsk}, t("restart")); }
+// Re-render and put focus back on the control that had it (matched by id), so a re-render does not drop the keyboard user.
+function keepFocus(render) {
+  const a = document.activeElement, id = a && a.id;
+  render();
+  const e = id ? document.getElementById(id) : null;
+  if (e && !e.disabled) e.focus({preventScroll: true});
 }
 function show(n) {
   if (n !== 4) { // leaving the questions cancels an in-flight submit
@@ -170,10 +238,14 @@ function show(n) {
     S.busy = false;
   }
   const changed = n !== curScreen;
+  const keepId = !changed && document.activeElement ? document.activeElement.id : ""; // same-screen re-render keeps focus
   curScreen = n;
+  if (changed) showMsg(""); // a message belongs to the screen that raised it; the new screen shows what it needs
+  document.getElementById("main").className = (n === 1 || n === 3) ? "w-narrow" : "w-wide";
   for (let i = 1; i <= 6; i++) document.getElementById("s" + i).hidden = i !== n;
   applyDir();
   const chrome = n !== 6; // the Home screen is not one of the five steps
+  document.getElementById("stepper").hidden = !chrome;
   document.getElementById("steps").hidden = !chrome;
   document.getElementById("step-cap").hidden = !chrome;
   if (chrome) renderSteps(n);
@@ -182,6 +254,9 @@ function show(n) {
   if (!firstShow && changed) { // move focus to the new screen's heading so keyboard and screen-reader users land on it
     const h = document.querySelector("#s" + n + " h2");
     if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
+  } else if (keepId) {
+    const e = document.getElementById(keepId);
+    if (e && !e.disabled) e.focus({preventScroll: true});
   }
   firstShow = false;
 }
@@ -254,21 +329,21 @@ function isolate(text) {
   return out;
 }
 // Numbered footnotes for one screen: mark(c) returns the [n] marker, list() returns the ONE ordered list. Same citation = same number.
-function makeNotes() {
-  const items = [], index = new Map();
+function makeNotes(prefix) { // prefix keeps the anchor ids unique: the Result and Home screens both stay in the DOM
+  const items = [], index = new Map(), pre = prefix || "fn";
   return {
     mark(c) {
       if (!c || !c.source) return null;
       const key = [c.source, c.page, c.effective_date].join("|");
       if (!index.has(key)) { items.push(c); index.set(key, items.length); }
       const n = index.get(key);
-      return el("sup", {class: "fn-mark"}, el("bdi", {dir: "ltr"}, "[" + n + "]"));
+      return el("sup", {class: "fn-mark"}, el("a", {href: "#" + pre + "-" + n}, el("bdi", {dir: "ltr"}, "[" + n + "]")));
     },
     list() {
       if (!items.length) return null;
       return el("ol", {class: "notes", role: "list", "aria-label": t("src")}, ...items.map((c, i) => {
         const row = [el("span", {class: "fn-num", dir: "ltr"}, "[" + (i + 1) + "]"), el("span", {class: "fn-text"}, ...citeParts(c))];
-        return el("li", {id: "fn-" + (i + 1)}, c.url
+        return el("li", {id: pre + "-" + (i + 1)}, c.url
           ? el("a", {class: "note", href: c.url, target: "_blank", rel: "noopener"}, ...row)
           : el("span", {class: "note"}, ...row));
       }));
@@ -279,6 +354,8 @@ function renderSteps(n) { // segmented step bar; the current step carries aria-c
   fill(document.getElementById("steps"), ...[1, 2, 3, 4, 5].map(i => {
     const cur = i === n;
     return el("li", {class: cur ? "now" : i < n ? "done" : "", "aria-current": cur ? "step" : false},
+      el("span", {class: "bar"}),
+      el("span", {class: "lbl", "aria-hidden": "true"}, i + ". " + t("step_" + i)),
       el("span", {class: "sr-only"}, t("step_of", {n: i, total: 5}) + ": " + t("step_" + i)));
   }));
   document.getElementById("step-cap").textContent = t("step_of", {n, total: 5}) + ": " + t("step_" + n);
@@ -291,7 +368,7 @@ function blankBill() {
 
 // ---------- screen 1: start
 function langBtn(l) {
-  return el("button", {"aria-pressed": String(S.lang === l), lang: l, onclick: () => { S.lang = l; S.view = viewFor(l); show(1); }}, LANG_NAMES[l]);
+  return optionButton(LANG_NAMES[l], S.lang === l, () => { S.lang = l; S.view = viewFor(l); show(1); }, {id: "lang-" + l, lang: l});
 }
 // Desktop only: a QR code that opens this page on a phone with the hospital preselected. Any failure draws nothing.
 function qrFigure() {
@@ -309,38 +386,55 @@ function qrFigure() {
 }
 function renderStart() {
   const root = document.getElementById("s1");
-  fill(root,
-    el("p", {class: "notice"}, t("notice")),
+  const title = screenTitle(t("pick_lang"), t("no_id"));
+  title.querySelector("h2").id = "pick-lang-label";
+  const qr = qrFigure();
+  fill(root, el("div", {class: "stack-8"},
+    title,
     S.fromQr ? el("p", {class: "chip"}, ...tNodes("chip_selected", {name: "Cumberland General Hospital (SYNTHETIC)"})) : null,
-    el("p", {class: "muted"}, t("no_id")),
-    el("h2", {class: "with-icon", id: "pick-lang-label"}, icon("globe"), t("pick_lang")),
-    el("div", {class: "row", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER1.map(langBtn)),
-    el("p", {class: "muted", lang: "en", dir: "ltr"}, "More languages (interface in English)"),
-    el("div", {class: "row", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER2.map(langBtn)),
-    el("h2", {id: "for-whom-label"}, t("for_whom")),
-    el("div", {class: "row", role: "group", "aria-labelledby": "for-whom-label"}, ...[["self", "me"], ["family", "family"]].map(([v, k]) =>
-      el("button", {"aria-pressed": String(S.forWhom === v), onclick: () => { S.forWhom = v; show(1); }}, t(k)))),
-    el("div", {class: "row"}, el("button", {class: "primary", onclick: () => { showMsg(""); show(2); }}, t("start"))),
-    qrFigure(),
-  );
+    el("p", {class: "notice"}, t("notice")),
+    el("div", {class: "stack-3"},
+      el("div", {class: "grid-3", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER1.map(langBtn)),
+      el("p", {class: "muted"}, t("more_langs")),
+      el("div", {class: "grid-3", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER2.map(langBtn))),
+    el("div", {class: "stack-3"},
+      el("h3", {id: "for-whom-label"}, t("for_whom")),
+      el("div", {class: "grid-2", role: "group", "aria-labelledby": "for-whom-label"}, ...[["self", "me", "who-me"], ["family", "family", "who-family"]].map(([v, k, id]) =>
+        optionButton(t(k), S.forWhom === v, () => { S.forWhom = v; show(1); }, {id})))),
+    actions([], el("button", {type: "button", class: "primary", id: "start-btn", onclick: () => { showMsg(""); show(2); }}, t("start"))),
+    qr ? panel("", qr) : null,
+  ));
 }
 
 // ---------- screen 2: bill
 function renderBill() {
   const root = document.getElementById("s2");
-  const file = el("input", {type: "file", accept: "image/png,image/jpeg", id: "bill-file"});
+  const file = el("input", {type: "file", accept: "image/png,image/jpeg", id: "bill-file", class: "sr-only", disabled: S.extracting});
   file.addEventListener("change", onFile);
-  const left = el("div", null, el("label", {for: "bill-file", class: "with-icon"}, icon("camera"), t("upload")), file);
-  if (S.imageUrl) left.append(el("img", {src: S.imageUrl, alt: ""}));
-  const right = el("div", {id: "fields"});
-  fill(root,
-    el("h2", null, t("bill_title")),
-    el("p", {class: "muted"}, t("bill_hint")),
+  const drop = el("label", {class: "drop", "aria-disabled": S.extracting ? "true" : false},
+    icon("camera"), el("span", null, t("upload")), el("small", {lang: "en", dir: "ltr"}, "PNG / JPEG"), file);
+  const left = el("div", {class: "stack-3"}, drop, S.imageUrl ? el("img", {class: "preview", src: S.imageUrl, alt: ""}) : null);
+  const right = el("div", {id: "fields", class: "stack-3"});
+  fill(root, el("div", {class: "stack-8"},
+    screenTitle(t("bill_title"), t("bill_hint")),
     el("div", {class: "bill-grid"}, left, right),
-    el("div", {class: "row"},
-      el("button", {onclick: () => show(1)}, t("back")),
-      el("button", {class: "primary", id: "bill-next", disabled: true, onclick: () => show(3)}, t("continue_"))));
+    el("div", {class: "stack-3"},
+      actions([el("button", {type: "button", onclick: () => show(1)}, t("back"))],
+        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, onclick: () => show(3)}, t("continue_"))),
+      el("p", {class: "why", id: "bill-why", hidden: true}))));
+  if (S.extracting) showBusy(t("reading")); // a re-render while the photo is still being read keeps the spinner
   if (S.bill) renderFields();
+  updateBillNext();
+}
+// Continue is enabled only when a bill exists and every field is confirmed; p.why says what is missing.
+function updateBillNext() {
+  const next = document.getElementById("bill-next"), why = document.getElementById("bill-why");
+  if (!next || !why) return;
+  const left = S.bill ? FIELD_ORDER.filter(([n]) => !S.bill.fields[n].confirmed).length : FIELD_ORDER.length;
+  next.disabled = S.extracting || !S.bill || left > 0;
+  why.hidden = !next.disabled || S.extracting;
+  if (why.hidden) fill(why);
+  else fill(why, ...(S.bill ? tNodes("why_bill", {n: left}) : [t("upload")]));
 }
 // Downscale big photos in the browser (long side 2000 px, JPEG 0.85) so phone photos fit the upload cap.
 // Any failure returns the original file; the server then accepts or refuses it as before.
@@ -370,8 +464,8 @@ async function onFile(ev) {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
   S.imageUrl = URL.createObjectURL(f);
   S.bill = null; S.home = null; // a new photo makes the all-bills totals stale
-  renderBill();
-  showMsg(t("reading"), true);
+  S.extracting = true; // the file input and Continue stay disabled until the latest read finishes
+  renderBill(); // shows the "Reading the bill..." status while S.extracting
   const upload = await shrinkImage(f);
   if (seq !== S.extractSeq) return;
   const fd = new FormData();
@@ -395,6 +489,7 @@ async function onFile(ev) {
     S.bill = blankBill();
     showMsg(failMsg);
   }
+  S.extracting = false;
   renderBill();
 }
 function readInput(name, node) {
@@ -420,17 +515,22 @@ function renderFields() {
       input = el("input", {type: "text", id, dir: "auto", value: f.value || "", autocomplete: "off"});
     }
     const cb = el("input", {type: "checkbox", id: id + "-ok"});
-    const hint = el("span", {class: "hint"});
-    const wrap = el("div", {class: "field"},
+    const hint = el("p", {class: "hint", id: id + "-hint"});
+    const ok = el("span", {class: "state-ok", "aria-hidden": "true"});
+    input.setAttribute("aria-describedby", id + "-hint");
+    const wrap = el("div", {class: "field panel"},
       el("label", {for: id}, t(labelKey) + (REQUIRED.has(name) ? " *" : "")), input, hint,
-      el("label", {class: "check", for: id + "-ok"}, cb, t("confirm")));
+      el("label", {class: "check", for: id + "-ok"}, cb, el("span", null, t("confirm"))), ok);
     const sync = () => {
       const blank = f.value === null || f.value === "";
       hint.textContent = blank ? t("unreadable") + (REQUIRED.has(name) ? " (" + t("required") + ")" : "") : "";
+      hint.hidden = !hint.textContent;
+      ok.textContent = f.confirmed ? t("confirmed_word") : "";
+      ok.hidden = !f.confirmed;
       cb.disabled = blank && REQUIRED.has(name);
       cb.checked = f.confirmed;
-      wrap.className = "field" + (f.confirmed ? " confirmed" : blank ? " blank" : "");
-      document.getElementById("bill-next").disabled = !FIELD_ORDER.every(([n]) => S.bill.fields[n].confirmed);
+      wrap.className = "field panel" + (f.confirmed ? " confirmed" : blank ? " blank" : "");
+      updateBillNext();
     };
     const onEdit = () => { f.value = readInput(name, input); f.confirmed = false; f.confidence = null; sync(); };
     input.addEventListener(name === "insurance_status" ? "change" : "input", onEdit);
@@ -446,37 +546,57 @@ function renderFields() {
 function renderQuestions() {
   const root = document.getElementById("s3");
   const size = el("input", {type: "number", id: "q-size", min: "1", max: "12", step: "1", value: S.size});
+  const minus = el("button", {type: "button", class: "sq", id: "q-minus", "aria-label": t("q_minus")}, "\u2212");
+  const plus = el("button", {type: "button", class: "sq", id: "q-plus", "aria-label": t("q_plus")}, "+");
   const income = el("input", {type: "text", id: "q-income", inputmode: "decimal", value: S.income, autocomplete: "off", "aria-describedby": "q-income-hint"});
   const incomeHint = el("p", {class: "hint", id: "q-income-hint"});
-  const go = el("button", {class: "primary", id: "q-go", onclick: submitAnswers}, t("see_result"));
+  const go = el("button", {type: "button", class: "primary", id: "q-go", onclick: submitAnswers}, t("see_result"));
+  const why = el("p", {class: "why", id: "q-why"}, t("why_q"));
+  const sizeNow = () => { // the household size as typed: an integer, or 0 when empty or not a number
+    const n = Number(size.value);
+    return size.value.trim() !== "" && Number.isFinite(n) ? Math.trunc(n) : 0;
+  };
   const check = () => {
     S.size = size.value; S.income = income.value;
     incomeHint.textContent = (S.income.trim() !== "" && dollarsToCents(S.income) === null) ? t("income_hint") : "";
+    incomeHint.hidden = !incomeHint.textContent;
     const n = Number(S.size);
+    const wasMinus = document.activeElement === minus, wasPlus = document.activeElement === plus;
+    minus.disabled = !(sizeNow() > 1);
+    plus.disabled = sizeNow() >= 12;
+    if (wasMinus && minus.disabled && !plus.disabled) plus.focus({preventScroll: true}); // keep the keyboard user on a live button
+    if (wasPlus && plus.disabled && !minus.disabled) minus.focus({preventScroll: true});
     go.disabled = S.busy || !(Number.isInteger(n) && n >= 1 && n <= 12) || dollarsToCents(S.income) === null || S.tax === null;
+    why.hidden = !go.disabled || S.busy;
   };
+  const step = d => { size.value = String(Math.min(12, Math.max(1, sizeNow() + d))); check(); };
+  minus.addEventListener("click", () => step(-1));
+  plus.addEventListener("click", () => step(1));
   size.addEventListener("input", check);
   income.addEventListener("input", check);
-  const taxBtn = (val, key) => el("button", {"aria-pressed": String(S.tax === val), onclick: () => { S.tax = val; renderQuestions(); }}, t(key));
-  fill(root,
-    el("h2", null, t("q_title")),
-    el("p", {class: "muted"}, t("no_id")),
-    el("label", {for: "q-size"}, t("q_size")), size,
-    el("p", null), el("label", {for: "q-income"}, t("q_income")), income, incomeHint,
-    el("p", null), el("p", {id: "q-tax-label"}, t("q_tax")), el("div", {class: "row", role: "group", "aria-labelledby": "q-tax-label"}, taxBtn(true, "yes"), taxBtn(false, "no")),
-    el("div", {class: "row"}, el("button", {onclick: () => show(2)}, t("back")), go));
+  const taxBtn = (val, key, id) => optionButton(t(key), S.tax === val, () => { S.tax = val; keepFocus(renderQuestions); }, {id});
+  fill(root, el("div", {class: "stack-8"},
+    screenTitle(t("q_title"), t("no_id")),
+    el("div", {class: "stack-3"}, el("label", {for: "q-size"}, t("q_size")), el("div", {class: "num-step", dir: "ltr"}, minus, size, plus)),
+    el("div", {class: "stack-3"}, el("label", {for: "q-income"}, t("q_income")),
+      el("div", {class: "money-in", dir: "ltr"}, el("span", {"aria-hidden": "true"}, "$"), income), incomeHint),
+    el("div", {class: "stack-3"}, el("h3", {id: "q-tax-label"}, t("q_tax")),
+      el("div", {class: "grid-2", role: "group", "aria-labelledby": "q-tax-label"}, taxBtn(true, "yes", "tax-yes"), taxBtn(false, "no", "tax-no"))),
+    el("div", {class: "stack-3"}, actions([el("button", {type: "button", onclick: () => show(2)}, t("back"))], go), why)));
   check();
+  if (S.busy) setBusy(go, true);
 }
 async function submitAnswers() {
   const seq = (S.submitSeq = (S.submitSeq || 0) + 1); // Back or restart bumps S.submitSeq and cancels this submit
   S.answers = {contract_version: 1, language: S.lang, for_whom: S.forWhom, household_size: Number(S.size),
                annual_income_cents: dollarsToCents(S.income), files_tax_return: S.tax};
-  S.busy = true; showMsg(t("load_evaluate"), true);
-  document.getElementById("q-go").disabled = true;
+  S.busy = true; showBusy(t("load_evaluate"));
+  setBusy(document.getElementById("q-go"), true);
+  document.getElementById("q-why").hidden = true;
   try {
     S.result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     if (seq !== S.submitSeq) return;
-    showMsg(t("load_explain"), true);
+    showBusy(t("load_explain"));
     S.explain = await post("/explain", {bill: S.bill, answers: S.answers, result: S.result});
   } catch (e) {
     if (seq !== S.submitSeq) return;
@@ -520,51 +640,60 @@ function renderResult() {
   const eligible = r.tier.eligible;
   // Footnote markers are numbered in the order they are created, so build the page top to bottom.
   const notes = makeNotes();
-  const lead = el("p", {class: "lead"}, ...tNodes("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year}), notes.mark(r.fpl.citation));
+  const hero = panel("hero",
+    el("div", {class: "hero-row"},
+      typeof r.percent_of_fpl === "number" ? el("span", {class: "pct", dir: "ltr"}, r.percent_of_fpl + "%") : null,
+      el("p", {class: "lead"}, ...tNodes("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year}), notes.mark(r.fpl.citation))),
+    el("p", {class: "decides"}, t("r_decides")));
+  const policyUsed = typeof r.policy_hospital_name === "string" ? el("p", {class: "muted"}, ...tNodes("r_policy_used", {name: r.policy_hospital_name})) : null;
+  const mismatch = r.hospital_matches_policy === false
+    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, t("r_mismatch")))
+    : null;
+  if (mismatch) mismatch.setAttribute("role", "note");
   const tierBlock = Array.isArray(r.tiers) && r.tiers.length
-    ? [el("p", {class: "excerpt-head"}, t("r_tier")), tierTable(r)]
-    : [el("div", {class: "card"}, el("strong", null, t("r_tier")), englishOnly("p", {class: "stat"}, r.tier.label_en))];
+    ? [el("p", {class: "excerpt-head"}, t("r_tier")), el("div", {class: "tbl"}, tierTable(r))]
+    : [panel("", el("h3", null, t("r_tier")), englishOnly("p", {class: "stat"}, r.tier.label_en))];
   const tierNote = el("p", {class: "muted tbl-note"}, t("r_policy_en"), notes.mark(r.tier.citation));
   const now = new Date();
   const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-  const deadline = el("div", {class: "deadline"}, el("strong", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
+  const deadline = panel("warn", el("h3", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
     el("p", {lang: "en", dir: "ltr"}, deadlineLine(r.deadline), notes.mark(r.deadline.citation)),
     r.deadline.date < today ? el("p", {class: "warn-text"}, t("r_deadline_passed")) : null);
-  const docs = el("ul", {class: "plain"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, notes.mark(d.citation)))));
+  const explain = panel("explain", el("h3", null, t("r_about")),
+    ...enLines.map(l => el("p", {dir: "ltr", lang: "en"}, l)),
+    ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, ...isolate(l))));
+  const docs = el("ol", {class: "docs"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, notes.mark(d.citation)))));
+  const docsPanel = eligible ? panel("", el("h3", {class: "with-icon"}, icon("file"), t("r_docs")), docs) : null;
   const c = r.contacts;
-  const contactCard = eligible
-    ? el("div", {class: "card"}, el("strong", null, t("r_contact")), el("p", null, t("r_email") + ": ", englishOnly("span", null, c.email)),
-        el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.phone)), notes.mark(c.citation))
-    : el("div", {class: "card"}, el("strong", null, t("r_payplan")),
-        el("p", null, t("r_phone") + ": ", englishOnly("span", null, c.payment_plan_phone || c.phone)), notes.mark(c.citation));
+  const phoneLink = p => el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "tel:" + String(p).replace(/[^\d+]/g, "")}, p));
+  const contactPanel = eligible
+    ? panel("", el("h3", null, t("r_contact"), notes.mark(c.citation)),
+        el("dl", {class: "kv"},
+          el("dt", null, t("r_email")), el("dd", null, el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "mailto:" + c.email}, c.email))),
+          el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.phone))))
+    : panel("", el("h3", null, t("r_payplan"), notes.mark(c.citation)),
+        el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
   const toggle = S.lang === "en" || tier2 ? null
-    : el("button", {onclick: () => { S.view = english ? S.lang : "en"; show(4); }}, english ? t("r_see_native") : t("r_see_en"));
-  fill(root,
-    el("h2", null, t("r_title")),
-    toggle ? el("div", {class: "row"}, toggle) : null,
-    lead,
-    typeof r.policy_hospital_name === "string" ? el("p", {class: "muted"}, ...tNodes("r_policy_used", {name: r.policy_hospital_name})) : null,
-    r.hospital_matches_policy === false
-      ? el("div", {class: "card warn", role: "note"}, el("strong", null, t("r_mismatch_title")), el("p", null, t("r_mismatch")))
-      : null,
-    el("p", {class: "decides"}, t("r_decides")),
-    ...tierBlock,
-    tierNote,
+    : el("button", {type: "button", id: "r-toggle", onclick: () => { S.view = english ? S.lang : "en"; show(4); }}, english ? t("r_see_native") : t("r_see_en"));
+  fill(root, el("div", {class: "stack-8"},
+    screenTitle(t("r_title")),
+    toggle,
+    hero,
+    policyUsed,
+    mismatch,
+    el("div", {class: "stack-3"}, ...tierBlock, tierNote),
     deadline,
-    el("div", {class: "card explain"}, el("strong", null, t("r_about")),
-      ...enLines.map(l => el("p", {dir: "ltr", lang: "en"}, l)),
-      ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, ...isolate(l)))),
+    explain,
     showNative ? el("p", {class: "muted"}, t("ai_note")) : null,
     fb && (tier2 || !english) ? el("p", {class: "muted"}, t("r_fallback")) : null,
-    eligible ? el("div", {class: "card"}, el("strong", {class: "with-icon"}, icon("file"), t("r_docs")), docs) : null,
-    contactCard,
+    el("div", {class: "grid-md-2"}, docsPanel, contactPanel),
     eligible ? null : el("p", null, t("r_no_packet")),
     notes.list(),
-    el("div", {class: "row"},
-      el("button", {onclick: () => show(3)}, t("back")),
-      eligible ? el("button", {class: "primary", onclick: () => { show(5); loadPacket(); }}, t("r_packet")) : null,
-      el("button", {onclick: () => show(6)}, t("home_open")),
-      el("button", {onclick: restart}, t("restart"))));
+    actions([
+      el("button", {type: "button", onclick: () => show(3)}, t("back")),
+      el("button", {type: "button", onclick: () => show(6)}, t("home_open")),
+      ghostRestart()],
+      eligible ? el("button", {type: "button", class: "primary", onclick: () => { show(5); loadPacket(); }}, t("r_packet")) : null)));
 }
 
 // ---------- screen 6: home (all bills from this visit)
@@ -604,83 +733,111 @@ function downloadIcs(h) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000); // a moment later, so the download has started
 }
-function homeNav() {
-  return el("div", {class: "row"},
-    el("button", {onclick: () => { showMsg(""); show(4); }}, t("back")),
-    el("button", {onclick: restart}, t("restart")));
+function homeActions(primary) { // Back to the result, Start over; primary is the Retry button on a load error, else none
+  return actions([
+    el("button", {type: "button", onclick: () => { showMsg(""); show(4); }}, t("back")),
+    ghostRestart()], primary || null);
 }
 function renderHome() {
   const root = document.getElementById("s6");
   const h = S.home;
   if (!h) {
-    fill(root, el("h2", null, t("home_title")), homeNav());
-    showMsg(t("load_home"), true);
+    fill(root, el("div", {class: "stack-8"}, screenTitle(t("home_title")), homeActions()));
+    showBusy(t("load_home"));
     const seq = (S.homeSeq = (S.homeSeq || 0) + 1);
     post("/household", {answers: S.answers, bill: S.bill}).then(result => {
       if (seq !== S.homeSeq || curScreen !== 6) return;
       S.home = result; showMsg(""); renderHome();
     }, e => {
       if (seq !== S.homeSeq || curScreen !== 6) return;
-      showMsg(e.message); fill(root, el("h2", null, t("home_title")), homeNav());
+      showMsg(e.message);
+      fill(root, el("div", {class: "stack-8"}, screenTitle(t("home_title")),
+        homeActions(el("button", {type: "button", class: "primary", id: "home-retry", onclick: renderHome}, t("retry")))));
     });
     return;
   }
-  const notes = makeNotes();
+  const notes = makeNotes("home-fn"); // own anchor ids: the Result screen's notes stay in the DOM too
   const headline = h.eligible
-    ? el("div", {class: "card"},
+    ? panel("hero",
+        el("p", {class: "big-money", dir: "ltr"}, money(h.estimate_cents)),
         el("p", {class: "lead"}, ...tNodes("home_estimate", {amt: money(h.estimate_cents)})),
         el("p", {class: "muted"}, t("home_estimate_note")))
-    : el("div", {class: "card"}, el("p", {class: "lead"}, t("home_not_eligible")));
+    : panel("hero", el("p", {class: "lead"}, t("home_not_eligible")));
   const covers = h.one_application_covers_all
-    ? [el("p", null, ...tNodes("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
-       englishOnly("p", {class: "muted"}, h.coverage.text_en)]
-    : [];
-  const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => el("li", {class: "card"},
-    el("p", null, englishOnly("strong", null, b.label_en), b.source === "yours" ? " " + t("home_yours") : null),
-    el("p", null, ...tNodes("home_bill_line", {amount: money(b.amount_due_cents), date: b.statement_date})),
-    el("p", null, ...tNodes("home_bill_deadline", {date: b.deadline.date})),
-    h.eligible ? el("p", null, ...tNodes("home_bill_reduction", {amount: money(b.reduction_cents)})) : null)));
-  const reminders = el("div", {class: "card"},
-    el("strong", null, t("rem_title")),
+    ? panel("ok",
+        el("p", null, ...tNodes("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
+        englishOnly("p", {class: "muted"}, h.coverage.text_en))
+    : null;
+  const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => el("li", {class: "panel"},
+    el("div", {class: "bill-top"},
+      el("div", null,
+        el("p", null, englishOnly("strong", null, b.label_en), b.source === "yours" ? " " + t("home_yours") : null),
+        el("p", {class: "muted"}, t("f_statement") + ": ", bdiEn(b.statement_date))),
+      el("span", {class: "bill-amt", dir: "ltr"}, money(b.amount_due_cents))),
+    el("p", {class: "bill-meta"}, ...tNodes("home_bill_deadline", {date: b.deadline.date}),
+      h.eligible ? " " : null, ...(h.eligible ? tNodes("home_bill_reduction", {amount: money(b.reduction_cents)}) : [])))));
+  const reminders = panel("",
+    el("h3", null, t("rem_title")),
     el("p", null, ...tNodes("rem_apply", {date: h.earliest_deadline.date})),
     el("p", null, ...tNodes("rem_follow", {phone: h.contacts.phone})),
     el("p", null, t("rem_reuse")),
-    el("div", {class: "row"}, el("button", {onclick: () => downloadIcs(h)}, t("rem_ics"))));
-  fill(root,
-    el("h2", null, t("home_title")),
+    el("div", null, el("button", {type: "button", onclick: () => downloadIcs(h)}, t("rem_ics"))));
+  fill(root, el("div", {class: "stack-8"},
+    screenTitle(t("home_title")),
     headline,
-    ...covers,
+    covers,
     bills,
     reminders,
     notes.list(),
-    homeNav());
+    homeActions()));
 }
 
 // ---------- screen 5: packet
+function packetSkeleton() { return el("div", {class: "skeleton", "aria-hidden": "true"}); }
 function renderPacketShell() {
-  fill(document.getElementById("s5"), 
-    el("h2", null, t("p_title")), el("p", {class: "muted"}, t("p_sub")),
-    el("div", {class: "row"},
-      el("button", {onclick: () => show(4)}, t("back")),
-      el("button", {class: "primary", id: "print-btn", disabled: true, onclick: () => document.getElementById("packet-frame").contentWindow.print()}, icon("printer"), t("p_print")),
-      el("button", {onclick: restart}, t("restart"))),
-    el("iframe", {id: "packet-frame", title: t("p_title"), sandbox: "allow-modals allow-same-origin"}));
+  fill(document.getElementById("s5"), el("div", {class: "stack-8"},
+    screenTitle(t("p_title"), t("p_sub")),
+    el("div", {class: "paper", id: "packet-paper"}, packetSkeleton()),
+    actions([
+      el("button", {type: "button", onclick: () => show(4)}, t("back")),
+      ghostRestart()],
+      el("button", {type: "button", class: "primary", id: "print-btn", disabled: true, onclick: () => document.getElementById("packet-frame").contentWindow.print()}, icon("printer"), t("p_print")))));
 }
 async function loadPacket() {
-  showMsg(t("load_packet"), true);
+  const seq = (S.packetSeq = (S.packetSeq || 0) + 1); // leaving this screen or starting a new packet makes this reply stale
+  const paper = document.getElementById("packet-paper"), print = document.getElementById("print-btn");
+  showBusy(t("load_packet"));
+  setBusy(print, true);
   try {
     const page = await post("/packet", {bill: S.bill, answers: S.answers, result: S.result}, true);
-    document.getElementById("packet-frame").srcdoc = page;
-    document.getElementById("print-btn").disabled = false;
+    if (seq !== S.packetSeq || curScreen !== 5) return;
+    const frame = el("iframe", {id: "packet-frame", title: t("p_title"), sandbox: "allow-modals allow-same-origin"});
+    fill(paper, frame);
+    frame.srcdoc = page;
+    setBusy(print, false);
     showMsg("");
-  } catch (e) { showMsg(e.message); }
+  } catch (e) {
+    if (seq !== S.packetSeq || curScreen !== 5) return;
+    setBusy(print, false);
+    print.disabled = true;
+    showMsg(e.message);
+    fill(paper, el("div", {class: "stack-3"},
+      el("button", {type: "button", class: "primary", id: "packet-retry", onclick: () => { show(5); loadPacket(); }}, t("retry"))));
+  }
 }
 
 function restart() {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
-  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0, home: null, homeSeq: 0});
+  // theme is deliberately not reset; every request counter is bumped (never reset to 0) so any
+  // in-flight reply is dropped and cannot match the next request's number
+  Object.assign(S, {bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false,
+                    extractSeq: S.extractSeq + 1, submitSeq: S.submitSeq + 1, home: null, homeSeq: S.homeSeq + 1, extracting: false, packetSeq: S.packetSeq + 1});
   showMsg(""); show(1);
 }
 
 S.fromQr = new URLSearchParams(location.search).get("hospital") === "cumberland_synthetic";
+document.getElementById("theme-btn").addEventListener("click", () => {
+  S.theme = {auto: "light", light: "dark", dark: "auto"}[S.theme];
+  applyTheme();
+});
 show(1);

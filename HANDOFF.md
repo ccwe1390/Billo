@@ -23,7 +23,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
 **Last updated: 2026-10-17 23:47 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AM).
+snapshot; history lives in the record (Phase 0, Appendices A-AN).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack

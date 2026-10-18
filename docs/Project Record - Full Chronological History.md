@@ -73,6 +73,7 @@ the dated entry, not the digest.
 - [AK - Docs sync after audit 2: stale live-doc statements corrected](#appendix-ak---docs-sync-after-audit-2-stale-live-doc-statements-corrected-2026-10-17-2051-cdt) (10-17)
 - [AL - Audit 2 fixes on f10: cost caps, ineligible flow, races, translation back-check, browser tests](#appendix-al---audit-2-fixes-on-f10-cost-caps-ineligible-flow-races-translation-back-check-browser-tests-2026-10-17-2331-cdt) (10-17)
 - [AM - Market research launched: stats, features, sustainability (partial saved), Middle TN hospital policies](#appendix-am---market-research-launched-stats-features-sustainability-partial-saved-middle-tn-hospital-policies-2026-10-17-2337-cdt) (10-17)
+- [AN - Handoff prompt to chat, deploy scripts into repo, landing-check fixes, research saved](#appendix-an---handoff-prompt-to-chat-deploy-scripts-into-repo-landing-check-fixes-research-saved-2026-10-17-2350-cdt) (10-17)
 
 ---
 
@@ -1507,3 +1508,51 @@ if the research agents had not finished; this entry records what exists.
 running. Their results exist only inside this Claude session until saved to
 docs/research/; if the next session finds no such files, the research was
 not saved and must be re-run (the prompts are summarized above).
+
+# Appendix AN - Handoff prompt to chat, deploy scripts into repo, landing-check fixes, research saved (2026-10-17 23:50 CDT)
+**When:** 2026-10-17 ~23:43-23:51 CDT. **Branch:** f10 (not pushed yet; live still c30be63).
+
+**What changed**
+- HANDOFF: the fenced handoff prompt was removed at Evan's request ("delete the
+  prompt from the handoff doc just paste in chat"); it was pasted in chat instead
+  (8dae525). This departs from the docs-sync convention of keeping the prompt at
+  the end of HANDOFF; Evan's live instruction wins.
+- Deploy scripts moved from the session scratchpad into the repo at deploy/
+  (deploy.ps1, deploy-remote.sh, rollback-remote.sh, https.ps1,
+  https-remote.sh), at Evan's request (6da2a60). New .gitattributes pins
+  deploy/*.sh to LF, because core.autocrlf=true would otherwise check them out
+  with CRLF and bash on the VM would fail. `git ls-files --eol deploy` shows
+  i/lf w/lf for all five. Contents checked first: no secrets (the key path is
+  $HOME\.ssh\HackTN26.pem, the VM address is already in the docs); the repo is
+  PRIVATE (gh repo view).
+- Landing check over 5af2f1f..8dae525: SAFE TO PUSH. Three of its four doc
+  findings fixed in feccaf5:
+  1. timestamps written ahead of the clock (brief "saved 23:45" committed
+     23:36; "added 23:40" committed 23:38; HANDOFF "Last updated 23:42"
+     committed 23:39) - corrected to the commit times;
+  3. HANDOFF said 12 meaning-flipped strings; the DROP list holds 72;
+  4. the scratchpad path in HANDOFF replaced by the deploy/ pointer.
+  Finding 2 (Appendix AM says funding evidence "is being collected" while the
+  same commit c4683fc already added Merge 1) cannot be edited in place
+  (append-only): CORRECTION here - Merge 1 (comparables, prices, funders) was
+  merged in c4683fc; only the regulation status was still pending at AM.
+  AM's "When ~23:20-23:40" also overran its commit time (23:38).
+- Research saved (4fc0b91), each marked unreviewed and not cold-assessed:
+  docs/research/2026-10-17_customer-features-brief.md (research-features) and
+  docs/research/raw/ reports for VUMC, HCA TriStar, Ascension Saint Thomas
+  FAPs and hospital economics + regulation. Extracted from the agents'
+  hand-back text by script (non-ASCII transliterated; username paths
+  scrubbed). The sustainability brief's regulation section gained an
+  agent-reported update: CFPB credit-reporting rule vacated 2025-07-11;
+  no Tennessee screening law; Dollar For's own analysis says full charity
+  coverage costs hospitals up to 0.7% of net revenue, which weakens a
+  hospital-pays model in Tennessee.
+
+**Slip:** a python-based HANDOFF edit failed (no `python` on PATH; `py` is the
+launcher) but the commit ran anyway, so 6da2a60 holds the scripts without the
+HANDOFF pointer; feccaf5 completed it.
+
+**Still open:** research-stats, research-money-2, mtn-census and mtn-others
+agents running; compiled hospital census brief and the stage-10.5 cold
+assessment not done; push of f10 + ui-max not done; deploy of 5af2f1f still
+waits on Evan.

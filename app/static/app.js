@@ -162,6 +162,8 @@ const T = {
   ics_follow:  {en: "Billow: follow up on your financial assistance application", es: "Billow: dé seguimiento a su solicitud de asistencia financiera", ar: "Billow: تابع طلب المساعدة المالية", "zh-CN": "Billow：跟进您的经济援助申请", "zh-TW": "Billow：追蹤您的財務援助申請"}, // TODO-REVIEW es+ar+zh
   chip_selected:{en: "{name} selected", es: "{name} seleccionado", ar: "تم اختيار {name}", "zh-CN": "已选择 {name}", "zh-TW": "已選擇 {name}"}, // TODO-REVIEW es+ar+zh
   qr_alt:      {en: "QR code that opens Billow on a phone", es: "Código QR que abre Billow en un teléfono", ar: "رمز QR يفتح Billow على الهاتف", "zh-CN": "可在手机上打开 Billow 的二维码", "zh-TW": "可在手機上開啟 Billow 的 QR 碼"}, // TODO-REVIEW es+ar+zh
+  qr2_alt:     {en: "QR code that opens the page of synthetic test bills", es: "Código QR que abre la página de facturas de prueba sintéticas", ar: "رمز QR يفتح صفحة فواتير الاختبار الاصطناعية", "zh-CN": "打开合成测试账单页面的二维码", "zh-TW": "開啟合成測試帳單頁面的 QR 碼"}, // TODO-REVIEW es+ar+zh
+  qr2_caption: {en: "Scan for test bills to try (synthetic)", es: "Escanee para obtener facturas de prueba (sintéticas)", ar: "امسح الرمز للحصول على فواتير اختبار (اصطناعية)", "zh-CN": "扫码获取测试账单（合成）", "zh-TW": "掃描取得測試帳單（合成）"}, // TODO-REVIEW es+ar+zh
   qr_caption:  {en: "Scan to open on a phone", es: "Escanee para abrir en un teléfono", ar: "امسح الرمز للفتح على الهاتف", "zh-CN": "扫码即可在手机上打开", "zh-TW": "掃描即可在手機上開啟"}, // TODO-REVIEW es+ar+zh
   theme_auto:  {en: "Theme: auto", es: "Tema: automático", ar: "السمة: تلقائي", "zh-CN": "主题：自动", "zh-TW": "主題：自動"}, // TODO-REVIEW es+ar+zh
   theme_light: {en: "Theme: light", es: "Tema: claro", ar: "السمة: فاتح", "zh-CN": "主题：浅色", "zh-TW": "主題：淺色"}, // TODO-REVIEW es+ar+zh
@@ -540,9 +542,16 @@ function qrFigure() {
     const origin = location.hostname === "207.211.181.174" ? "https://billow.duckdns.org" : location.origin; // the live site by name (Evan 2026-10-18)
     q.addData(origin + "/?hospital=vumc");
     q.make();
-    return el("figure", {class: "qr"},
-      el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),
-      el("figcaption", null, t("qr_caption")));
+    const q2 = qrcode(0, "M"); // second code: the page of downloadable synthetic test bills (Evan 2026-10-18)
+    q2.addData(origin + "/test-bills/");
+    q2.make();
+    return el("div", {class: "qr-pair"},
+      el("figure", {class: "qr"},
+        el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),
+        el("figcaption", null, t("qr_caption"))),
+      el("figure", {class: "qr"},
+        el("img", {src: q2.createDataURL(4, 2), alt: t("qr2_alt"), width: "164", height: "164"}),
+        el("figcaption", null, el("a", {href: "/test-bills/"}, t("qr2_caption")))));
   } catch (e) {
     return null;
   }

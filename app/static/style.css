@@ -429,6 +429,7 @@ iframe#packet-frame { display: block; width: 100%; height: 75vh; border: 0; back
   display: inline-flex; width: fit-content; max-width: 100%; padding: .375rem .875rem; border-radius: 999px;
   background-color: var(--accent); color: var(--accent-fg); font-size: .875rem; font-weight: 700;
 }
+.qr-pair { display: flex; flex-wrap: wrap; gap: 1.5rem; }
 .qr { margin: 0; }
 .qr img { display: block; padding: .5rem; border-radius: var(--radius-md); background-color: #fff; image-rendering: pixelated; }
 .qr figcaption { margin-block-start: .5rem; font-size: .875rem; color: var(--muted-fg); }

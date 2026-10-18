@@ -176,7 +176,8 @@ Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT. Synthetic data
 only; no diagnosis; OCI only; $500 credits, $0 beyond. Commit only when
 asked; push only when told; no Co-Authored-By lines. Claude cannot restart
 the live server (auto-mode refuses): Evan runs deploy.ps1 in PowerShell 5.1
-(scripts in %TEMP%\claude\C--ClaudeCode-TNHacks2768dbcb1-...\scratchpad\deploy- copy them into the repo or a safe folder first; they may be cleaned up).
+(scripts in %TEMP%\claude\C--ClaudeCode-TNHacks27\f68dbcb1-d488-4fb0-9c45-c5a72e045bf8\scratchpad\deploy\ -
+copy them into the repo or a safe folder first; they may be cleaned up).
 Never re-apply the starter-kit Terraform stack. Never put real patient data
 anywhere.
 

@@ -1148,7 +1148,7 @@ assert len(_many["lines"]["items"]) == 40
 main.BillIn(**_many)
 
 # ---- insurance: TennCare / Medicaid text maps to "medicaid" before the general insured match (D4)
-for txt in ("TennCare (SYNTHETIC member)", "Medicaid", "TENNCARE Select", "tenncare"):
+for txt in ("TennCare (SYNTHETIC member)", "Medicaid", "TENNCARE Select", "tenncare", "TennCare insurance", "Medicaid Insurance"):
     assert main._norm_insurance(txt) == "medicaid", txt
 assert main._norm_insurance("Aetna PPO") == "insured" and main._norm_insurance("Medicare") == "insured"
 assert main._norm_insurance("Uninsured") == "self_pay" and main._norm_insurance("") is None

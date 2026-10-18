@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 23:42 CDT** - this file is the only live
+**Last updated: 2026-10-17 23:47 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-AM).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -92,9 +92,10 @@ snapshot; history lives in the record (Phase 0, Appendices A-AM).
 - Deploys are run by Evan in PowerShell 5.1 (the auto-mode classifier
   refuses Claude's live restarts, record AG): deploy.ps1 -Commit <c>, and
   deploy.ps1 -Commit <c> -Rollback restores the backup taken before <c>
-  (VM ~/backup-before-<c>.tar). Scripts (not in the repo, temp folder - copy them
-  somewhere safe): %TEMP%\claude\C--ClaudeCode-TNHacks27\f68dbcb1-d488-4fb0-9c45-c5a72e045bf8\scratchpad\deploy\ (deploy.ps1, deploy-remote.sh,
-  rollback-remote.sh, https.ps1, https-remote.sh). Rollback target now: cc3c333.
+  (VM ~/backup-before-<c>.tar). Scripts are in the repo under deploy/
+  (deploy.ps1, deploy-remote.sh, rollback-remote.sh, https.ps1,
+  https-remote.sh; .sh kept LF by .gitattributes). From the repo root:
+  powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1 -Commit <c>. Rollback target now: cc3c333.
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on
   bill-02); the rollback was not rehearsed live.
 - AUDIT 2 (record AJ, docs/2026-10-17_audit-2.md): 5 high / 18 med / 10 low.
@@ -107,7 +108,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AM).
   codes + Hindi) from app/data/languages.json; Start-screen dropdown; 27
   machine-translated interface files app/static/i18n/<code>.json (built by
   scripts/build_i18n.py, unreviewed); safety lines show English under a
-  machine translation (tSafe), and 12 meaning-flipped strings are English
+  machine translation (tSafe), and 72 meaning-flipped strings are English
   only (build_i18n.py DROP). Tests ALL PASS; landing-check code SAFE.
 - If the team picks React: every server change is additive, so the React
   app keeps working; the vanilla-only UI work (Home, reminders, QR chip,

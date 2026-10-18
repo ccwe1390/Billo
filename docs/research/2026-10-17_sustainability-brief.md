@@ -1,8 +1,8 @@
 # Research brief - How BillScan sustains itself financially
 
-**Date:** 2026-10-17 (written 23:23-23:40 CDT; saved 23:45 CDT)
-**Status: PARTIAL.** Merge 1 (comparables, prices, funders) added
-23:40 CDT, unverified by the orchestrator; regulation status still pending.
+**Date:** 2026-10-17 (written 23:23-23:36 CDT; first commit 23:36 CDT)
+**Status: PARTIAL.** Merge 1 (comparables, prices, funders) committed
+23:38 CDT, unverified by the orchestrator; regulation status still pending.
 Until then the model ranking is an assumption-driven hypothesis table, not
 an evidence-tested verdict. Do not quote it to judges as settled.
 **Question:** Which revenue or funding model can pay BillScan's operating

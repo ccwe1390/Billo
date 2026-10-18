@@ -186,9 +186,12 @@ def test_pair07_pending():
     assert f["letter_en"] == ("My insurance claim for this visit is still being processed. Please hold this bill "
                               "until it is finished and send me a corrected bill.")
     assert f["amount_cents"] is None and f["citation"] is None and f["line_indexes"] == []
-    # not_yet with no EOB at all
+    # not_yet with no EOB at all: no-summary wording, never "still processing" (Evan 2026-10-18)
     r2 = eob_checks.run(bill, None, not_yet=True)
     assert ins_ids(r2) == ["pending"] and "insurance_unpaid" in ids(r2, "bill")
+    assert flag(r2, "pending")["text_en"] == "You don't have your insurer's summary for this visit yet. Ask the hospital whether you can wait for it before paying."
+    assert flag(r2, "pending")["letter_en"] == "I have not received my insurer's explanation of benefits (insurance summary) for this visit yet. Please hold this bill until it arrives."
+    assert "processing" not in flag(r2, "pending")["text_en"] + flag(r2, "pending")["letter_en"]
     assert r2["total_to_ask_cents"] == p2["total_to_ask_cents"] and r2["insurer_letter"] is None
     # not_yet beats a paid EOB: no other insurance rule runs
     bill6, eob6 = pair06()

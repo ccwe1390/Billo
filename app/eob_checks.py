@@ -214,9 +214,15 @@ def run(bill, eob=None, not_yet=False, p2=None):
     if eob is None and not not_yet:
         return result([])
 
-    # 2. still processing: one flag, no other insurance rule.
+    # 2. no summary yet, or still processing: one flag, no other insurance rule.
     status = _status(eob)
-    if not_yet or status == "pending":
+    if not_yet:  # the person tapped "No Explanation of Benefits Available": nothing is known about the claim
+        return result([_ins(
+            "pending",
+            "You don't have your insurer's summary for this visit yet. Ask the hospital whether you can wait for it before paying.",
+            "I have not received my insurer's explanation of benefits (insurance summary) for this visit yet. Please hold this bill until it arrives.",
+        )])
+    if status == "pending":
         return result([_ins(
             "pending",
             "Your insurance is still processing this visit. Ask the hospital whether you can wait for your insurer's summary before paying.",

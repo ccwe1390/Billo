@@ -198,9 +198,9 @@ const T = {
   eob_title:   {en: "Your insurance summary", es: "Su resumen del seguro", ar: "ملخص التأمين الخاص بك", "zh-CN": "您的保险摘要", "zh-TW": "您的保險摘要"}, // TODO-REVIEW es+ar+zh
   eob_ask:     {en: "Do you have your insurer's summary for this visit? It usually says 'This is not a bill.'", es: "¿Tiene el resumen de su aseguradora para esta visita? Suele decir 'Esto no es una factura'.", ar: "هل لديك ملخص شركة التأمين لهذه الزيارة؟ يكتب عادةً «هذه ليست فاتورة».", "zh-CN": "您有保险公司针对这次就诊发出的说明吗？上面通常写着“这不是账单”。", "zh-TW": "您有保險公司針對這次就診發出的說明嗎？上面通常寫著「這不是帳單」。"}, // TODO-REVIEW es+ar+zh
   eob_add:     {en: "Add a photo", es: "Agregar una foto", ar: "أضف صورة", "zh-CN": "添加照片", "zh-TW": "新增照片"}, // TODO-REVIEW es+ar+zh
-  eob_not_yet: {en: "Not yet", es: "Todavía no", ar: "ليس بعد", "zh-CN": "暂时没有", "zh-TW": "暫時沒有"}, // TODO-REVIEW es+ar+zh
+  eob_not_yet: {en: "No Explanation of Benefits Available", es: "Explicación de beneficios no disponible", ar: "لا يتوفر بيان المزايا", "zh-CN": "无可用的福利说明", "zh-TW": "無可用的福利說明"}, // TODO-REVIEW es+ar+zh
   eob_reading: {en: "Reading the insurance summary...", es: "Leyendo el resumen del seguro...", ar: "جارٍ قراءة ملخص التأمين...", "zh-CN": "正在读取保险摘要...", "zh-TW": "正在讀取保險摘要..."}, // TODO-REVIEW es+ar+zh
-  eob_not_eob: {en: "This doesn't look like an insurance summary. Try another photo, or tap Not yet.", es: "Esto no parece un resumen del seguro. Pruebe con otra foto o toque Todavía no.", ar: "لا يبدو هذا ملخص تأمين. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "这看起来不是保险摘要。请换一张照片，或点“暂时没有”。", "zh-TW": "這看起來不是保險摘要。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
+  eob_not_eob: {en: "This doesn't look like an insurance summary. Try another photo, or tap No Explanation of Benefits Available.", es: "Esto no parece un resumen del seguro. Pruebe con otra foto o toque «Explicación de beneficios no disponible».", ar: "لا يبدو هذا ملخص تأمين. جرّب صورة أخرى أو اضغط «لا يتوفر بيان المزايا».", "zh-CN": "这看起来不是保险摘要。请换一张照片，或点“无可用的福利说明”。", "zh-TW": "這看起來不是保險摘要。請換一張照片，或點「無可用的福利說明」。"}, // TODO-REVIEW es+ar+zh
   eob_hint:    {en: "Check each field against your insurance summary, fix mistakes, then confirm each one.", es: "Compare cada campo con su resumen del seguro, corrija los errores y confirme cada uno.", ar: "قارن كل حقل بملخص التأمين وصحح الأخطاء ثم أكّد كل حقل.", "zh-CN": "请对照保险摘要检查每个字段，更正错误，然后逐项确认。", "zh-TW": "請對照保險摘要檢查每個欄位，更正錯誤，然後逐項確認。"}, // TODO-REVIEW es+ar+zh
   eob_blank:   {en: "Not on the summary, or we could not read it. Leave it blank if it is not there.", es: "No aparece en el resumen o no pudimos leerlo. Déjelo en blanco si no está.", ar: "غير موجود في الملخص أو تعذّرت قراءته. اتركه فارغًا إن لم يكن موجودًا.", "zh-CN": "摘要上没有，或我们无法读取。如果摘要上没有，请留空。", "zh-TW": "摘要上沒有，或我們無法讀取。如果摘要上沒有，請留空。"}, // TODO-REVIEW es+ar+zh
   eob_retake:  {en: "Use a different photo", es: "Usar otra foto", ar: "استخدم صورة أخرى", "zh-CN": "换一张照片", "zh-TW": "換一張照片"}, // TODO-REVIEW es+ar+zh
@@ -226,7 +226,7 @@ const T = {
   eob_f_appeal_deadline:{en: "Appeal deadline", es: "Fecha límite para apelar", ar: "الموعد النهائي للاستئناف", "zh-CN": "申诉截止日期", "zh-TW": "申訴截止日期"}, // TODO-REVIEW es+ar+zh
   eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
   srcs:        {en: "Sources", es: "Fuentes", ar: "المصادر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
-  eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap Not yet.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque Todavía no.", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "目前无法读取照片。请换一张照片，或点“暂时没有”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
+  eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap No Explanation of Benefits Available.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque «Explicación de beneficios no disponible».", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «لا يتوفر بيان المزايا».", "zh-CN": "目前无法读取照片。请换一张照片，或点“无可用的福利说明”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「無可用的福利說明」。"}, // TODO-REVIEW es+ar+zh
   why_all:     {en: "Check each detail, then tick \"This is correct\" to continue.", es: "Revise cada dato y marque «Esto es correcto» para continuar.", ar: "راجع كل معلومة، ثم ضع علامة على «هذا صحيح» للمتابعة.", "zh-CN": "请核对每一项，然后勾选“此项正确”继续。", "zh-TW": "請核對每一項，然後勾選「此項正確」繼續。"}, // TODO-REVIEW es+ar+zh
   photo_remove:{en: "Remove photo", es: "Quitar la foto", ar: "إزالة الصورة", "zh-CN": "删除照片", "zh-TW": "刪除照片"}, // TODO-REVIEW es+ar+zh
 };
@@ -907,7 +907,7 @@ function renderEob() {
     screenTitle(t("eob_title"), t("eob_ask")),
     drop,
     actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back"))],
-      el("button", {type: "button", id: "eob-notyet", disabled: S.eobExtracting, onclick: eobNotYet}, t("eob_not_yet")))));
+      el("button", {type: "button", id: "eob-notyet", onclick: eobNotYet}, t("eob_not_yet")) /* always clickable (Evan 2026-10-18); a read in flight goes stale via clearEob */)));
   if (S.eobExtracting) showBusy(t("eob_reading")); // a re-render while the photo is still being read keeps the spinner
 }
 // Continue is enabled only when every field is confirmed and any service lines are confirmed; p.why says what is missing.

@@ -1166,7 +1166,7 @@ test("m1. Continue on the Bill screen shows the insurance-summary screen for 'in
   assert.strictEqual(A.curScreen, 7, "insured did not go to screen 7");
   const txt = byId("s7").textContent;
   assert.ok(txt.includes("Your insurance summary") && txt.includes("Do you have your insurer's summary for this visit? It usually says 'This is not a bill.'"), txt);
-  assert.ok(txt.includes("Add a photo") && txt.includes("Not yet"), "ask buttons missing");
+  assert.ok(txt.includes("Add a photo") && txt.includes("No Explanation of Benefits Available"), "ask buttons missing");
   assert.ok(byId("eob-file") && byId("eob-file").getAttribute("accept") === "image/png,image/jpeg", "file input missing");
   byId("eob-back").click();
   assert.strictEqual(A.curScreen, 2, "Back did not return to the Bill screen");
@@ -1211,11 +1211,26 @@ test("m3. Upload posts /extract with kind=eob, the bill's date_of_service and a 
   const r2 = await uploadEob(undefined);
   assert.strictEqual(r2.opts.body.get("kind"), "eob"); assert.strictEqual(r2.opts.body.has("date_of_service"), false, "blank date must be omitted");
 });
+test("m10. \"No Explanation of Benefits Available\" stays clickable while a photo is read; tapping it drops the read and goes to the questions", "Evan 2026-10-18", async () => {
+  openEobAsk("insured");
+  assert.strictEqual(byId("eob-notyet").textContent, "No Explanation of Benefits Available");
+  const file = new File([new Uint8Array(10)], "eob.png", {type: "image/png"});
+  const done = byId("eob-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  assert.strictEqual(S.eobExtracting, true, "read did not start");
+  assert.strictEqual(byId("eob-notyet").disabled, false, "button disabled while reading");
+  const req = take("/extract");
+  byId("eob-notyet").click();
+  assert.strictEqual(A.curScreen, 3, "did not go to the questions");
+  assert.ok(S.eobNotYet === true && S.eobExtracting === false && byId("status").hidden, "state or spinner not cleared");
+  respond(req, eobRead()); await done; await flush();
+  assert.ok(S.eobDraft === null && S.eobNotYet === true && A.curScreen === 3, "a late read must be ignored");
+});
 test("m4. A 422 shows the not-an-insurance-summary message and the ask state again; other failures show the read-failed message", "eob", async () => {
   openEobAsk("insured");
   await uploadEob({detail: "This doesn't look like an insurance summary."}, 422);
   assert.strictEqual(A.curScreen, 7);
-  assert.ok(byId("alert").textContent === "This doesn't look like an insurance summary. Try another photo, or tap Not yet.", byId("alert").textContent);
+  assert.ok(byId("alert").textContent === "This doesn't look like an insurance summary. Try another photo, or tap No Explanation of Benefits Available.", byId("alert").textContent);
   assert.strictEqual(S.eobDraft, null);
   assert.ok(byId("eob-file") && byId("eob-file").disabled === false && byId("eob-notyet").disabled === false, "ask state not restored");
   await uploadEob("<html>gateway</html>", 502);
@@ -1339,7 +1354,7 @@ test("m9. new strings: every eob_ key and eob_f_<field> exists in all five inlin
     .concat(EOB_NAMES.map(n => "eob_f_" + n));
   for (const k of keys) for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(T[k] && typeof T[k][l] === "string" && T[k][l].length >= 2, k + "." + l);
   assert.strictEqual(T.eob_lines_ok.en, "These match my insurance summary.");
-  assert.strictEqual(T.eob_not_eob.en, "This doesn't look like an insurance summary. Try another photo, or tap Not yet.");
+  assert.strictEqual(T.eob_not_eob.en, "This doesn't look like an insurance summary. Try another photo, or tap No Explanation of Benefits Available.");
 });
 
 test("n1. Sources: the citation list sits in a closed dropdown; a footnote mark opens it", "Evan 2026-10-18", async () => {

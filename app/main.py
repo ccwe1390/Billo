@@ -31,10 +31,14 @@ CONTRACT_VERSION = 1
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 POLICY_PATH = os.path.join(BASE_DIR, "data", "policy_cumberland_synthetic.json")
 FPL_PATH = os.path.join(BASE_DIR, "data", "fpl_2026.json")
+LANGUAGES_PATH = os.path.join(BASE_DIR, "data", "languages.json")
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 MultiPartParser.spool_max_size = MAX_IMAGE_BYTES + 1024 * 1024  # uploads stay in memory: nothing is spooled to disk
 ALLOWED_MIME = ("image/png", "image/jpeg")
 NOTICE_EN = "This is a draft you choose to send. The hospital makes the final decision."
+
+with open(LANGUAGES_PATH, encoding="utf-8") as _f:
+    LANGS = {x["code"]: x for x in json.load(_f)}  # the one language list (app/data/languages.json)
 
 app = FastAPI(title="BillScan", docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -133,11 +137,18 @@ class AnswersIn(BaseModel):
     # extra="forbid": no way to send immigration status, SSN, ID or a name.
     model_config = ConfigDict(extra="forbid")
     contract_version: Literal[1] = CONTRACT_VERSION
-    language: Literal["en", "es", "ar", "zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"]
+    language: str
     for_whom: Literal["self", "family"]
     household_size: int = Field(ge=1, le=12)
     annual_income_cents: int = Field(ge=0, le=10**12)
     files_tax_return: bool
+
+    @field_validator("language")
+    @classmethod
+    def _known_language(cls, v):
+        if v not in LANGS:
+            raise ValueError("unknown language")
+        return v
 
 
 class EvaluateIn(BaseModel):
@@ -339,7 +350,10 @@ def explain(body: ResultIn):
         return out
     required = numlock.extract_numbers(facts)  # the translation must show these; locked numbers may also appear
     try:
-        text = oci_client.phrase(facts, lang)
+        if LANGS[lang]["explain"] == "oci_language":
+            text = oci_client.translate_many([facts], lang)[0]
+        else:
+            text = oci_client.phrase(facts, lang)
         ok, _missing, _unexpected = numlock.check(text, required, allowed=result["locked_numbers"])
     except Exception as e:
         log.warning("explanation failed: %s", type(e).__name__)
@@ -478,7 +492,7 @@ li{margin:6px 0;list-style:none}
 
 def render_packet_html(packet, result, lang):
     p, r = packet, result
-    d = "rtl" if lang == "ar" else "ltr"
+    d = LANGS[lang]["dir"]
     rows = "".join("<tr><td>%s</td><td>%s</td></tr>" % (_E(f["label_en"]), _E(f["value"]))
                    for f in p["application_fields"])
     items = []

@@ -157,8 +157,10 @@ oci_client.translate_many = lambda texts, lang, keep=(): (_ for _ in ()).throw(N
 assert main.packet(body, format="json")["translation_check"]["fallback_used"]
 oci_client.translate_many = real_tr
 
-# ---- tier 2 languages: AI explanation + letter; Hindi letter is not back-checked
-for code in ("zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"):
+# ---- every non-English language (app/data/languages.json): AI explanation + letter; Hindi letter is not back-checked
+LANG_CODES = [x["code"] for x in main.LANGS.values() if x["code"] != "en"]
+assert len(LANG_CODES) == 31 and "hi" in LANG_CODES
+for code in LANG_CODES:
     a2 = answers(language=code)
     r2 = main.evaluate(main.EvaluateIn(bill=B, answers=a2))
     ex2 = main.explain(main.ResultIn(bill=B, answers=a2, result=r2))
@@ -167,8 +169,17 @@ for code in ("zh-CN", "zh-TW", "vi", "fr", "ko", "ru", "de", "hi"):
     assert pk2["translation_check"]["translator"] == ("command_a" if code == "hi" else "oci_language"), code
     assert pk2["translation_check"]["numbers_match"] and not pk2["translation_check"]["fallback_used"], code
     assert pk2["cover_letter_translated"].startswith("[%s draft]" % code.upper()), code
-assert pk2["cover_letter_translated"].startswith("[HI draft]")
+assert code == LANG_CODES[-1] and pk2["cover_letter_translated"].startswith("[%s draft]" % code.upper())
 assert ex_en["ai_written"] is False
+# Danish is explained by OCI Language (explain == "oci_language"); fake translate_many marks its text
+assert main.LANGS["da"]["explain"] == "oci_language" and main.LANGS["es"]["explain"] == "command_a"
+ex_da = main.explain(main.ResultIn(bill=B, answers=answers(language="da")))
+assert ex_da["language"] == "da" and ex_da["ai_written"] is True and ex_da["numbers_match"], ex_da
+assert ex_da["text"].startswith("[DA draft] "), ex_da["text"]
+# Hebrew is right-to-left; Danish is not
+he_html = main.packet(main.ResultIn(bill=B, answers=answers(language="he"))).body.decode("utf-8")
+assert 'dir="rtl"' in he_html and 'lang="he"' in he_html
+assert 'dir="rtl"' not in main.packet(main.ResultIn(bill=B, answers=answers(language="da"))).body.decode("utf-8")
 try:
     answers(language="ku")
     raise AssertionError("language ku accepted")
@@ -190,6 +201,12 @@ assert "115%" in main.explain(main.ResultIn(bill=B, answers=answers(language="en
 # ---- every UI string row in app.js has zh-CN and zh-TW
 js = open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "static", "app.js"),
           encoding="utf-8").read()
+# ---- the language list in app.js is the one in app/data/languages.json
+assert "const LANGS = " in js, "app.js has no `const LANGS = ` list yet"
+langs_block = js[js.index("const LANGS = "):]
+langs_block = langs_block[:langs_block.index("];")]
+assert set(re.findall(r'code:\s*"([A-Za-z-]+)"', langs_block)) == set(main.LANGS), "app.js LANGS differ from languages.json"
+
 t_block = js[js.index("const T = {"):js.index("\nconst LANG_NAMES")]
 rows = [ln for ln in t_block.splitlines() if re.match(r"^  \w+:\s*\{en:", ln)]
 assert len(rows) >= 60, len(rows)

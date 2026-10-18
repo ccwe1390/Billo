@@ -21,9 +21,8 @@ EXTRACT_PROMPT = (
     "you cannot read clearly. Do not guess."
 )
 
-LANGUAGE_NAMES = {"en": "English", "es": "Spanish", "ar": "Arabic", "zh-CN": "Simplified Chinese",
-                  "zh-TW": "Traditional Chinese", "vi": "Vietnamese", "fr": "French", "ko": "Korean",
-                  "ru": "Russian", "de": "German", "hi": "Hindi"}
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "languages.json"), encoding="utf-8") as _f:
+    LANGUAGE_NAMES = {x["code"]: x["english"] for x in json.load(_f)}
 
 
 def is_fake():

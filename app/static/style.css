@@ -105,6 +105,10 @@
 :lang(zh-TW) { font-family: 'BillPlex', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans CJK TC', sans-serif; }
 :lang(ko) { font-family: 'BillPlex', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK KR', sans-serif; }
 :lang(vi), :lang(ru) { font-family: 'BillPlex', system-ui, sans-serif; }
+:lang(ja) { font-family: system-ui, 'Hiragino Sans', 'Yu Gothic UI', Meiryo, sans-serif; }
+:lang(th) { font-family: system-ui, 'Leelawadee UI', Tahoma, sans-serif; line-height: 1.8; }
+:lang(he) { font-family: system-ui, 'Segoe UI', Arial, sans-serif; }
+:lang(el) { font-family: 'BillPlex', system-ui, sans-serif; }
 :lang(ar) { --lh: 1.85; }
 :lang(ar) h1, :lang(ar) h2, :lang(ar) h3 { line-height: 1.6; }
 
@@ -126,6 +130,8 @@ h3 { font-size: 1.125rem; }
 h2[tabindex="-1"]:focus:not(:focus-visible) { outline: none; }
 p.sub { max-width: 65ch; color: var(--muted-fg); }
 .muted { color: var(--muted-fg); }
+/* English under a machine-translated safety line (app.js tSafe); the English is what counts */
+.en-gloss { display: block; margin-block-start: .25rem; font-size: .875rem; font-weight: 400; color: var(--muted-fg); }
 a:not(.btn) { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
 a:not(.btn):hover { color: var(--primary-hover); }
 :focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }

@@ -1,10 +1,47 @@
 "use strict";
 // BillScan UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
 
+// Every language the app offers, in dropdown order. Copied from app/data/languages.json (keep the two in step).
+const LANGS = [
+  {code: "en", native: "English", dir: "ltr"},
+  {code: "es", native: "Español", dir: "ltr"},
+  {code: "ar", native: "العربية", dir: "rtl"},
+  {code: "zh-CN", native: "简体中文", dir: "ltr"},
+  {code: "zh-TW", native: "繁體中文", dir: "ltr"},
+  {code: "cs", native: "Čeština", dir: "ltr"},
+  {code: "da", native: "Dansk", dir: "ltr"},
+  {code: "de", native: "Deutsch", dir: "ltr"},
+  {code: "el", native: "Ελληνικά", dir: "ltr"},
+  {code: "fr", native: "Français", dir: "ltr"},
+  {code: "fr-CA", native: "Français (Canada)", dir: "ltr"},
+  {code: "he", native: "עברית", dir: "rtl"},
+  {code: "hi", native: "हिन्दी", dir: "ltr"},
+  {code: "hr", native: "Hrvatski", dir: "ltr"},
+  {code: "it", native: "Italiano", dir: "ltr"},
+  {code: "ja", native: "日本語", dir: "ltr"},
+  {code: "ko", native: "한국어", dir: "ltr"},
+  {code: "hu", native: "Magyar", dir: "ltr"},
+  {code: "nl", native: "Nederlands", dir: "ltr"},
+  {code: "no", native: "Norsk", dir: "ltr"},
+  {code: "pl", native: "Polski", dir: "ltr"},
+  {code: "pt", native: "Português", dir: "ltr"},
+  {code: "pt-BR", native: "Português (Brasil)", dir: "ltr"},
+  {code: "ro", native: "Română", dir: "ltr"},
+  {code: "ru", native: "Русский", dir: "ltr"},
+  {code: "sk", native: "Slovenčina", dir: "ltr"},
+  {code: "sl", native: "Slovenščina", dir: "ltr"},
+  {code: "fi", native: "Suomi", dir: "ltr"},
+  {code: "sv", native: "Svenska", dir: "ltr"},
+  {code: "th", native: "ไทย", dir: "ltr"},
+  {code: "tr", native: "Türkçe", dir: "ltr"},
+  {code: "vi", native: "Tiếng Việt", dir: "ltr"},
+];
+const dirOf = c => (LANGS.find(l => l.code === c) || {}).dir || "ltr";
+
 // UI strings. Every es, ar, zh-CN and zh-TW string is a draft for a human translator.
 // TODO-REVIEW: all es/ar/zh strings below (one marker per line).
-// Tier 1 (en, es, ar, zh-CN, zh-TW) has a translated interface. Tier 2 (vi, fr, ko, ru, de, hi) keeps the
-// English interface (t() falls back to en): only the explanation and the packet letter are translated.
+// en, es, ar, zh-CN and zh-TW are inline below. Every other language's interface strings are fetched on demand
+// from i18n/<code>.json into I18N (see loadLang); t() falls back to English for any missing key.
 const T = {
   app_title:   {en: "BillScan", es: "BillScan", ar: "BillScan", "zh-CN": "BillScan", "zh-TW": "BillScan"}, // brand name: identical in every language
   notice:      {en: "Nothing you enter is saved. Demo uses synthetic bills only.", es: "Nada de lo que escribe se guarda. La demostración usa solo facturas sintéticas.", ar: "لا يتم حفظ أي شيء تدخله. العرض التجريبي يستخدم فواتير اصطناعية فقط.", "zh-CN": "您输入的任何内容都不会被保存。演示仅使用合成账单。", "zh-TW": "您輸入的任何內容都不會被儲存。示範僅使用合成帳單。"}, // TODO-REVIEW es+ar+zh
@@ -118,7 +155,6 @@ const T = {
   theme_dark:  {en: "Theme: dark", es: "Tema: oscuro", ar: "السمة: داكن", "zh-CN": "主题：深色", "zh-TW": "主題：深色"}, // TODO-REVIEW es+ar+zh
   q_minus:     {en: "One fewer person", es: "Una persona menos", ar: "شخص واحد أقل", "zh-CN": "减少一人", "zh-TW": "減少一人"}, // TODO-REVIEW es+ar+zh
   q_plus:      {en: "One more person", es: "Una persona más", ar: "شخص واحد إضافي", "zh-CN": "增加一人", "zh-TW": "增加一人"}, // TODO-REVIEW es+ar+zh
-  more_langs:  {en: "More languages (interface in English)", es: "Más idiomas (la interfaz queda en inglés)", ar: "المزيد من اللغات (تبقى الواجهة بالإنجليزية)", "zh-CN": "更多语言（界面保持英文）", "zh-TW": "更多語言（介面維持英文）"}, // TODO-REVIEW es+ar+zh
   why_bill:    {en: "Confirm {n} more field(s) to continue", es: "Confirme {n} campo(s) más para continuar", ar: "أكّد {n} حقل (حقول) إضافية للمتابعة", "zh-CN": "还需确认 {n} 个字段才能继续", "zh-TW": "還需確認 {n} 個欄位才能繼續"}, // TODO-REVIEW es+ar+zh
   why_q:       {en: "Answer all three questions to continue", es: "Responda las tres preguntas para continuar", ar: "أجب عن الأسئلة الثلاثة للمتابعة", "zh-CN": "请回答全部三个问题后继续", "zh-TW": "請回答全部三個問題後繼續"}, // TODO-REVIEW es+ar+zh
   restart_q:   {en: "Start over? Your answers on this page will be cleared.", es: "¿Empezar de nuevo? Se borrarán sus respuestas en esta página.", ar: "هل تريد البدء من جديد؟ سيتم مسح إجاباتك في هذه الصفحة.", "zh-CN": "重新开始？此页面上的回答将被清除。", "zh-TW": "重新開始？此頁面上的回答將被清除。"}, // TODO-REVIEW es+ar+zh
@@ -126,11 +162,8 @@ const T = {
   confirmed_word:{en: "Confirmed", es: "Confirmado", ar: "تم التأكيد", "zh-CN": "已确认", "zh-TW": "已確認"}, // TODO-REVIEW es+ar+zh
   steps_label: {en: "Progress", es: "Progreso", ar: "التقدّم", "zh-CN": "进度", "zh-TW": "進度"}, // TODO-REVIEW es+ar+zh
 };
-const LANG_NAMES = {en: "English", es: "Español", ar: "العربية", "zh-CN": "简体中文", "zh-TW": "繁體中文",
-                    vi: "Tiếng Việt", fr: "Français", ko: "한국어", ru: "Русский", de: "Deutsch", hi: "हिन्दी"};
-const TIER1 = ["ar", "es", "en", "zh-CN", "zh-TW"]; // translated interface
-const TIER2 = ["vi", "fr", "ko", "ru", "de", "hi"]; // English interface, translated explanation and letter
-const viewFor = l => (TIER2.includes(l) ? "en" : l);
+const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
+const I18N = {}; // other languages' interface strings, fetched on demand from i18n/<code>.json
 const FIELD_ORDER = [
   ["hospital_name", "f_hospital"], ["statement_date", "f_statement"], ["account_number", "f_account"],
   ["amount_due_cents", "f_amount"], ["date_of_service", "f_service"], ["insurance_status", "f_insurance"],
@@ -144,9 +177,21 @@ const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, 
 let firstShow = true, curScreen = 0;
 
 // ---------- helpers
+// Fetch one language's interface strings. The five inline languages need no fetch. Returns false on any failure.
+async function loadLang(code) {
+  if (T.app_title[code] !== undefined || I18N[code]) return true;
+  try {
+    const r = await fetch("i18n/" + code + ".json");
+    if (!r.ok) return false;
+    I18N[code] = await r.json();
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 function t(key, vars) {
   const row = T[key];
-  let s = (row && (row[S.view] || row.en)) || key;
+  let s = (row && row[S.view]) || (I18N[S.view] && I18N[S.view][key]) || (row && row.en) || key;
   for (const k in (vars || {})) s = s.replace("{" + k + "}", vars[k]);
   return s;
 }
@@ -175,7 +220,7 @@ function applyTheme() { // auto follows the phone; light and dark force a theme.
 }
 function applyDir() {
   document.documentElement.lang = S.view;
-  document.documentElement.dir = S.view === "ar" ? "rtl" : "ltr";
+  document.documentElement.dir = dirOf(S.view);
   document.getElementById("app-title").textContent = t("app_title");
   document.getElementById("stepper").setAttribute("aria-label", t("steps_label"));
   applyTheme();
@@ -197,8 +242,8 @@ function showBusy(text) { // a named loading step: spinner plus words in #status
   st.hidden = false;
 }
 // A heading block: h2 (focus target on screen change) plus an optional sub line.
-function screenTitle(text, sub) {
-  return el("div", {class: "stack-3"}, el("h2", {tabindex: "-1"}, text), sub ? el("p", {class: "sub"}, sub) : null);
+function screenTitle(text, sub) { // sub: a string or an array of nodes
+  return el("div", {class: "stack-3"}, el("h2", {tabindex: "-1"}, text), sub ? el("p", {class: "sub"}, ...[].concat(sub)) : null);
 }
 function panel(cls, ...kids) { // cls: "" or "warn" | "ok" | "hero"
   return el("section", {class: ("panel " + (cls || "")).trim()}, ...kids);
@@ -301,9 +346,22 @@ function icon(name) { // decorative Phosphor icon, served locally
   return el("img", {src: "icons/" + name + ".svg", alt: "", width: "24", height: "24", class: "icon"});
 }
 // Translated template -> nodes. Each {var} (and a % right after it) goes in <bdi dir="ltr"> so numbers do not flip in Arabic.
-function tNodes(key, vars) {
+function tNodes(key, vars) { return tplNodes(t(key), vars); }
+// Safety lines (estimate, the hospital decides, nothing saved, no ID asked) in a machine-translated
+// language also show the English line under the translation: Oracle's translation changed their
+// meaning in some languages (back-translation check 2026-10-17), and the English is what counts.
+const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
+                     "home_estimate_note", "home_one_approval", "home_bill_reduction"];
+function machineTranslated(key) {
+  return S.view !== "en" && !(T[key] && T[key][S.view]) && !!(I18N[S.view] && I18N[S.view][key]);
+}
+function tSafe(key, vars) {
+  const nodes = tNodes(key, vars);
+  if (!SAFETY_KEYS.includes(key) || !machineTranslated(key)) return nodes;
+  return [...nodes, el("span", {class: "en-gloss", lang: "en", dir: "ltr"}, ...tplNodes(T[key].en, vars))];
+}
+function tplNodes(tpl, vars) {
   const out = [];
-  const tpl = t(key);
   const re = /\{(\w+)\}(%?)/g;
   let last = 0, m;
   while ((m = re.exec(tpl)) !== null) {
@@ -367,8 +425,19 @@ function blankBill() {
 }
 
 // ---------- screen 1: start
-function langBtn(l) {
-  return optionButton(LANG_NAMES[l], S.lang === l, () => { S.lang = l; S.view = viewFor(l); show(1); }, {id: "lang-" + l, lang: l});
+let langPick = 0;
+function langSelect() { // one native dropdown with all languages, each named in its own language
+  const sel = el("select", {id: "lang-select"}, ...LANGS.map(l =>
+    el("option", {value: l.code, lang: l.code, dir: l.dir, selected: l.code === S.lang}, LANG_NAMES[l.code])));
+  sel.addEventListener("change", async () => {
+    const code = sel.value, mine = ++langPick; // a newer pick cancels this one (focus stays on the select)
+    const ok = await loadLang(code);
+    if (mine !== langPick) return;
+    S.lang = code; S.view = ok ? code : "en";
+    if (!ok) showMsg(t("err_generic"));
+    show(1);
+  });
+  return sel;
 }
 // Desktop only: a QR code that opens this page on a phone with the hospital preselected. Any failure draws nothing.
 function qrFigure() {
@@ -386,17 +455,16 @@ function qrFigure() {
 }
 function renderStart() {
   const root = document.getElementById("s1");
-  const title = screenTitle(t("pick_lang"), t("no_id"));
+  const title = screenTitle(t("pick_lang"), tSafe("no_id"));
   title.querySelector("h2").id = "pick-lang-label";
   const qr = qrFigure();
   fill(root, el("div", {class: "stack-8"},
     title,
     S.fromQr ? el("p", {class: "chip"}, ...tNodes("chip_selected", {name: "Cumberland General Hospital (SYNTHETIC)"})) : null,
-    el("p", {class: "notice"}, t("notice")),
+    el("p", {class: "notice"}, ...tSafe("notice")),
     el("div", {class: "stack-3"},
-      el("div", {class: "grid-3", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER1.map(langBtn)),
-      el("p", {class: "muted"}, t("more_langs")),
-      el("div", {class: "grid-3", role: "group", "aria-labelledby": "pick-lang-label"}, ...TIER2.map(langBtn))),
+      el("label", {for: "lang-select", class: "sr-only"}, t("pick_lang")),
+      langSelect()),
     el("div", {class: "stack-3"},
       el("h3", {id: "for-whom-label"}, t("for_whom")),
       el("div", {class: "grid-2", role: "group", "aria-labelledby": "for-whom-label"}, ...[["self", "me", "who-me"], ["family", "family", "who-family"]].map(([v, k, id]) =>
@@ -576,7 +644,7 @@ function renderQuestions() {
   income.addEventListener("input", check);
   const taxBtn = (val, key, id) => optionButton(t(key), S.tax === val, () => { S.tax = val; keepFocus(renderQuestions); }, {id});
   fill(root, el("div", {class: "stack-8"},
-    screenTitle(t("q_title"), t("no_id")),
+    screenTitle(t("q_title"), tSafe("no_id")),
     el("div", {class: "stack-3"}, el("label", {for: "q-size"}, t("q_size")), el("div", {class: "num-step", dir: "ltr"}, minus, size, plus)),
     el("div", {class: "stack-3"}, el("label", {for: "q-income"}, t("q_income")),
       el("div", {class: "money-in", dir: "ltr"}, el("span", {"aria-hidden": "true"}, "$"), income), incomeHint),
@@ -604,7 +672,7 @@ async function submitAnswers() {
     return;
   }
   if (seq !== S.submitSeq) return;
-  S.view = viewFor(S.lang); showMsg(""); S.home = null; // new answers: recompute the all-bills totals
+  S.view = (I18N[S.lang] || T.app_title[S.lang] !== undefined) ? S.lang : "en"; showMsg(""); S.home = null; // new answers: recompute the all-bills totals
   S.busy = false; show(4);
 }
 
@@ -629,14 +697,13 @@ function deadlineLine(d) { // the English sentence with its date highlighted
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
   const english = S.view === "en";
-  const tier2 = TIER2.includes(S.lang);
   const fb = S.explain.fallback_used;
-  // Tier 2: English facts first (the interface is English), then the translated text. Tier 1: one or the other.
-  const showEn = english || fb || tier2;
-  const showNative = S.lang !== "en" && !fb && (tier2 || !english);
+  // One view at a time: the translated text, or English (the toggle, or when the number check failed).
+  const showEn = english || fb;
+  const showNative = S.lang !== "en" && !fb && !english;
   const enLines = showEn ? S.explain.text_en.split("\n") : [];
   const nativeLines = showNative ? S.explain.text.split("\n") : [];
-  const nativeDir = S.lang === "ar" ? "rtl" : "ltr";
+  const nativeDir = dirOf(S.lang);
   const eligible = r.tier.eligible;
   // Footnote markers are numbered in the order they are created, so build the page top to bottom.
   const notes = makeNotes();
@@ -644,10 +711,10 @@ function renderResult() {
     el("div", {class: "hero-row"},
       typeof r.percent_of_fpl === "number" ? el("span", {class: "pct", dir: "ltr"}, r.percent_of_fpl + "%") : null,
       el("p", {class: "lead"}, ...tNodes("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year}), notes.mark(r.fpl.citation))),
-    el("p", {class: "decides"}, t("r_decides")));
+    el("p", {class: "decides"}, ...tSafe("r_decides")));
   const policyUsed = typeof r.policy_hospital_name === "string" ? el("p", {class: "muted"}, ...tNodes("r_policy_used", {name: r.policy_hospital_name})) : null;
   const mismatch = r.hospital_matches_policy === false
-    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, t("r_mismatch")))
+    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch")))
     : null;
   if (mismatch) mismatch.setAttribute("role", "note");
   const tierBlock = Array.isArray(r.tiers) && r.tiers.length
@@ -673,7 +740,7 @@ function renderResult() {
           el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.phone))))
     : panel("", el("h3", null, t("r_payplan"), notes.mark(c.citation)),
         el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
-  const toggle = S.lang === "en" || tier2 ? null
+  const toggle = S.lang === "en" ? null
     : el("button", {type: "button", id: "r-toggle", onclick: () => { S.view = english ? S.lang : "en"; show(4); }}, english ? t("r_see_native") : t("r_see_en"));
   fill(root, el("div", {class: "stack-8"},
     screenTitle(t("r_title")),
@@ -684,8 +751,8 @@ function renderResult() {
     el("div", {class: "stack-3"}, ...tierBlock, tierNote),
     deadline,
     explain,
-    showNative ? el("p", {class: "muted"}, t("ai_note")) : null,
-    fb && (tier2 || !english) ? el("p", {class: "muted"}, t("r_fallback")) : null,
+    showNative ? el("p", {class: "muted"}, ...tSafe("ai_note")) : null,
+    fb && !english ? el("p", {class: "muted"}, t("r_fallback")) : null,
     el("div", {class: "grid-md-2"}, docsPanel, contactPanel),
     eligible ? null : el("p", null, t("r_no_packet")),
     notes.list(),
@@ -760,12 +827,12 @@ function renderHome() {
   const headline = h.eligible
     ? panel("hero",
         el("p", {class: "big-money", dir: "ltr"}, money(h.estimate_cents)),
-        el("p", {class: "lead"}, ...tNodes("home_estimate", {amt: money(h.estimate_cents)})),
-        el("p", {class: "muted"}, t("home_estimate_note")))
+        el("p", {class: "lead"}, ...tSafe("home_estimate", {amt: money(h.estimate_cents)})),
+        el("p", {class: "muted"}, ...tSafe("home_estimate_note")))
     : panel("hero", el("p", {class: "lead"}, t("home_not_eligible")));
   const covers = h.one_application_covers_all
     ? panel("ok",
-        el("p", null, ...tNodes("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
+        el("p", null, ...tSafe("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
         englishOnly("p", {class: "muted"}, h.coverage.text_en))
     : null;
   const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => el("li", {class: "panel"},
@@ -775,7 +842,7 @@ function renderHome() {
         el("p", {class: "muted"}, t("f_statement") + ": ", bdiEn(b.statement_date))),
       el("span", {class: "bill-amt", dir: "ltr"}, money(b.amount_due_cents))),
     el("p", {class: "bill-meta"}, ...tNodes("home_bill_deadline", {date: b.deadline.date}),
-      h.eligible ? " " : null, ...(h.eligible ? tNodes("home_bill_reduction", {amount: money(b.reduction_cents)}) : [])))));
+      h.eligible ? " " : null, ...(h.eligible ? tSafe("home_bill_reduction", {amount: money(b.reduction_cents)}) : [])))));
   const reminders = panel("",
     el("h3", null, t("rem_title")),
     el("p", null, ...tNodes("rem_apply", {date: h.earliest_deadline.date})),
@@ -796,7 +863,7 @@ function renderHome() {
 function packetSkeleton() { return el("div", {class: "skeleton", "aria-hidden": "true"}); }
 function renderPacketShell() {
   fill(document.getElementById("s5"), el("div", {class: "stack-8"},
-    screenTitle(t("p_title"), t("p_sub")),
+    screenTitle(t("p_title"), tSafe("p_sub")),
     el("div", {class: "paper", id: "packet-paper"}, packetSkeleton()),
     actions([
       el("button", {type: "button", onclick: () => show(4)}, t("back")),

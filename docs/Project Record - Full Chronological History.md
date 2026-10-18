@@ -98,6 +98,7 @@ the dated entry, not the digest.
 - [BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80)](#appendix-bj---https-only-http-308-redirects-to-https-acme-path-kept-on-80-2026-10-18-1233-cdt) (10-18)
 - [BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live](#appendix-bk---audit-5-10-agent-fast-sweep-11-fixes-790eb38-live-2026-10-18-1249-cdt) (10-18)
 - [BL - Concurrent deploy overwrote 790eb38 with 58d8908; 790eb38 redeployed](#appendix-bl---concurrent-deploy-overwrote-790eb38-with-58d8908-790eb38-redeployed-2026-10-18-1251-cdt) (10-18)
+- [BM - Second QR: downloadable synthetic test bills page, df69369 live](#appendix-bm---second-qr-downloadable-synthetic-test-bills-page-df69369-live-2026-10-18-1312-cdt) (10-18)
 
 ---
 
@@ -2077,3 +2078,29 @@ Fixes landed in 3547230 + 790eb38, on top of the forked session's 58d8908 (QR ->
 - The 790eb38 redeploy keeps its first backup (deploy-remote.sh keeps an existing one), so `-Commit 790eb38 -Rollback` still restores 2e74b20.
 
 **Open.** Deploys need a lock, or a single owner session. Rule for the rest of the event: only this session deploys.
+
+# Appendix BM - Second QR: downloadable synthetic test bills page, df69369 live (2026-10-18 ~13:12 CDT)
+**What.** Evan (~13:08 CDT): "put the test images as a download from another QR code on the main screen next to the original one so that participants can use them". Commit df69369 does this. Claude deployed it at 13:11 CDT at Evan's word ("check then commit push and deploy"), during the showcase.
+
+**How.**
+- app/static/test-bills/ holds bill-01..14 (bill-02 is the blur0 render), bills 20, 22 and 23, and eob-06..10.
+- It has an index.html generated from spikes/synthetic-bill/answer_key.json and spikes/synthetic-eob/pairs_key.json. Each bill line shows hospital, amount due and insurance status; each pair line gives the order to upload.
+- The page opens with a SYNTHETIC banner: no hospital or insurer issued, reviewed or endorsed these.
+- The Start screen's qrFigure now draws two codes in a .qr-pair row: origin + "/?hospital=vumc" as before, and origin + "/test-bills/".
+- New strings qr2_alt and qr2_caption, with es/ar/zh marked TODO-REVIEW. The QR shows only at >= 900 px, as before.
+- Size: 1.1 MB, 23 files.
+
+**Judgment call, stated.** Bills 01-09 carry real hospital names, labelled "(SYNTHETIC)" and "NOT ISSUED BY", which important.md 7 allows. They are now downloadable by anyone. The planted-error and EOB-pair bills (10-14, 20, 22, 23) all use the fictional Cumberland General Hospital (SYNTHETIC), so plan rule A2 still holds.
+
+**Verification.**
+- All 9 test files pass: test_app_js 78 including j9, which pins the first QR.
+- Every href on the page resolves to a committed file.
+- Local preview: two QR figures at 1024 px; the page has 0 px overflow at 375 px and 24 download links.
+- Live, on both https://207.211.181.174 and https://billow.duckdns.org:
+  - app.js 0019423dacb1 = df69369 (CR stripped);
+  - /test-bills/ 200;
+  - /test-bills/eob-08.png 200 image/png;
+  - /stats 200.
+- Before deploying, live was 790eb38, the expected state, so no other session had deployed in between.
+
+**Rollback:** `deploy.ps1 -Commit df69369 -Rollback` restores 790eb38.

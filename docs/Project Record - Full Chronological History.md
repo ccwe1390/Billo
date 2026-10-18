@@ -97,6 +97,7 @@ the dated entry, not the digest.
 - [BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open)](#appendix-bi---swarm-ui-fixes-2e74b20-live-8-of-10-translations-and-hebrew-billing-office-open-2026-10-18-1228-cdt) (10-18)
 - [BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80)](#appendix-bj---https-only-http-308-redirects-to-https-acme-path-kept-on-80-2026-10-18-1233-cdt) (10-18)
 - [BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live](#appendix-bk---audit-5-10-agent-fast-sweep-11-fixes-790eb38-live-2026-10-18-1249-cdt) (10-18)
+- [BL - Concurrent deploy overwrote 790eb38 with 58d8908; 790eb38 redeployed](#appendix-bl---concurrent-deploy-overwrote-790eb38-with-58d8908-790eb38-redeployed-2026-10-18-1251-cdt) (10-18)
 
 ---
 
@@ -2058,3 +2059,21 @@ Fixes landed in 3547230 + 790eb38, on top of the forked session's 58d8908 (QR ->
    - the denial_reason prompt has no copy-verbatim rule.
 7. Already known: the number lock compares sets, not counts (audit 3 A1).
 8. Docs: PRD has no Phase 2/3 or Billow entry; contracts.md section headers still say f12/f13 are not merged; testing.md gives a Python count for only 4 files.
+
+# Appendix BL - Concurrent deploy overwrote 790eb38 with 58d8908; 790eb38 redeployed (2026-10-18 ~12:51 CDT)
+**What.**
+- 12:49 CDT: this session deployed 790eb38 (record BK) at Evan's word.
+- 12:50: a forked session, working on the billow.duckdns.org name, deployed 58d8908. That overwrote 790eb38: the served app.js hash became 443db1674c2e, which is 58d8908's.
+- 12:51: this session confirmed the overwrite, told the forked session to stop deploying, and redeployed 790eb38.
+
+**Why the redeploy is safe.** 790eb38 is a descendant of 58d8908, so it contains the QR change as well. Evan's last deploy instruction named 790eb38.
+
+**Verification after the redeploy (12:51:34).** On both https://207.211.181.174 and https://billow.duckdns.org, served app.js is 7fbf2eca8fa8, which is 790eb38's (CR stripped), and /stats is 200.
+
+**Root cause.** Two sessions shared one checkout and one VM, and each ran deploy.ps1 on its own. Nothing serializes deploys, and the forked session did not know the tree had moved past its commit.
+
+**Rollback facts.**
+- The forked session said "-Commit 58d8908 -Rollback restores 2e74b20". That is wrong: backup-before-58d8908.tar was taken from 790eb38's live tree.
+- The 790eb38 redeploy keeps its first backup (deploy-remote.sh keeps an existing one), so `-Commit 790eb38 -Rollback` still restores 2e74b20.
+
+**Open.** Deploys need a lock, or a single owner session. Rule for the rest of the event: only this session deploys.

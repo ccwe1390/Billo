@@ -91,6 +91,7 @@ the dated entry, not the digest.
 - [BC - Phase 2 Find errors built, merged and deployed (99d4851)](#appendix-bc---phase-2-find-errors-built-merged-and-deployed-99d4851-2026-10-18-1119-cdt) (10-18)
 - [BD - Presenter demo kit (artifact) incl. EOB drafts](#appendix-bd---presenter-demo-kit-artifact-incl-eob-drafts-2026-10-18-1134-cdt) (10-18)
 - [BE - Phase 3 EOB merged and deployed (ba6d1f0)](#appendix-be---phase-3-eob-merged-and-deployed-ba6d1f0-2026-10-18-1149-cdt) (10-18)
+- [BF - Remove photo + Sources dropdown (a0684aa, not live); swarm plan held; quick usability brief](#appendix-bf---remove-photo--sources-dropdown-a0684aa-not-live-swarm-plan-held-quick-usability-brief-2026-10-18-1155-cdt) (10-18)
 
 ---
 
@@ -1880,3 +1881,10 @@ Earlier checks (blank name, VUMC condition, deadline anchor, no result field) pa
 - Phase 2 checks (lc6) 20/20 and earlier checks pass;
 - served app.js equals the commit (CRLF-normalised sha 9c252713e0d4).
 Slip: lc6 was run twice by a command error, about 20 extra vision calls (cents).
+
+# Appendix BF - Remove photo + Sources dropdown (a0684aa, not live); swarm plan held; quick usability brief (2026-10-18 11:55 CDT)
+**When:** 2026-10-18 ~11:50-11:56 CDT.
+- Evan: "allow the user to delete an uploaded photo; make a dropdown menu to show and hide sources, make it closed by default". Built in a0684aa: a Remove photo button on the Bill screen drops the photo and every field read from it, and a read still in flight is ignored; Sources is a closed details dropdown that any footnote mark opens. New tests n1 and n2 fail on the old app.js; 76 JS tests ALL PASS. NOT deployed. The freeze on app.js for the f13 fork was lifted, and the fork was told.
+- Swarm plan written to ~/.claude/task-plans/tnhacks26-swarm.md (30 Sonnet probes, 10 on the core journey). Evan: "wait on the swarm plan", so it has not launched.
+- /research-brief "very quick" on usability: docs/research/2026-10-18_usability-quick-brief.md. Verdict: Billow already follows most established practices; the structural gap (many fields per screen vs GOV.UK one-thing-per-page) is not a minutes fix. Stage 10.5 was skipped (stated in the brief).
+- Correction to record BD: its time range ends 11:36, but the clock read 11:35 at commit.

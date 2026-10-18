@@ -126,3 +126,6 @@
   Ascension policies). Backup ~/backup-before-bdc76df.tar = the 984a537 app. ROLLBACK from bdc76df:
   `deploy.ps1 -Commit bdc76df -Rollback` (restores 984a537). Do NOT roll back with -Commit 984a537:
   that restores the 5af2f1f app (Cumberland only). Live checks 08:49 pass (record AV). main = bdc76df.
+- 2026-10-18 09:59 CDT - Claude deployed f6b6f05 (audit-4 fixes; first run of the split rm/mkdir/tar
+  lines). Backup ~/backup-before-f6b6f05.tar = the bdc76df app. Rollback: `deploy.ps1 -Commit f6b6f05
+  -Rollback` (restores bdc76df). Live checks 10:00 pass (record AX). main = f6b6f05.

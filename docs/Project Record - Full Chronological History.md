@@ -83,6 +83,7 @@ the dated entry, not the digest.
 - [AU - Deploy 984a537 live (audit 3 fixes), health check worked, live checks pass](#appendix-au---deploy-984a537-live-audit-3-fixes-health-check-worked-live-checks-pass-2026-10-18-0751-cdt) (10-18)
 - [AV - Real published policies (VUMC + Ascension Saint Thomas) with synthetic bills: audited plan, 5 agents, live bdc76df](#appendix-av---real-published-policies-vumc--ascension-saint-thomas-with-synthetic-bills-audited-plan-5-agents-live-bdc76df-2026-10-18-0852-cdt) (10-18)
 - [AW - Audit 4 (6 workers) after the real-policy change: 1 crit (pitch language claim), 7 high](#appendix-aw---audit-4-6-workers-after-the-real-policy-change-1-crit-pitch-language-claim-7-high-2026-10-18-0941-cdt) (10-18)
+- [AX - Audit 4 fixes: presenter sheet, HANDOFF, Home gating, no-name bills, deploy f6b6f05](#appendix-ax---audit-4-fixes-presenter-sheet-handoff-home-gating-no-name-bills-deploy-f6b6f05-2026-10-18-1002-cdt) (10-18)
 
 ---
 
@@ -1704,3 +1705,14 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **Cost:** 6 Sonnet workers, 441 tool calls, ~1.52M subagent tokens, ~41 min. Side effects: one worker killed 6 local processes during its own cleanup (live site still 200); one wrote and removed 2 scratch files in the repo root (git status clean).
 
 **Open:** fixes await Evan (fix order section 7; B1/B2 decisions).
+
+# Appendix AX - Audit 4 fixes: presenter sheet, HANDOFF, Home gating, no-name bills, deploy f6b6f05 (2026-10-18, ~10:02 CDT)
+**When:** 2026-10-18 09:43-10:01 CDT. Evan: "Do the pre-1PM docs fixes (1, 4, 5, 18-23, 37, 7, 8), and the code fixes 2, 3, 10, 17, 12, 14 with B1 = (a) hide Home reminders/calendar/approval unless my bill matches, and B2 = (b) missing hospital name -> no-policy warning. Commit as you go, then deploy." Plan mode came on mid-run; Evan approved the remaining-steps plan and added a landing check and a docs sync at the end.
+
+**Docs (Opus):** fc21a7d presenter sheet - the 5 languages are AI drafts (not "written by the team"), the packet is not the hospital's application, rows for rev2 343/344/347, "English is one tap away", 4 of 13 hospitals encoded, Oregon 85% wording, no human verification claimed, B.A.R.S. difference, small items. 8f1a449 HANDOFF (live commit, real policies verified, 3 policy files, who deploys + full-path command built with char code 92, push state, brief corrected, VUMC gate superseded) and operations.md (bdc76df entry with the right rollback).
+
+**Code (plan-split: 2 Sonnet agents, disjoint files; Opus reviewed both diffs on disk):** a4d2fc1 UI - Home's one-approval line, reminders and calendar shown only when the user's own bill matches (n counts matching rows); no /explain call for no-policy results; r_no_hospital warning; "Financial assistance office" label; 6 new tests (48 total). f6b6f05 server + deploy - a bill with no hospital name is treated as no policy (hospital_name_missing; /packet 422 "the bill shows no hospital name"); /explain facts carry no tier or deadline for no-policy bills; Opus added the whitespace/non-text name guard the agent reported (its option 1, made type-safe); deploy-remote.sh rm/mkdir/tar on separate lines.
+
+**Verification:** 6/6 test files ALL PASS; node --check, bash -n, LF on the .sh, main.py 686/686 CRLF, engine.py untouched. Browser (fake OCI): blank name -> "could not read a hospital name" + help card, no estimate; TriStar -> no-policy screen; VUMC 187% unchanged; Ascension bill then Home -> no reminders, approval line or calendar. Deploy f6b6f05 09:59 CDT by Claude (Evan's "then deploy"): backup-before-f6b6f05.tar, DEPLOYED. Live checks 10:00: all journeys pass as at 08:49; blank-name /evaluate -> matched false + missing true, /explain one line, /packet 422 (http + https); served app.js equals the commit modulo CRLF.
+
+**State:** LIVE f6b6f05; rollback = deploy.ps1 -Commit f6b6f05 -Rollback (restores bdc76df). Local main = f6b6f05, not pushed.

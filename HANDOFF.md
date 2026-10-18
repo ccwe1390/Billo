@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 09:41 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AW).
+**Last updated: 2026-10-18 10:02 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AX).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -74,13 +74,11 @@ snapshot; history lives in the record (Phase 0, Appendices A-AW).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## STATUS (2026-10-18 08:52 CDT) - read this first
-- **09:41 CDT (record AW): audit 4 done, docs/2026-10-18_audit-4.md** - 1 crit (pitch sheet says the 5 languages were "written by the team"), 7 high; several lines BELOW are stale (live commit, VUMC "unverified", push state, deploy path) until the fix pass. Rollback from bdc76df: `deploy.ps1 -Commit bdc76df -Rollback` (full path C:\ClaudeCode\TNHacks27\deploy\deploy.ps1).
-- **LIVE: bdc76df on http AND https://207.211.181.174/** (deployed by Claude 08:48 CDT at Evan's
-  request; live checks 08:49 pass; record AV). The demo now uses the REAL published policies of
-  Vanderbilt University Medical Center and Ascension Saint Thomas (app/data/policy_vumc.json,
-  policy_ascension_saint_thomas.json, page-cited, verified by a fresh agent); every bill stays
-  SYNTHETIC. Other hospitals get no estimate. Rollback: `deploy.ps1 -Commit bdc76df -Rollback`
-  (restores 984a537).
+- **10:02 CDT (record AX):** audit 4 (docs/2026-10-18_audit-4.md) - crit 1 and highs 2-8 fixed (fc21a7d, 8f1a449, a4d2fc1, f6b6f05); open: 9, 11, 13, 15, 16, 24-36, B3.
+- **LIVE: f6b6f05 on http AND https://207.211.181.174/** (deployed by Claude 09:59 CDT at Evan's
+  request; live checks 10:00 pass; record AX). Real published VUMC + Ascension Saint Thomas policies,
+  synthetic bills; audit-4 code fixes 2, 3, 10, 12, 14, 17 live. Rollback:
+  `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit f6b6f05 -Rollback` (restores bdc76df).
 - Deploy command (any folder): `powershell -ExecutionPolicy Bypass -File
   C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; after a dropped link re-run with
   -Watch (exit 2 = network dropped, remote keeps running). One "curl: (7)" line is normal.

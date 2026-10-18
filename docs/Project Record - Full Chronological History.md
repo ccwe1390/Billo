@@ -88,6 +88,7 @@ the dated entry, not the digest.
 - [AZ - Landing check of the audit-4 fixes; B2 reaches Home; deploy e53d1ce](#appendix-az---landing-check-of-the-audit-4-fixes-b2-reaches-home-deploy-e53d1ce-2026-10-18-1022-cdt) (10-18)
 - [BA - Deadline counts from the date of service (feature review flaw 2)](#appendix-ba---deadline-counts-from-the-date-of-service-feature-review-flaw-2-2026-10-18-1029-cdt) (10-18)
 - [BB - Audits applied and deployed (08265fa + Apache gzip/h2); rename on hold; Phase 2 build decision](#appendix-bb---audits-applied-and-deployed-08265fa--apache-gziph2-rename-on-hold-phase-2-build-decision-2026-10-18-1043-cdt) (10-18)
+- [BC - Phase 2 Find errors built, merged and deployed (99d4851)](#appendix-bc---phase-2-find-errors-built-merged-and-deployed-99d4851-2026-10-18-1119-cdt) (10-18)
 
 ---
 
@@ -1800,3 +1801,45 @@ Local main fast-forwarded to e53d1ce; nothing pushed after a959f2b (f10) / bdc76
   - merge and deploy only on his word; no push.
 - Done now: the pitch sheet's top banner gains a DO NOT SAY line (no error flags or dispute letters unless Phase 2 is live by 12:40). It was committed without the uncommitted rename phrases (staged from HEAD's copy).
 - Slides 6 and 7 were checked against the rev2 text (the deck is not in the repo; Evan edits it).
+
+# Appendix BC - Phase 2 Find errors built, merged and deployed (99d4851) (2026-10-18 11:19 CDT)
+**When:** 2026-10-18, from 10:43 CDT (plan audit) to the live check after the 11:16 deploy. Evan: "Build option 3 (Phase 2 'Find errors') TODAY", "12:40 cut", then "You write them" (prompt + letter), then "merge and deploy f12".
+
+**Plan audit (cold Opus):** GO WITH FIXES. The source spec (vision prompt + letter template) was not on disk, so Opus wrote them (plan A5/A6; Evan: "You write them"). Other fixes, all in plan section 1b:
+- planted-error bills under the fictional Cumberland General Hospital, never a real hospital's name;
+- all flag strings and route shapes pinned;
+- S4 started at kickoff; S7 (i18n) cut;
+- medicaid option in the UI.
+One audit claim was wrong: it said 08265fa was not deployed, but HANDOFF was stale and 08265fa was live. HANDOFF was corrected (745ba6b).
+
+**O1 (Opus):** 42 CFR 447.15 alone = PARTLY: it binds the state plan for "amounts paid by the agency", and TennCare pays through MCOs. So the TennCare card uses narrower wording and cites 42 CFR 438.106 (eCFR, current to 2026-10-15). The Tennessee rule 1200-13-13-.08(1)(a) agrees; it was read on Cornell LII, not on the official Tennessee site.
+
+**Build on worktree f12 (Sonnet agents; Opus re-ran each check and read each diff):**
+| step | commit | check |
+|---|---|---|
+| Billow rename (Evan "keep") | cbc815b | 6 suites ALL PASS |
+| S1 bills 11-14 (+ Cumberland redo) | 674fb5a, b430562 | sums re-derived by Opus; bill-12 due differs by $200.00 |
+| S2 app/checks.py | 5f5f1a0 | 20 tests; 3 mutants caught; Opus gate: insurance_unpaid needs confirmed payments (mutant caught) |
+| S6 contracts addendum | bc09bfc | append-only, ASCII |
+| S3 app/dispute.py | e7be5a5 | 11 tests; sample bill-12 letter read |
+| S5 UI | 3b44323 | 65 node tests; k1-k15 fail on the old app.js |
+| S4 server | 100fad8 | 8 suites ALL PASS |
+| wrap fix | 0852522 | long document URL made the Result screen 515 px wide at 375 px (also live before) -> 375/375 |
+| O2 fixes | 5ede3f7 | line cents over 10^9 -> None (was a 422 on every later call); lines_checked only when the sum ran; total_to_ask >= 0; medicaid letter "My bill lists TennCare coverage"; "Medicaid pending"/"No Medicaid" -> unknown |
+- **V1 vision gate:** PASS, 36 real calls. Re-scored by Opus with the f12 normalizer: NEW 106 vs OLD 99 of 108 fields. Bill-11 CT read as 2 rows in 2/2 runs. Max NEW latency 12.32 s, about 2.3x OLD. One NEW miss: bill-01 date_of_service came back null (n=1).
+- **Fake-mode browser pass (Opus, 375 px):** lines table -> confirm -> card with safety line -> letter on screen 5.
+- **V2:** 19 mutants; 18 caught. #12 (an "insur" check before tenncare/medicaid) survived until 64c1ea1 added "TennCare insurance"/"Medicaid Insurance"; that mutant now fails.
+- **O2 (cold Opus):** SHIP WITH FIXES. #1-#3 fixed. #4-#13 open: contracts doc wording; due_mismatch with zero items; bidi controls; checks_run inflatable; lax bools; total-row hint; English-only flag text; step bar says "Packet"; test_api timing flake at line 304 under load.
+
+**Merge + deploy (Evan's word):**
+- merge 99d4851 (f12 into f10, --no-ff), 8 suites ALL PASS;
+- deployed 11:16 CDT; backup-before-99d4851.tar = the 08265fa app;
+- rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa).
+
+**Live 11:17-11:19, http + https:** real /extract of bills 01, 11, 12, 13, 14:
+- /check gave [], [duplicate] (to ask $1,385.00), [due_mismatch] ($200.00), [insurance_unpaid], [medicaid];
+- lines read 4/7/4/4/3 = printed;
+- /dispute in Spanish -> 200 with the letter for each flagged bill; a bad body -> 422.
+Earlier checks (blank name, VUMC condition, deadline anchor, no result field) pass. lc5's "70 KB -> 413" FAIL is its own header-case bug; curl showed 413 + nosniff earlier.
+
+**Agents:** Sonnet = rename, S1 (resumed once), S2, S3, S4, S5, S6, V1, V2 = 9. Opus = plan audit, O1, O2 = 3. O3 (landing check) was not run: the Opus budget was used.

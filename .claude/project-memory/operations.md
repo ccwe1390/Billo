@@ -139,3 +139,5 @@
   ~/bill-to-help-ssl.conf.before-perf). Undo: delete the perf conf, copy the backup back, `sudo systemctl reload httpd`.
 - 11:11 CDT - Phase 2 build on worktree C:/ClaudeCode/TNHacks27-f12 (branch f12); preview config f12-fake (port 8770) in
   .claude/launch.json. NOT deployed; merge + deploy only on Evan's word, 12:40 CDT hard cut (record BB).
+- 2026-10-18 11:16 CDT - Claude deployed 99d4851 (merge of f12: Phase 2 + Billow). Backup ~/backup-before-99d4851.tar = the 08265fa
+  app. Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Live checks pass (record BC).

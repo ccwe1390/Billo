@@ -4,6 +4,10 @@
 > your bill" or dispute letters, on slides, in the demo or in judge answers, unless Phase 2 ("Find errors")
 > is live-checked on http + https by 12:40 CDT (record BB).** Until then the app checks eligibility only;
 > it does not look for billing errors.
+> **11:20 CDT - LIFTED: Phase 2 is live (99d4851, live-checked on http + https 11:19, record BC).** Say: "fixed rules, not
+> AI, flag things to ask the hospital about; only the hospital can confirm an error." Never say "errors found", "savings"
+> or "money back". Show flags ONLY on bills 11-14 (fictional Cumberland General Hospital), never on a VUMC or
+> Ascension bill.
 >
 > **2026-10-18 08:51 CDT - THE DEMO NOW USES REAL POLICIES (bdc76df, live 08:48 CDT).**
 > The app holds the real published financial assistance policies of Vanderbilt

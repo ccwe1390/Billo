@@ -15,3 +15,6 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
   built: using insurance_status in the estimate (the engine ignores it), pending-insurance detection.
 - 2026-10-18 10:34 CDT - built, NOT deployed (223013b, record BA): Apply by counts from the date of service when
   known and earlier than the statement (deadline.counted_from), so it can only be earlier than the policy deadline.
+- 11:11 CDT - Phase 2 "Find errors" BUILT on f12, NOT live: charge lines read + confirmed, fixed-rule checks (duplicate,
+  lines_sum, due_mismatch, insurance_unpaid, medicaid w/ 42 CFR 438.106), "Things to ask the hospital about" card, fixed
+  English letter (/dispute). Product name is Billow (cbc815b, not deployed).

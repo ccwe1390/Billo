@@ -132,3 +132,10 @@
 - 2026-10-18 10:20 CDT - Claude deployed e53d1ce (landing-check fixes + VUMC underinsured condition).
   Backup ~/backup-before-e53d1ce.tar = the f6b6f05 app. Rollback: `deploy.ps1 -Commit e53d1ce -Rollback`
   (restores f6b6f05). Live checks 10:21 pass (record AZ). main = e53d1ce, not pushed.
+- 2026-10-18 ~10:38 CDT - Claude deployed 08265fa (Evan: "Do 1-4"). Backup ~/backup-before-08265fa.tar = the e53d1ce app.
+  Rollback: `deploy.ps1 -Commit 08265fa -Rollback` (restores e53d1ce). Live checks pass (record BB).
+- 2026-10-18 ~10:35 CDT - Apache (VM only, not in the repo): /etc/httpd/conf.d/bill-to-help-perf.conf (DEFLATE for
+  html/css/js/json/svg/text, DeflateAlterETag NoChange) and `Protocols h2 http/1.1` in bill-to-help-ssl.conf (backup
+  ~/bill-to-help-ssl.conf.before-perf). Undo: delete the perf conf, copy the backup back, `sudo systemctl reload httpd`.
+- 11:11 CDT - Phase 2 build on worktree C:/ClaudeCode/TNHacks27-f12 (branch f12); preview config f12-fake (port 8770) in
+  .claude/launch.json. NOT deployed; merge + deploy only on Evan's word, 12:40 CDT hard cut (record BB).

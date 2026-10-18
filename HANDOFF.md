@@ -20,10 +20,10 @@ via the plan's ClearHealthCosts source, not re-read by Claude). Full plan:
 **Hard deadline: hacking finishes Sun 2026-10-18 1:00 PM CDT.** Venue closes
 Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
-## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
+## Current state - LIVE on OCI at https://207.211.181.174/ (HTTPS only since 2026-10-18 12:31 CDT; http 308-redirects; gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 12:28 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-BH).
+**Last updated: 2026-10-18 12:46 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-BK).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -37,11 +37,11 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
 | Submission form / repo / video | **UNKNOWN** - ask organizers | - |
 | Team roster and roles | **UNCONFIRMED** (plan assumes 4) | - |
 | OCI account | Exists (tenancy root compartment); Chicago home region per kit guidance | console pastes |
-| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :80. SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
+| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :443 (:80 only redirects to https since 2026-10-18 12:31). SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each - OLD render only (2026-10-17); the re-rendered blur-3 bill misread the date (2026-10-18 08:49, experiments.md); blur 5 not re-run | experiments.md |
 | VUMC + Ascension policy | **REAL, VERIFIED** 2026-10-18: read from their PDFs, page-cited, re-checked by a second AI pass and against freshly downloaded PDFs (audit 4: 0 defects); live since 08:48 | record AV, audit 4 |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs e53d1ce (deployed 2026-10-18 10:20 CDT, record AZ; real policies) | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 9 test files ALL PASS (2026-10-18 12:45: checks 21, eob_checks 25, dispute 21, app_js 78); live with real OCI since 14:53; the live server runs 2e74b20 (see the LIVE bullet under Status; the e53d1ce text that follows is history) (e53d1ce deployed 2026-10-18 10:20 CDT, record AZ; real policies) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -86,7 +86,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
   bills 11-14 (fictional Cumberland). Open O2 items #4-#13 (record BC). Pitch: the DO NOT SAY line is lifted (Phase 2 live by 12:40).
   KEEP until after the pitches (Evan 11:23): worktree C:/ClaudeCode/TNHacks27-f12 and ~/.claude/task-plans/tnhacks26-errorcheck.md.
   Phase 2 files frozen at 79f1c07 for the Phase 3 fork (f13); nothing merges without Evan.
-- **LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
+- **[SUPERSEDED 2026-10-18 12:27: LIVE is 2e74b20, https only] Earlier LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
   word; live checks 10:21 pass; record AZ). Real published VUMC + Ascension Saint Thomas policies,
   synthetic bills; audit-4 fixes + landing-check fixes + the VUMC uninsured/underinsured condition
   (record AY) live. Rollback:

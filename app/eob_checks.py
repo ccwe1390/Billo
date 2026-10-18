@@ -88,7 +88,7 @@ def _line_flags(bill, eob, bill_dos, eob_dos):
     eob_groups = _line_groups(eob_items, eob_dos, "amount_billed_cents")
 
     def desc(i):
-        return str(bill_items[i].get("description")).strip()
+        return str(bill_items[i].get("description") or "this charge").strip()  # never print "None"
 
     flags = []
     for (date, amt), idxs in bill_groups.items():
@@ -130,6 +130,7 @@ def _money_flags(bill, eob):
     discount = _int_or_none(_field(eob, "plan_discount_cents"))
     plan_paid = _int_or_none(_field(eob, "plan_paid_cents"))
     owes = _int_or_none(_field(eob, "patient_owes_cents"))
+    owes = None if owes is None else max(0, owes)  # a negative "you owe" must not raise the total above the amount due
     claim = _s(_field(eob, "claim_number"))
 
     flags = []
@@ -145,15 +146,18 @@ def _money_flags(bill, eob):
     if payments is not None and plan_paid is not None:
         credit = plan_paid + (discount or 0)
         if abs(payments - credit) > TOLERANCE:
+            if discount is None:  # no discount on the summary: say nothing about one, never "$0.00"
+                said, wrote = f"Your insurer says it paid {_money(plan_paid)}", f"My insurer says it paid {_money(plan_paid)}"
+            else:
+                said = (f"Your insurer says it paid {_money(plan_paid)} and took off a plan discount of "
+                        f"{_money(discount)} ({_money(credit)} in all)")
+                wrote = (f"My insurer says it paid {_money(plan_paid)} and applied a plan discount of "
+                         f"{_money(discount)}, a total of {_money(credit)}")
             flags.append(_ins(
                 "credit_mismatch",
-                f"Your insurer says it paid {_money(plan_paid)} and took off a plan discount of "
-                f"{_money(discount or 0)} ({_money(credit)} in all), but this bill shows "
-                f"{_money(payments)} in payments and adjustments.",
-                f"My insurer says it paid {_money(plan_paid)} and applied a plan discount of "
-                f"{_money(discount or 0)}, a total of {_money(credit)}, but this bill shows "
-                f"{_money(payments)} in payments and adjustments. "
-                "Please apply the full insurance payment and discount.",
+                f"{said}, but this bill shows {_money(payments)} in payments and adjustments.",
+                f"{wrote}, but this bill shows {_money(payments)} in payments and adjustments. "
+                "Please apply the full insurance payment" + (" and discount." if discount is not None else "."),
             ))
     if due is not None and owes is not None and due > owes + TOLERANCE:
         claim_part = f" (claim {claim})" if claim else ""
@@ -259,6 +263,7 @@ def run(bill, eob=None, not_yet=False, p2=None):
                   if not (f["id"] == "duplicate" and set(f["line_indexes"]) & charged_idx)]
     due = _int_or_none(_field(bill, "amount_due_cents"))
     owes = _int_or_none(_field(eob, "patient_owes_cents"))
+    owes = None if owes is None else max(0, owes)  # a negative "you owe" must not raise the total above the amount due
     total = p2_total
     if due is not None and owes is not None:
         total = due - owes if due > owes + TOLERANCE else 0

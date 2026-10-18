@@ -134,7 +134,7 @@ const T = {
   err_busy:    {en: "Too many requests right now. Wait a minute and try again.", es: "Hay demasiadas solicitudes en este momento. Espere un minuto e inténtelo de nuevo.", ar: "هناك طلبات كثيرة الآن. انتظر دقيقة ثم حاول مرة أخرى.", "zh-CN": "目前请求过多。请等一分钟后再试。", "zh-TW": "目前請求過多。請等一分鐘後再試。"}, // TODO-REVIEW es+ar+zh
   r_policy_used:{en: "This estimate uses the policy of {name}.", es: "Esta estimación usa la política de {name}.", ar: "يستخدم هذا التقدير سياسة {name}.", "zh-CN": "此估算使用 {name} 的政策。", "zh-TW": "此估算使用 {name} 的政策。"}, // TODO-REVIEW es+ar+zh
   r_mismatch_title:{en: "Different hospital", es: "Hospital distinto", ar: "مستشفى مختلف", "zh-CN": "不同的医院", "zh-TW": "不同的醫院"}, // TODO-REVIEW es+ar+zh
-  r_mismatch:  {en: "Your bill names a different hospital. This demo has only one hospital's policy, and it is synthetic, so this estimate is not about your hospital.", es: "Su factura menciona otro hospital. Esta demostración solo tiene la política de un hospital, y es sintética, así que esta estimación no corresponde a su hospital.", ar: "تذكر فاتورتك مستشفى مختلفًا. يحتوي هذا العرض التجريبي على سياسة مستشفى واحد فقط، وهي اصطناعية، لذا فإن هذا التقدير لا يخص مستشفاك.", "zh-CN": "您的账单上是另一家医院。本演示只有一家医院的政策，而且是合成的，所以此估算与您的医院无关。", "zh-TW": "您的帳單上是另一家醫院。本示範只有一家醫院的政策，而且是合成的，所以此估算與您的醫院無關。"}, // TODO-REVIEW es+ar+zh
+  r_mismatch_real:{en: "Your bills name a different hospital. This estimate uses Vanderbilt University Medical Center's published policy, so it is not about your hospital."}, // audit 5: replaces r_mismatch, which wrongly called the policy synthetic
   r_conditions:{en: "What the hospital also checks (not in this estimate)", es: "Lo que el hospital también revisa (no incluido en esta estimación)", ar: "ما يتحقق منه المستشفى أيضًا (غير مشمول في هذا التقدير)", "zh-CN": "医院还会核查的内容（不在此估算中）", "zh-TW": "醫院還會核查的內容（不在此估算中）"}, // TODO-REVIEW es+ar+zh
   r_mismatch_any:{en: "Your bill names a hospital this demo has no policy for, so we cannot estimate it. The demo has the published policies of Vanderbilt University Medical Center and Ascension Saint Thomas. Ask your hospital for its own financial assistance policy.", es: "Su factura menciona un hospital cuya política no está en esta demostración, así que no podemos hacer una estimación. La demostración tiene las políticas publicadas de Vanderbilt University Medical Center y Ascension Saint Thomas. Pida a su hospital su propia política de asistencia financiera.", ar: "تذكر فاتورتك مستشفى لا تتوفر سياسته في هذا العرض التجريبي، لذا لا يمكننا تقديم تقدير. يتضمن العرض السياسات المنشورة لـ Vanderbilt University Medical Center و Ascension Saint Thomas. اطلب من مستشفاك سياسة المساعدة المالية الخاصة به.", "zh-CN": "您账单上的医院不在本演示的政策范围内，因此我们无法估算。本演示包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。请向您的医院索取其财务援助政策。", "zh-TW": "您帳單上的醫院不在本示範的政策範圍內，因此我們無法估算。本示範包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。請向您的醫院索取其財務援助政策。"}, // TODO-REVIEW es+ar+zh
   r_other_route:{en: "Your income is above this hospital's income tiers. The hospital may still help another way - see what it also checks below. Ask the hospital; this app does not make a packet for that.", es: "Su ingreso está por encima de los niveles de ingreso de este hospital. El hospital aún podría ayudarle de otra forma: vea abajo lo que también revisa. Pregunte al hospital; esta aplicación no crea un paquete para eso.", ar: "دخلك أعلى من شرائح الدخل في هذا المستشفى. قد يساعدك المستشفى بطريقة أخرى، انظر أدناه ما يتحقق منه أيضًا. اسأل المستشفى؛ هذا التطبيق لا ينشئ حزمة لذلك.", "zh-CN": "您的收入高于该医院的收入档次。医院仍可能以其他方式提供帮助，请看下方医院还会核查的内容。请咨询医院；本应用不会为此生成申请材料。", "zh-TW": "您的收入高於該醫院的收入級距。醫院仍可能以其他方式提供協助，請看下方醫院還會核查的內容。請洽詢醫院；本應用程式不會為此產生申請資料。"}, // TODO-REVIEW es+ar+zh
@@ -437,7 +437,7 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 // Safety lines (estimate, the hospital decides, nothing saved, no ID asked) in a machine-translated
 // language also show the English line under the translation: Oracle's translation changed their
 // meaning in some languages (back-translation check 2026-10-17), and the English is what counts.
-const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
+const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch_real", "home_estimate",
                      "home_estimate_note", "home_one_approval", "home_bill_reduction",
                      "r_packet", "r_no_packet", "home_not_eligible", "rem_follow",
                      "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_no_hospital", "r_other_route", "chk_safety"];
@@ -491,7 +491,7 @@ function makeNotes(prefix) { // prefix keeps the anchor ids unique: the Result a
       if (!items.length) return null;
       const ol = el("ol", {class: "notes", role: "list", "aria-label": t("src")}, ...items.map((c, i) => {
         const row = [el("span", {class: "fn-num", dir: "ltr"}, "[" + (i + 1) + "]"), el("span", {class: "fn-text"}, ...citeParts(c))];
-        return el("li", {id: pre + "-" + (i + 1)}, c.url
+        return el("li", {id: pre + "-" + (i + 1)}, c.url && /^https?:\/\//i.test(c.url) // only web links, never javascript:
           ? el("a", {class: "note", href: c.url, target: "_blank", rel: "noopener"}, ...row)
           : el("span", {class: "note"}, ...row));
       }));
@@ -1306,7 +1306,7 @@ function renderHome() {
   const eligible = h.eligible === true; // not eligible: no covers panel, no "Apply by", no reminders, no calendar file
   const noneCounted = h.bills.length > 0 && h.bills.every(b => b.hospital_matches_policy !== true); // false = another hospital, null = no name: not counted
   const headline = eligible && noneCounted
-    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch")))
+    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch_real")))
     : eligible
     ? panel("hero",
         el("p", {class: "big-money", dir: "ltr"}, money(h.estimate_cents)),

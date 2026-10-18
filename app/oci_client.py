@@ -224,7 +224,7 @@ def translate_many(texts, target_lang, keep=()):
     kwargs = {}
     if os.environ.get("OCI_LANGUAGE_ENDPOINT"):
         kwargs["service_endpoint"] = os.environ["OCI_LANGUAGE_ENDPOINT"]
-    client = AIServiceLanguageClient(**_auth(), retry_strategy=oci.retry.NoneRetryStrategy(), **kwargs)
+    client = AIServiceLanguageClient(**_auth(), retry_strategy=oci.retry.NoneRetryStrategy(), timeout=(10, 40), **kwargs)  # same as GenAI: under the 45 s wait
     details = m.BatchLanguageTranslationDetails(
         compartment_id=_env("OCI_COMPARTMENT_ID"),
         target_language_code=target_lang,

@@ -468,9 +468,9 @@ def normalize_bill(raw):
     unreadable field and null (not reported) otherwise.
     """
     values = {
-        "hospital_name": _norm_text(raw.get("hospital_name")),
+        "hospital_name": _eob_text(raw.get("hospital_name")),  # cut to FieldIn's 200 chars, or every later call 422s
         "statement_date": _norm_date(raw.get("statement_date")),
-        "account_number": _norm_text(raw.get("account_number")),
+        "account_number": _eob_text(raw.get("account_number")),
         "amount_due_cents": _norm_cents(raw.get("amount_due")),
         "date_of_service": _norm_date(raw.get("date_of_service")),
         "insurance_status": _norm_insurance(raw.get("insurance_status")),

@@ -1,4 +1,4 @@
-# Run Bill to Help locally
+# Run Billow (formerly Bill to Help) locally
 
 Python 3 (on this laptop: `py`, 3.14).
 
@@ -57,6 +57,9 @@ py tests/test_engine.py
 py tests/test_api.py
 py tests/test_policy_page.py
 py tests/test_answer_key.py
+py tests/test_checks.py
+py tests/test_eob_checks.py
+py tests/test_dispute.py
 node tests/test_app_js.js
 ```
 

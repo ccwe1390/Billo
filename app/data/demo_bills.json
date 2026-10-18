@@ -1,13 +1,13 @@
 {
   "synthetic": true,
-  "note_en": "Five SYNTHETIC bills from one emergency visit at a fictional hospital. Demo data only.",
+  "note_en": "Five synthetic demo bills for one household. Not real patients; not issued by any hospital.",
   "bills": [
     {
       "id": "bill-01",
       "label_en": "Emergency department visit",
       "fields": {
         "hospital_name": {
-          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "value": "Vanderbilt University Medical Center (SYNTHETIC)",
           "confidence": null,
           "confirmed": true
         },
@@ -43,7 +43,7 @@
       "label_en": "Emergency department follow-up visit",
       "fields": {
         "hospital_name": {
-          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "value": "Vanderbilt University Medical Center (SYNTHETIC)",
           "confidence": null,
           "confirmed": true
         },
@@ -79,7 +79,7 @@
       "label_en": "Clinic follow-up",
       "fields": {
         "hospital_name": {
-          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "value": "Vanderbilt University Medical Center (SYNTHETIC)",
           "confidence": null,
           "confirmed": true
         },
@@ -115,7 +115,7 @@
       "label_en": "Lab tests",
       "fields": {
         "hospital_name": {
-          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "value": "Vanderbilt University Medical Center (SYNTHETIC)",
           "confidence": null,
           "confirmed": true
         },
@@ -151,7 +151,7 @@
       "label_en": "Imaging follow-up",
       "fields": {
         "hospital_name": {
-          "value": "Cumberland General Hospital (SYNTHETIC)",
+          "value": "Vanderbilt University Medical Center (SYNTHETIC)",
           "confidence": null,
           "confirmed": true
         },

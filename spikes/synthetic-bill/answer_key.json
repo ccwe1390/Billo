@@ -1,6 +1,6 @@
 {
   "bill-01": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
     "statement_date": "2026-10-01",
     "account_number": "CGH-00482913",
     "amount_due_cents": 481240,
@@ -8,7 +8,7 @@
     "insurance_status": "self_pay"
   },
   "bill-02": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
     "statement_date": "2026-10-05",
     "account_number": "CGH-00519377",
     "amount_due_cents": 185850,
@@ -16,7 +16,7 @@
     "insurance_status": "self_pay"
   },
   "bill-03": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
     "statement_date": "2026-10-09",
     "account_number": "CGH-00527104",
     "amount_due_cents": 64200,
@@ -24,7 +24,7 @@
     "insurance_status": "self_pay"
   },
   "bill-04": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Vanderbilt Wilson County Hospital (SYNTHETIC)",
     "statement_date": "2026-10-12",
     "account_number": "CGH-00527118",
     "amount_due_cents": 31875,
@@ -32,7 +32,7 @@
     "insurance_status": "self_pay"
   },
   "bill-05": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
     "statement_date": "2026-10-14",
     "account_number": "CGH-00533062",
     "amount_due_cents": 120600,
@@ -40,7 +40,7 @@
     "insurance_status": "self_pay"
   },
   "bill-06": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Ascension Saint Thomas Midtown (SYNTHETIC)",
     "statement_date": "2026-09-08",
     "account_number": "CGH-00541206",
     "amount_due_cents": 79150,
@@ -48,7 +48,7 @@
     "insurance_status": "self_pay"
   },
   "bill-07": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Ascension Saint Thomas West (SYNTHETIC)",
     "statement_date": "2026-09-17",
     "account_number": "CGH-00548830",
     "amount_due_cents": 519100,
@@ -56,7 +56,7 @@
     "insurance_status": "self_pay"
   },
   "bill-08": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Ascension Saint Thomas Rutherford (SYNTHETIC)",
     "statement_date": "2026-09-24",
     "account_number": "CGH-00556471",
     "amount_due_cents": 34900,
@@ -64,7 +64,7 @@
     "insurance_status": "self_pay"
   },
   "bill-09": {
-    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+    "hospital_name": "Ascension Saint Thomas West (SYNTHETIC)",
     "statement_date": "2026-10-02",
     "account_number": "CGH-00563920",
     "amount_due_cents": 456900,

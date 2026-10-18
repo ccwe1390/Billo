@@ -17,8 +17,11 @@ GENAI_ENDPOINT = "https://inference.generativeai.us-chicago-1.oci.oraclecloud.co
 
 EXTRACT_PROMPT = (
     "Read this hospital bill. Return only JSON with keys hospital_name, statement_date, "
-    "account_number, amount_due, date_of_service, insurance_status. Use null for anything "
-    "you cannot read clearly. Do not guess."
+    "account_number, amount_due, date_of_service, insurance_status, line_items, "
+    "total_charges, payments_and_adjustments. line_items is a list with one object per "
+    "printed charge row, in order, with keys date, description, quantity, amount. "
+    "Include every row exactly as printed, even when two rows are identical. "
+    "Use null for anything you cannot read clearly. Do not guess."
 )
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "languages.json"), encoding="utf-8") as _f:
@@ -99,13 +102,25 @@ def extract_bill(image_bytes, mime):
             "amount_due": 4812.40,
             "date_of_service": "09/12/2026",
             "insurance_status": "None on file (self-pay)",
+            "line_items": [  # the charge rows printed on bill-01 (its dates are 09/12/2026)
+                {"date": "2026-09-12", "description": "Emergency department visit, high complexity",
+                 "quantity": 1, "amount": 2640.00},
+                {"date": "2026-09-12", "description": "CT scan, head, without contrast",
+                 "quantity": 1, "amount": 1385.00},
+                {"date": "2026-09-12", "description": "Blood test panel, comprehensive",
+                 "quantity": 1, "amount": 412.40},
+                {"date": "2026-09-12", "description": "IV fluids, first hour",
+                 "quantity": 1, "amount": 375.00},
+            ],
+            "total_charges": 4812.40,
+            "payments_and_adjustments": 0.00,
         }
     from oci.generative_ai_inference import models as m
     uri = "data:%s;base64,%s" % (mime, base64.b64encode(image_bytes).decode("ascii"))
     text = _chat(_env("OCI_VISION_MODEL_ID"), [
         m.CohereTextContentV2(text=EXTRACT_PROMPT),
         m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)),
-    ], json_mode=True)
+    ], json_mode=True, max_tokens=1500)  # the line items need more room than the six fields did
     data = parse_json_object(text)
     if not isinstance(data, dict):
         raise ValueError("model did not return a JSON object")

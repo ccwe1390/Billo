@@ -490,7 +490,7 @@ finally:
     reset_limits()
 assert main.RATE_LIMIT == 60 and main.GLOBAL_LIMIT_PER_HOUR == 600
 paid = {r.path for r in main.app.routes if getattr(r, "dependant", None) and r.dependant.dependencies}
-assert paid == {"/extract", "/explain", "/packet"}, paid
+assert paid == {"/extract", "/explain", "/packet", "/dispute"}, paid
 
 # ---- B8: amount parsing is strict
 for raw_amount, want in (("4,812.40", 481240), ("4812.40", 481240), (4812.4, 481240), ("$4,812.40", 481240),
@@ -579,7 +579,7 @@ try:
     assert st["counts"]["photos_read"] == "<10" and st["counts"]["packets"] == 12, st["counts"]
     assert set(st) == {"contract_version", "since", "counts", "languages", "rules", "policies", "rules_review_by"}, set(st)
     assert set(st["counts"]) == {"photos_read", "results_free_care", "results_discount", "results_not_eligible",
-                                 "packets", "fallbacks", "household_views"}
+                                 "packets", "fallbacks", "household_views", "checks_run", "disputes"}
     assert st["languages"] == {"ar": "<10"}, st["languages"]
     _dump = str(st)
     assert "CGH-" not in _dump and "4,812" not in _dump
@@ -1079,6 +1079,216 @@ assert hh4["estimate_cents"] == 883765   # no hospital name: listed, not counted
 # the AI explanation: a bill with a policy still goes to the model; its facts carry the matched policy's wording
 exa = main.explain(main.ResultIn(bill=AB, answers=answers(language="es")))
 assert exa["ai_written"] is True and "100% charity care" in exa["text_en"], exa["text_en"]
+
+# ================================================================ Phase 2: charge lines, /check, /dispute (plan S4)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+with open(os.path.join(ROOT, "spikes", "synthetic-bill", "lines_key.json"), encoding="utf-8") as _f:
+    LK = json.load(_f)
+with open(os.path.join(ROOT, "spikes", "synthetic-bill", "answer_key.json"), encoding="utf-8") as _f:
+    AK = json.load(_f)
+
+
+def key_bill(bid, lines_confirmed=True, fields_confirmed=True, with_lines=True):
+    """A BillIn dict for a planted bill: six fields from answer_key.json, charge lines from lines_key.json."""
+    b = {"contract_version": 1,
+         "fields": {k: {"value": v, "confidence": None, "confirmed": fields_confirmed} for k, v in AK[bid].items()}}
+    if with_lines:
+        L = LK[bid]
+        b["lines"] = {"items": [dict(date=None, **it) for it in L["items"]],
+                      "total_charges_cents": L["total_charges_cents"], "payments_cents": L["payments_cents"],
+                      "confirmed": lines_confirmed, "read": True}
+    return b
+
+
+def post(path, payload, **kw):
+    return call("POST", path, json.dumps(payload).encode(), JSON_H, **kw)
+
+
+def check_ids(b):
+    st, _h, jb = post("/check", {"bill": b})
+    assert st == 200, (st, jb[:200])
+    out = json.loads(jb)
+    assert out["contract_version"] == 1 and set(out) == {"contract_version", "flags", "total_to_ask_cents",
+                                                         "lines_checked"}, set(out)
+    return [f["id"] for f in out["flags"]], out
+
+
+# ---- FAKE extract returns bill-01's printed lines (D10/A8): unconfirmed, read
+fx = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png")))
+assert fx["lines"]["read"] is True and fx["lines"]["confirmed"] is False
+assert fx["lines"]["total_charges_cents"] == 481240 and fx["lines"]["payments_cents"] == 0
+assert [i["amount_cents"] for i in fx["lines"]["items"]] == [264000, 138500, 41240, 37500]
+assert fx["lines"]["items"][1] == {"date": "2026-09-12", "description": "CT scan, head, without contrast",
+                                   "quantity": 1, "amount_cents": 138500}
+assert sum(i["amount_cents"] for i in fx["lines"]["items"]) == fx["lines"]["total_charges_cents"]
+main.BillIn(**fx)                                                          # the extract output is a valid BillIn
+assert oci_client.EXTRACT_PROMPT.endswith("Use null for anything you cannot read clearly. Do not guess.")
+assert "line_items" in oci_client.EXTRACT_PROMPT and "even when two rows are identical" in oci_client.EXTRACT_PROMPT
+
+# ---- normalize_bill: line_items, total_charges, payments_and_adjustments
+_raw6 = {"hospital_name": "X", "statement_date": "2026-10-01", "account_number": "A-1", "amount_due": "1,385.00",
+         "date_of_service": "2026-09-12", "insurance_status": "self-pay"}
+nl = main.normalize_bill(dict(_raw6, line_items=[
+    {"date": "09/12/2026", "description": "CT  scan,\nhead", "quantity": "1", "amount": "$1,385.00"},
+    {"date": None, "description": None, "quantity": 0, "amount": "x"}, "junk"],
+    total_charges="$1,585.00", payments_and_adjustments="($200.00)"))["lines"]
+assert nl == {"items": [{"date": "2026-09-12", "description": "CT scan, head", "quantity": 1, "amount_cents": 138500},
+                        {"date": None, "description": "", "quantity": None, "amount_cents": None}],
+              "total_charges_cents": 158500, "payments_cents": 20000, "confirmed": False, "read": True}, nl
+for printed, want in (("($200.00)", 20000), ("-$200.00", 20000), ("$-200.00", 20000), ("-200", 20000),
+                      (-200.0, 20000), ("(200.00)", 20000), ("$(200.00)", 20000), ("$200.00", 20000),
+                      (0, 0), ("0.00", 0), ("abc", None), (None, None), (True, None), ("1.234", None)):
+    got = main.normalize_bill(dict(_raw6, line_items=[], payments_and_adjustments=printed))["lines"]["payments_cents"]
+    assert got == want, (printed, got)
+assert main.normalize_bill(_raw6)["lines"] is None                         # no line_items key: lines None
+_nl_null = main.normalize_bill(dict(_raw6, line_items=None))["lines"]
+assert _nl_null["read"] is True and _nl_null["items"] == [] and _nl_null["total_charges_cents"] is None
+_many = main.normalize_bill(dict(_raw6, line_items=[{"description": "d%d" % i, "amount": "1"} for i in range(60)]))
+assert len(_many["lines"]["items"]) == 40
+main.BillIn(**_many)
+
+# ---- insurance: TennCare / Medicaid text maps to "medicaid" before the general insured match (D4)
+for txt in ("TennCare (SYNTHETIC member)", "Medicaid", "TENNCARE Select", "tenncare"):
+    assert main._norm_insurance(txt) == "medicaid", txt
+assert main._norm_insurance("Aetna PPO") == "insured" and main._norm_insurance("Medicare") == "insured"
+assert main._norm_insurance("Uninsured") == "self_pay" and main._norm_insurance("") is None
+_mb = key_bill("bill-14", with_lines=False)
+_mb["fields"]["hospital_name"]["value"] = "Cumberland General Hospital (SYNTHETIC)"
+_mpk = main.packet(main.ResultIn(bill=main.BillIn(**_mb), answers=answers(language="en")), format="json")
+assert {"label_en": "Insurance", "value": "TennCare / Medicaid", "source": "bill"} in _mpk["application_fields"], _mpk
+
+# ---- models: LinesIn limits (D3), extra forbidden, lines optional and ignored by the engine
+_item = {"date": "2026-09-12", "description": "x", "quantity": 1, "amount_cents": 100}
+main.LinesIn(items=[_item] * 40)
+for label, bad in (("41 items", dict(items=[_item] * 41)),
+                   ("long description", dict(items=[dict(_item, description="x" * 121)])),
+                   ("quantity 0", dict(items=[dict(_item, quantity=0)])),
+                   ("quantity 1000", dict(items=[dict(_item, quantity=1000)])),
+                   ("quantity true", dict(items=[dict(_item, quantity=True)])),
+                   ("negative amount", dict(items=[dict(_item, amount_cents=-1)])),
+                   ("amount too big", dict(items=[dict(_item, amount_cents=10**9 + 1)])),
+                   ("us date", dict(items=[dict(_item, date="09/12/2026")])),
+                   ("impossible date", dict(items=[dict(_item, date="2026-02-30")])),
+                   ("extra item key", dict(items=[dict(_item, note="x")])),
+                   ("extra lines key", dict(items=[], note="x")),
+                   ("negative payments", dict(items=[], payments_cents=-1)),
+                   ("float total", dict(items=[], total_charges_cents=1.5))):
+    try:
+        main.LinesIn(**bad)
+        raise AssertionError("accepted: " + label)
+    except ValidationError:
+        pass
+main.LinesIn(items=[dict(_item, date=None, quantity=None, amount_cents=None)], total_charges_cents=None,
+             payments_cents=None)
+assert main.LinesIn(items=[dict(_item, description="a\nb\x00c")]).items[0].description == "a b c"
+assert main.BillIn(**key_bill("bill-11", with_lines=False)).lines is None
+_kb = main.BillIn(**key_bill("bill-11"))
+_ev = main.evaluate(main.EvaluateIn(bill=_kb, answers=answers(language="en")))          # the engine ignores lines
+assert "lines" not in _ev and _ev["tier"]["id"] == "free_care"
+main.explain(main.ResultIn(bill=_kb, answers=answers(language="en")))
+assert main.packet(main.ResultIn(bill=_kb, answers=answers(language="en")), format="json")["application_fields"]
+
+# ---- /check: the planted bills give exactly the expected flags
+for bid, want in (("bill-11", ["duplicate"]), ("bill-12", ["due_mismatch"]),
+                  ("bill-13", ["insurance_unpaid"]), ("bill-14", ["medicaid"])):
+    got, out = check_ids(key_bill(bid))
+    assert got == want, (bid, got)
+    assert out["lines_checked"] is True
+_ids, _out = check_ids(key_bill("bill-11"))
+assert _out["flags"][0]["amount_cents"] == 138500 and _out["flags"][0]["line_indexes"] == [1, 2]
+assert _out["total_to_ask_cents"] == 138500
+_checks_before = main._counts["checks_run"]
+check_ids(key_bill("bill-12"))
+assert main._counts["checks_run"] == _checks_before + 1
+# the clean control: the fake extract of bill-01, fields and lines confirmed, has no flags
+_clean = confirm_all(copy.deepcopy(fx))
+_clean["lines"]["confirmed"] = True
+_ids, _out = check_ids(_clean)
+assert _ids == [] and _out["total_to_ask_cents"] == 0 and _out["lines_checked"] is True
+# lines absent (typed by hand, never read): the insurance rules still run, the line rules do not
+_ids, _out = check_ids(key_bill("bill-14", with_lines=False))
+assert _ids == ["medicaid"] and _out["lines_checked"] is False
+assert check_ids(key_bill("bill-11", with_lines=False))[0] == []
+# no policy needed and no hospital name needed
+_other = key_bill("bill-11")
+_other["fields"]["hospital_name"]["value"] = "Some Other Hospital"
+assert check_ids(_other)[0] == ["duplicate"]
+_nameless = key_bill("bill-11")
+del _nameless["fields"]["hospital_name"]
+assert check_ids(_nameless)[0] == ["duplicate"]
+
+# ---- /check refuses unconfirmed input (422) and extra keys
+for label, bad in (("lines not confirmed", key_bill("bill-11", lines_confirmed=False)),
+                   ("fields not confirmed", key_bill("bill-11", fields_confirmed=False))):
+    st, _h, jb = post("/check", {"bill": bad})
+    assert st == 422, (label, st)
+st, _h, jb = post("/check", {"bill": key_bill("bill-11"), "answers": ANS_DICT})
+assert st == 422, st
+assert call("POST", "/check", b"not json", JSON_H)[0] == 422
+
+# ---- /check is free: 70 calls in a row, none rate limited, none counted against the paid budget
+reset_limits()
+_ck = json.dumps({"bill": key_bill("bill-11")}).encode()
+for _i in range(70):
+    st, _h, jb = call("POST", "/check", _ck, JSON_H)
+    assert st == 200, (_i, st)
+assert main._hits == {} and not main._global_hits
+reset_limits()
+
+# ---- /check is under the 64 KiB body cap (413 with or without Content-Length)
+for _wl in (True, False):
+    st, hh, jb = call("POST", "/check", _big, JSON_H, with_length=_wl)
+    assert st == 413 and json.loads(jb)["detail"] == "Request is too large.", (_wl, st, jb[:120])
+    assert all(hh.get(k) == v for k, v in SEC_H.items()), hh
+
+# ---- /dispute: 422 with no flags, unconfirmed input, or extra keys
+reset_limits()
+_cleanbill = confirm_all(copy.deepcopy(fx))
+_cleanbill["lines"]["confirmed"] = True
+st, _h, jb = post("/dispute", {"bill": _cleanbill, "answers": ANS_DICT})
+assert st == 422 and json.loads(jb)["detail"] == "No letter: no items to ask about.", (st, jb)
+st, _h, jb = post("/dispute", {"bill": key_bill("bill-11", lines_confirmed=False), "answers": ANS_DICT})
+assert st == 422 and json.loads(jb)["detail"] == "Confirm the charge lines first.", (st, jb)
+st, _h, jb = post("/dispute", {"bill": key_bill("bill-11", fields_confirmed=False), "answers": ANS_DICT})
+assert st == 422 and json.loads(jb)["detail"] == "Confirm every bill field first.", (st, jb)
+st, _h, jb = post("/dispute", {"bill": key_bill("bill-11")})
+assert st == 422, st                                                        # answers are required (the language)
+
+# ---- /dispute: HTML by default, JSON with ?format=json; the English letter is the fixed template
+_dup_line = 'The charge "CT scan, head, without contrast" ($1,385.00) appears 2 times.'
+_disputes_before = main._counts["disputes"]
+st, hh, jb = post("/dispute", {"bill": key_bill("bill-11"), "answers": ANS_DICT})
+page = jb.decode("utf-8")
+assert st == 200 and hh["content-type"].startswith("text/html"), (st, hh)
+assert html_escape(_dup_line) in page and "To the Billing Office, Cumberland General Hospital (SYNTHETIC):" in page
+assert "DRAFT - you decide whether to send it." in page and "savings" not in page
+assert main._counts["disputes"] == _disputes_before + 1
+r = main.dispute_letter(main.ResultIn(bill=main.BillIn(**key_bill("bill-11")), answers=answers(language="en")),
+                        format="json")
+assert _dup_line in r["letter_en"] and r["translation_check"] == {"numbers_match": True, "fallback_used": False}, r
+# another language: the FAKE translation passes the number lock
+r = main.dispute_letter(main.ResultIn(bill=main.BillIn(**key_bill("bill-11")), answers=answers(language="es")),
+                        format="json")
+assert r["translation_check"]["numbers_match"] is True and r["letter_translated"].startswith("[ES draft]"), r
+# no hospital name and no policy: both still get a letter
+for label, mutate in (("no name", lambda b: b["fields"].pop("hospital_name")),
+                      ("no policy", lambda b: b["fields"]["hospital_name"].update(value="Some Other Hospital"))):
+    nb = key_bill("bill-14")
+    mutate(nb)
+    r = main.dispute_letter(main.ResultIn(bill=main.BillIn(**nb), answers=answers(language="en")), format="json")
+    assert "TennCare" in r["letter_en"], label
+    assert r["letter_en"].count("To the Billing Office:") == (1 if label == "no name" else 0), label
+
+# ---- /dispute is rate limited like /packet: the 61st call in a minute is a 429
+reset_limits()
+try:
+    for _i in range(main.RATE_LIMIT):
+        st, _h, jb = post("/dispute", {"bill": _cleanbill, "answers": ANS_DICT})
+        assert st == 422, (_i, st)                                          # no flags: still spends the budget
+    st, _h, jb = post("/dispute", {"bill": _cleanbill, "answers": ANS_DICT})
+    assert st == 429, st
+finally:
+    reset_limits()
 
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)

@@ -514,8 +514,8 @@ test("h. questions screen: See my result needs size 1-12, a valid income and a t
 // i. Home screen: ineligible family is not told to apply
 function makeHome(eligible) {
   return {eligible, estimate_cents: eligible ? 12345 : 0, one_application_covers_all: eligible,
-    bills: [{label_en: "Bill A", source: "yours", statement_date: "2026-10-01", amount_due_cents: 100000, reduction_cents: eligible ? 12345 : 0, deadline: {date: "2099-01-01"}},
-            {label_en: "Bill B", source: "demo", statement_date: "2026-10-02", amount_due_cents: 5000, reduction_cents: 0, deadline: {date: "2099-01-01"}}],
+    bills: [{label_en: "Bill A", source: "yours", statement_date: "2026-10-01", amount_due_cents: 100000, reduction_cents: eligible ? 12345 : 0, deadline: {date: "2099-01-01"}, hospital_matches_policy: true},
+            {label_en: "Bill B", source: "demo", statement_date: "2026-10-02", amount_due_cents: 5000, reduction_cents: 0, deadline: {date: "2099-01-01"}, hospital_matches_policy: true}],
     coverage: {text_en: "One application covers all bills.", citation: CITE},
     earliest_deadline: {date: "2099-01-01"},
     contacts: {email: "a@b.com", phone: "(555) 123-4567", payment_plan_phone: "(555) 999-0000", citation: CITE}};
@@ -563,6 +563,24 @@ test("i4. Home, the user's own bill is from a no-policy hospital: no one-approva
   assert.ok(!txt.includes("Reminders"), "reminders shown for a user bill with no policy");
   assert.ok(!txt.includes("Add to my calendar") && !s6.all().some(n => n.tag === "button" && n.textContent === T.rem_ics.en), "calendar button shown for a user bill with no policy");
   assert.ok(txt.includes("Different hospital"), "the no-policy bill should still be flagged");
+});
+test("i7. Home, the user's own bill shows no hospital name: no one-approval line, reminders, calendar; the no-name note, not 'Different hospital'", "landing check B2", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(true);
+  h.bills = [homeBill("Bill A", "yours", null), homeBill("Bill B", "demo", true)];
+  S.home = h; A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(!txt.includes("One approval"), "one-approval line shown for a user bill with no hospital name");
+  assert.ok(!txt.includes("Reminders") && !txt.includes("Add to my calendar"), "reminders or calendar shown for a user bill with no hospital name");
+  assert.ok(txt.includes(T.r_no_hospital.en) && !txt.includes("Different hospital"), "no-name bill should carry the no-name note");
+});
+test("i8. Home, not eligible and the user's own bill has no policy here: no contact from this policy", "landing check #3", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(false);
+  h.bills = [homeBill("Bill A", "yours", false), homeBill("Bill B", "demo", true)];
+  S.home = h; A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(!txt.includes("(555) 999-0000") && !txt.includes("Financial assistance office"), "another policy's contact shown for a no-policy user bill");
 });
 test("i5. Home, the user's own bill matches: one-approval line, reminders and calendar shown; n = rows that match", "audit-4 #3", () => {
   resetApp(); S.answers = {}; S.bill = {};
@@ -830,6 +848,8 @@ test("j15. timeout: /extract gets 60 s and a timeout lands on the 'could not rea
 });
 
 // ---------- run
+let finished = false; // a test whose promise never settles empties the event loop: Node would exit 0 with no ALL PASS
+process.on("exit", code => { if (!finished && code === 0) { console.log("FAIL: the run stopped before every test finished"); process.exitCode = 1; } });
 (async () => {
   let failed = 0;
   for (const tc of tests) {
@@ -842,6 +862,7 @@ test("j15. timeout: /extract gets 60 s and a timeout lands on the 'could not rea
     }
   }
   if (failed) { console.log(failed + " of " + tests.length + " tests FAILED"); process.exit(1); }
+  finished = true;
   console.log("ALL PASS");
   process.exit(0);
 })();

@@ -910,7 +910,7 @@ function renderHome() {
   }
   const notes = makeNotes("home-fn"); // own anchor ids: the Result screen's notes stay in the DOM too
   const eligible = h.eligible === true; // not eligible: no covers panel, no "Apply by", no reminders, no calendar file
-  const noneCounted = h.bills.length > 0 && h.bills.every(b => b.hospital_matches_policy === false);
+  const noneCounted = h.bills.length > 0 && h.bills.every(b => b.hospital_matches_policy !== true); // false = another hospital, null = no name: not counted
   const headline = eligible && noneCounted
     ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch")))
     : eligible
@@ -921,29 +921,30 @@ function renderHome() {
     : h.tier && h.tier.other_route_en
       ? panel("hero", el("p", {class: "lead"}, ...tSafe("r_other_route")), englishOnly("p", {class: "muted"}, h.tier.other_route_en))
       : panel("hero", el("p", {class: "lead"}, ...tSafe("home_not_eligible")));
-  // The user's own bill is from a hospital with no policy here: the one-approval line, reminders and calendar would not apply to it.
+  // The user's own bill is from a hospital with no policy here, or shows no hospital name: the one-approval line, reminders,
+  // calendar and this policy's contact would not apply to it.
   const mine = h.bills.find(b => b.source === "yours");
-  const userOk = !mine || mine.hospital_matches_policy !== false;
+  const userOk = !mine || mine.hospital_matches_policy === true;
   const covers = eligible && userOk && h.one_application_covers_all
     ? panel("ok",
-        el("p", null, ...tSafe("home_one_approval", {n: h.bills.filter(b => b.hospital_matches_policy !== false).length}), notes.mark(h.coverage.citation)),
+        el("p", null, ...tSafe("home_one_approval", {n: h.bills.filter(b => b.hospital_matches_policy === true).length}), notes.mark(h.coverage.citation)),
         englishOnly("p", {class: "muted"}, h.coverage.text_en))
     : null;
   const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => {
-    const other = b.hospital_matches_policy === false; // null = unknown: no warning
+    const other = b.hospital_matches_policy !== true; // false = another hospital, null = no hospital name: listed, not counted
     return el("li", {class: "panel"},
     el("div", {class: "bill-top"},
       el("div", null,
         el("p", null, englishOnly("strong", null, b.label_en), b.source === "yours" ? " " + t("home_yours") : null),
         el("p", {class: "muted"}, t("f_statement") + ": ", bdiEn(b.statement_date))),
       el("span", {class: "bill-amt", dir: "ltr"}, money(b.amount_due_cents))),
-    other ? el("p", {class: "bill-warn", role: "note"}, t("r_mismatch_title")) : null,
+    other ? el("p", {class: "bill-warn", role: "note"}, ...(b.hospital_matches_policy === null ? tSafe("r_no_hospital") : [t("r_mismatch_title")])) : null,
     // another hospital's bill: this policy's deadline and reduction do not apply to it
     eligible && !other ? el("p", {class: "bill-meta"}, ...tSafe("home_bill_deadline", {date: b.deadline.date}),
       " ", ...tSafe("home_bill_reduction", {amount: money(b.reduction_cents)})) : null);
   }));
   const c = h.contacts;
-  const payPlan = eligible ? null : panel("",
+  const payPlan = eligible || !userOk ? null : panel("",
     el("h3", null, t("r_fa_office"), notes.mark(c.citation)),
     el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
   const reminders = !eligible || !userOk ? null : panel("",

@@ -1055,6 +1055,11 @@ _ab = confirm_all(main.normalize_bill({"hospital_name": "Ascension Saint Thomas 
                                        "date_of_service": "2026-09-12", "insurance_status": "self-pay"}))
 hh3 = main.household(main.HouseholdIn(answers=answers(language="en"), bill=main.BillIn(**_ab)))
 assert hh3["bills"][-1]["hospital_matches_policy"] is False and hh3["estimate_cents"] == 883765   # listed, not counted
+_nb = confirm_all(main.normalize_bill({"hospital_name": "", "statement_date": "2026-10-01", "account_number": "NN-1",
+                                       "amount_due": "700", "date_of_service": "2026-09-12", "insurance_status": "self-pay"}))
+hh4 = main.household(main.HouseholdIn(answers=answers(language="en"), bill=main.BillIn(**_nb)))
+assert hh4["bills"][-1]["hospital_matches_policy"] is None and hh4["bills"][-1]["reduction_cents"] > 0
+assert hh4["estimate_cents"] == 883765   # no hospital name: listed, not counted (landing check, B2)
 
 # the AI explanation: a bill with a policy still goes to the model; its facts carry the matched policy's wording
 exa = main.explain(main.ResultIn(bill=AB, answers=answers(language="es")))

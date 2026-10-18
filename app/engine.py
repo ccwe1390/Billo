@@ -277,7 +277,7 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
             "hospital_matches_policy": r["hospital_matches_policy"],
             "deadline": r["deadline"],
         })
-        if r["hospital_matches_policy"] is False:  # another hospital's bill: listed, never counted
+        if r["hospital_matches_policy"] is not True:  # another hospital's bill, or no hospital name: listed, never counted
             continue
         counted += 1
         estimate_cents += rows[-1]["reduction_cents"]
@@ -293,7 +293,7 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
         else:
             estimate_text_en = "Not eligible under this policy."
     # another hospital's bill has no deadline under this policy: the earliest is taken over counted rows
-    pool = [row for row in rows if row["hospital_matches_policy"] is not False] or rows
+    pool = [row for row in rows if row["hospital_matches_policy"] is True] or rows
     earliest = min((row["deadline"] for row in pool), key=lambda d: d["date"])
 
     locked = list(first["locked_numbers"])

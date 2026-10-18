@@ -262,11 +262,12 @@ def test_evaluate_many():
     assert r["one_application_covers_all"] is True
     assert r["estimate_text_en"] == "Up to $6,979.15 could be reduced if the hospital approves."
 
-    # a bill with no hospital name is unknown (None), still counted
+    # a bill with no hospital name is unknown (None): listed, not counted (audit-4 B2, landing check 2026-10-18)
     blank = many_bills()
     blank[0]["fields"]["hospital_name"]["value"] = None
     r = engine.evaluate_many(blank, answers(3_800_000), POLICY, FPL, as_of)
-    assert r["bills"][0]["hospital_matches_policy"] is None and r["estimate_cents"] == 883765
+    assert r["bills"][0]["hospital_matches_policy"] is None and r["bills"][0]["reduction_cents"] > 0
+    assert r["estimate_cents"] == 883765 - r["bills"][0]["reduction_cents"], r["estimate_cents"]
 
     # only other-hospital bills: nothing counted, so no "one application covers all"
     for b in other:

@@ -67,6 +67,7 @@ the dated entry, not the digest.
 - [AE - F10 built on branch f10, deploy-ready (not deployed)](#appendix-ae---f10-built-on-branch-f10-deploy-ready-not-deployed-2026-10-17-1846-cdt) (10-17)
 - [AF - UI port: Dipayan's design system in the vanilla app (light/dark, Atkinson)](#appendix-af---ui-port-dipayans-design-system-in-the-vanilla-app-lightdark-atkinson-2026-10-17-1921-cdt) (10-17)
 - [AG - Deploy go; live restart blocked by the auto-mode classifier; PowerShell deploy script for Evan](#appendix-ag---deploy-go-live-restart-blocked-by-the-auto-mode-classifier-powershell-deploy-script-for-evan-2026-10-17-1930-cdt) (10-17)
+- [AH - Deployed: D1 cc3c333, HTTPS (Let's Encrypt IP certificate), D2 c30be63 - F10 and the new UI live](#appendix-ah---deployed-d1-cc3c333-https-lets-encrypt-ip-certificate-d2-c30be63---f10-and-the-new-ui-live-2026-10-17-1943-cdt) (10-17)
 
 ---
 
@@ -1221,3 +1222,55 @@ The scripts sit in the session scratchpad, not the repo.
 
 **State at 19:29:** live app.js sha256 c33d08fc... = c4a28f0's; f10 and
 ui-max at c30be63, pushed; working tree clean.
+
+# Appendix AH - Deployed: D1 cc3c333, HTTPS (Let's Encrypt IP certificate), D2 c30be63 - F10 and the new UI live (2026-10-17 19:43 CDT)
+**When:** 2026-10-17 19:30-19:42 CDT. Deploys run by Evan from PowerShell
+5.1 with deploy.ps1 / https.ps1 (record AG); every live check below run by
+Claude from the laptop.
+
+**D1 - cc3c333 (19:30):** backup ~/backup-before-cc3c333.tar (706,560 B),
+import check ok, service active, 1 uvicorn process. Live checks: app.js
+live == cc3c333; security headers present; /openapi.json 404; text sent
+as image/png -> 415; journey bill-02-blur3 extract 3.5 s -> free_care 115%
+-> es explanation and es packet pass the number check, 11.3 s total; es
+not-eligible explanation passes; hi packet passes in 5.2 s (was 15.7 s at
+c4a28f0; R1 paragraph-parallel translation); title BillScan; journal no
+warnings. main fast-forwarded to cc3c333.
+
+**HTTPS (19:36-19:39):** https-remote.sh, each Apache change configtest-ed
+then graceful-reloaded with an http 200 check after it: mod_ssl
+2.4.62-13.0.1.el9_8.6 installed; certbot 5.8.0 in /opt/certbot (Python
+3.12 venv); /etc/httpd/conf.d/bill-to-help-acme.conf serves
+/.well-known/acme-challenge/ from /var/www/acme; certificate lineage
+billscan-ip: SAN IP Address 207.211.181.174 only, issuer Let's Encrypt
+YE2, shortlived profile, notAfter 2026-10-24 15:39:14 GMT, account
+registered with no email; /etc/httpd/conf.d/bill-to-help-ssl.conf =
+*:443 vhost, same proxy as :80, no redirect, no HSTS. Pre-checks: OCI
+security list and firewalld already allowed 443; SELinux Enforcing
+(restorecon run on /etc/letsencrypt). Laptop check: https 200 with
+certificate verification OK (curl ssl_verify_result 0), http 200, same
+app.js and headers on both. Not set up: auto-renewal (a pip certbot has
+no timer); the certificate outlives the event (ends 2026-10-18).
+
+**D2 - c30be63 (19:41):** backup ~/backup-before-c30be63.tar (788,480 B),
+import check ok, active, 1 process. Live checks over http: app.js ==
+c30be63; journey 10.6 s, es explanation + es packet + es not-eligible
+pass; hi packet 6.7 s passes. Over https: app.js == c30be63, headers,
+404/415 and extract 3.2 s -> evaluate free_care 115% (rest of that run cut
+by the output pipe, not a failure). index.html, style.css, fonts.css,
+dashboard.html, dashboard.js, an Atkinson woff2 and qrcode.js
+byte-identical to c30be63 (CR-normalized); index.html loads no Web
+Awesome; POST /household -> estimate_cents 883765, one approval covers
+all, 5 bills; GET /stats answers; journal no warnings; the live page in
+the in-app browser renders the new UI with 0 console errors. main
+fast-forwarded to c30be63.
+
+**Snapshot (19:42 CDT):**
+| Item | State |
+|---|---|
+| Live code | c30be63 (main), one uvicorn worker |
+| URLs | http://207.211.181.174/ and https://207.211.181.174/ (both serve the app) |
+| Certificate | billscan-ip, IP SAN, expires 2026-10-24 15:39 GMT, no renewal |
+| Rollback | deploy.ps1 -Commit c30be63 -Rollback restores cc3c333's app; backup-before-cc3c333.tar restores c4a28f0 |
+| Features live | F10.1 Home, F10.2 coverage rule, F10.3 reminders + .ics, F10.4 QR chip + Start QR, F10.5 dashboard, R1-R3, UI port (record AF) |
+| Open | Evan's phone checks (photo upload; https padlock; QR scan on bill-02); rollback not rehearsed (skipped to avoid two extra live restarts) |

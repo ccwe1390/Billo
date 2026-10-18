@@ -20,10 +20,10 @@ via the plan's ClearHealthCosts source, not re-read by Claude). Full plan:
 **Hard deadline: hacking finishes Sun 2026-10-18 1:00 PM CDT.** Venue closes
 Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
-## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
+## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 19:31 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AG).
+**Last updated: 2026-10-17 19:43 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AH).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -69,27 +69,23 @@ snapshot; history lives in the record (Phase 0, Appendices A-AG).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## F10 STATUS (19:31 CDT) - read this first
-- Product renamed **BillScan**. F10 (PRD) is BUILT on branch `f10`
-  (UI commit efe50f0 + its docs commit, pushed; `ui-max` = same
-  head), deploy-ready, NOT deployed: the live server still runs c4a28f0
-  (main = abfe317). Evan said "go" at 19:26 (record AG), but the auto-mode
-  classifier refuses Claude's live restart ("Production Deploy"), so Evan
-  runs the deploy himself in PowerShell 5.1 with deploy.ps1 (session
-  scratchpad `deploy/`; record AG describes it). Next: D1.
-- UI port (record AF): Dipayan's design system (PR #1) now lives in the
-  vanilla app on f10 - light/dark following the phone, Atkinson
-  Hyperlegible, his components plus busy/retry/focus fixes. PR #1 itself
-  stays open; the vanilla app carries both the design and all F10 features.
-- Deploy order (go given): D1 = cc3c333 (R1-R3 + F10.2, old UI; rollback
-  rehearsal) -> HTTPS (Let's Encrypt IP cert, certbot >= 5.4 in
-  /opt/certbot, approved incl. the agreement with no email; 30-min box) ->
-  D2 = c30be63 (Home, reminders, dashboard, QR, ported UI in one restart;
-  D3/D4 merged into D2, record AG). Each: backup tar, `import app.main`
-  check before restart, then Claude runs the live journey; main is
-  fast-forwarded to the deployed commit after each passes.
-  Plan: ~/.claude/task-plans/tnhacks26-f10.md. Then /landing-check and
-  /docs-sync.
+## F10 STATUS (19:43 CDT) - read this first
+- **LIVE: c30be63 (main) on http AND https://207.211.181.174/** (record AH).
+  F10 (Home, coverage rule, reminders + .ics, QR chip + Start QR,
+  dashboard /dashboard.html), R1-R3 and the UI port (record AF: Dipayan's
+  design system, light/dark, Atkinson) are all live. Live journeys pass on
+  both; Hindi packet ~5-7 s.
+- HTTPS: Let's Encrypt IP certificate (lineage billscan-ip, expires
+  2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
+  Apache conf.d files bill-to-help-acme.conf and bill-to-help-ssl.conf; no
+  redirect from http (both work).
+- Deploys are run by Evan in PowerShell 5.1 (the auto-mode classifier
+  refuses Claude's live restarts, record AG): deploy.ps1 -Commit <c>, and
+  deploy.ps1 -Commit <c> -Rollback restores the backup taken before <c>
+  (VM ~/backup-before-<c>.tar). Scripts are in this session's scratchpad
+  `deploy/` (not in the repo). Rollback target now: cc3c333.
+- Open: Evan's phone checks (photo upload, https padlock, QR scan on
+  bill-02); the rollback was not rehearsed live.
 - If the team picks React: every server change is additive, so the React
   app keeps working; the vanilla-only UI work (Home, reminders, QR chip,
   downscaling) would not be in the demo.
@@ -151,19 +147,19 @@ opc@207.211.181.174. UI on main/live: "Paper Trail" (Web Awesome CSS + IBM Plex)
 Dipayan's design system ported (record AF; light/dark, Atkinson
 Hyperlegible, no Web Awesome); policy table with your row highlighted and
 footnoted citations kept. Record is
-current through Appendix AG. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AH. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if
-it is lost. The audit fixes are live since 16:58 (c4a28f0).
+it is lost. Live since 19:41: c30be63 (F10 + UI port), http and https (record AH).
 
 Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
 ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
 OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
-Next, in order: (0) DEPLOY - Evan runs deploy.ps1 -Commit cc3c333 (D1),
-Claude runs the live journey, then HTTPS, then D2 = c30be63 (record AG);
+Next, in order: (0) Evan's phone checks on the live c30be63 (photo
+upload, https padlock, QR on bill-02); feature freeze ~23:00;
 (1) presenters adopt docs/2026-10-17_pitch-corrections.md;
 (2) pre-mortem T1/T3/T8 (Evan: organizers, phone test, budget alert); V1
 done (record AC); (3) fluent review of es/ar/zh strings

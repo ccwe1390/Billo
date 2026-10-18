@@ -99,3 +99,11 @@
   then deploy-remote.sh on the VM (backup ~/backup-before-<c>.tar, stage,
   import check, swap, restart). The unit runs one uvicorn process (no
   --workers flag; counters are per process).
+- 2026-10-17 19:30-19:42 CDT - Deployed by Evan (deploy.ps1/https.ps1),
+  checked by Claude (record AH): D1 cc3c333 (19:30) -> HTTPS (mod_ssl,
+  certbot 5.8.0 in /opt/certbot, cert lineage billscan-ip for IP
+  207.211.181.174, expires 2026-10-24 15:39 GMT, no renewal timer; conf.d
+  bill-to-help-acme.conf + bill-to-help-ssl.conf; :80 unchanged) -> D2
+  c30be63 (19:41). Backups on the VM: ~/backup-before-cc3c333.tar (=
+  c4a28f0 app), ~/backup-before-c30be63.tar (= cc3c333 app). main =
+  c30be63. Live journeys pass on http and https; journal clean.

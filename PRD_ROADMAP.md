@@ -591,3 +591,10 @@ and F9 disagree, F10 wins once Evan approves it.
   Sonnet agent, app.js/style.css to another (sequential within app.js:
   F10.1 -> F10.3 -> F10.4); D2b's new files can run in parallel. Opus
   reviews each diff on disk and runs the checks before any deploy.
+
+**2026-10-17 19:43 CDT - DEPLOYED (record AH).** F10.1-F10.5 (D2b), R1-R3
+and the UI port (record AF) are live at c30be63 on http and https
+(HTTPS item done: Let's Encrypt IP certificate). Done-checks passed: tests,
+browser checks (record AE/AF), live journeys on both schemes, /household
+estimate 883765 with one approval covering all 5 bills. Still open: the
+real-phone checks (photo upload, QR scan on bill-02) - Evan.

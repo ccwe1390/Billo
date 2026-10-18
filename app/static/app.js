@@ -1,6 +1,12 @@
 "use strict";
 // BillScan UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
 
+// Tennessee Justice Center's phone for the help card. null until the number is verified on their own page: the line then shows the name only.
+const TJC_PHONE = "(615) 255-0331"; // verified 2026-10-18 08:35 CDT on tnjustice.org/contact ("Call us at 615-255-0331")
+// Hospital names for the ?hospital=<key> link and QR code (informational: the bill's own hospital name picks the policy).
+const HOSPITALS = {vumc: "Vanderbilt University Medical Center", ascension_saint_thomas: "Ascension Saint Thomas",
+                   cumberland_synthetic: "Cumberland General Hospital (SYNTHETIC)"};
+
 // Every language the app offers, in dropdown order. Copied from app/data/languages.json (keep the two in step).
 const LANGS = [
   {code: "en", native: "English", dir: "ltr"},
@@ -127,6 +133,11 @@ const T = {
   r_policy_used:{en: "This estimate uses the policy of {name}.", es: "Esta estimación usa la política de {name}.", ar: "يستخدم هذا التقدير سياسة {name}.", "zh-CN": "此估算使用 {name} 的政策。", "zh-TW": "此估算使用 {name} 的政策。"}, // TODO-REVIEW es+ar+zh
   r_mismatch_title:{en: "Different hospital", es: "Hospital distinto", ar: "مستشفى مختلف", "zh-CN": "不同的医院", "zh-TW": "不同的醫院"}, // TODO-REVIEW es+ar+zh
   r_mismatch:  {en: "Your bill names a different hospital. This demo has only one hospital's policy, and it is synthetic, so this estimate is not about your hospital.", es: "Su factura menciona otro hospital. Esta demostración solo tiene la política de un hospital, y es sintética, así que esta estimación no corresponde a su hospital.", ar: "تذكر فاتورتك مستشفى مختلفًا. يحتوي هذا العرض التجريبي على سياسة مستشفى واحد فقط، وهي اصطناعية، لذا فإن هذا التقدير لا يخص مستشفاك.", "zh-CN": "您的账单上是另一家医院。本演示只有一家医院的政策，而且是合成的，所以此估算与您的医院无关。", "zh-TW": "您的帳單上是另一家醫院。本示範只有一家醫院的政策，而且是合成的，所以此估算與您的醫院無關。"}, // TODO-REVIEW es+ar+zh
+  r_conditions:{en: "What the hospital also checks (not in this estimate)", es: "Lo que el hospital también revisa (no incluido en esta estimación)", ar: "ما يتحقق منه المستشفى أيضًا (غير مشمول في هذا التقدير)", "zh-CN": "医院还会核查的内容（不在此估算中）", "zh-TW": "醫院還會核查的內容（不在此估算中）"}, // TODO-REVIEW es+ar+zh
+  r_mismatch_any:{en: "Your bill names a hospital this demo has no policy for, so we cannot estimate it. The demo has the published policies of Vanderbilt University Medical Center and Ascension Saint Thomas. Ask your hospital for its own financial assistance policy.", es: "Su factura menciona un hospital cuya política no está en esta demostración, así que no podemos hacer una estimación. La demostración tiene las políticas publicadas de Vanderbilt University Medical Center y Ascension Saint Thomas. Pida a su hospital su propia política de asistencia financiera.", ar: "تذكر فاتورتك مستشفى لا تتوفر سياسته في هذا العرض التجريبي، لذا لا يمكننا تقديم تقدير. يتضمن العرض السياسات المنشورة لـ Vanderbilt University Medical Center و Ascension Saint Thomas. اطلب من مستشفاك سياسة المساعدة المالية الخاصة به.", "zh-CN": "您账单上的医院不在本演示的政策范围内，因此我们无法估算。本演示包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。请向您的医院索取其财务援助政策。", "zh-TW": "您帳單上的醫院不在本示範的政策範圍內，因此我們無法估算。本示範包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。請向您的醫院索取其財務援助政策。"}, // TODO-REVIEW es+ar+zh
+  r_other_route:{en: "Your income is above this hospital's income tiers. The hospital may still help another way - see what it also checks below. Ask the hospital; this app does not make a packet for that.", es: "Su ingreso está por encima de los niveles de ingreso de este hospital. El hospital aún podría ayudarle de otra forma: vea abajo lo que también revisa. Pregunte al hospital; esta aplicación no crea un paquete para eso.", ar: "دخلك أعلى من شرائح الدخل في هذا المستشفى. قد يساعدك المستشفى بطريقة أخرى، انظر أدناه ما يتحقق منه أيضًا. اسأل المستشفى؛ هذا التطبيق لا ينشئ حزمة لذلك.", "zh-CN": "您的收入高于该医院的收入档次。医院仍可能以其他方式提供帮助，请看下方医院还会核查的内容。请咨询医院；本应用不会为此生成申请材料。", "zh-TW": "您的收入高於該醫院的收入級距。醫院仍可能以其他方式提供協助，請看下方醫院還會核查的內容。請洽詢醫院；本應用程式不會為此產生申請資料。"}, // TODO-REVIEW es+ar+zh
+  help_title: {en: "Want a person to help?", es: "¿Quiere que una persona le ayude?", ar: "هل تريد أن يساعدك شخص؟", "zh-CN": "想找人帮忙吗？", "zh-TW": "想找人幫忙嗎？"}, // TODO-REVIEW es+ar+zh
+  help_note:  {en: "These offices and groups help for free. BillScan does not send them anything.", es: "Estas oficinas y grupos ayudan gratis. BillScan no les envía nada.", ar: "تساعد هذه المكاتب والجهات مجانًا. لا يرسل BillScan إليها أي شيء.", "zh-CN": "这些办公室和机构免费提供帮助。BillScan 不会向它们发送任何信息。", "zh-TW": "這些辦公室和機構免費提供協助。BillScan 不會向它們傳送任何資訊。"}, // TODO-REVIEW es+ar+zh
   r_deadline_passed:{en: "This date has passed. Ask the hospital whether it will still accept your application.", es: "Esta fecha ya pasó. Pregunte al hospital si todavía aceptará su solicitud.", ar: "لقد مضى هذا التاريخ. اسأل المستشفى هل سيقبل طلبك رغم ذلك.", "zh-CN": "这个日期已经过了。请询问医院是否仍会接受您的申请。", "zh-TW": "這個日期已經過了。請詢問醫院是否仍會接受您的申請。"}, // TODO-REVIEW es+ar+zh
   income_hint: {en: "Type the amount in US dollars, like 38000 or 38,000.50.", es: "Escriba el monto en dólares de EE. UU., como 38000 o 38,000.50.", ar: "اكتب المبلغ بالدولار الأمريكي، مثل 38000 أو 38,000.50.", "zh-CN": "请用美元填写金额，例如 38000 或 38,000.50。", "zh-TW": "請用美元填寫金額，例如 38000 或 38,000.50。"}, // TODO-REVIEW es+ar+zh
   home_open:   {en: "All bills from this visit", es: "Todas las facturas de esta visita", ar: "جميع فواتير هذه الزيارة", "zh-CN": "本次就诊的所有账单", "zh-TW": "本次就診的所有帳單"}, // TODO-REVIEW es+ar+zh
@@ -173,19 +184,27 @@ const REQUIRED = new Set(["statement_date", "amount_due_cents"]); // the engine 
 
 const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, answers: null,
           result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0,
-          home: null, homeSeq: 0, fromQr: false,
+          home: null, homeSeq: 0, fromQr: null,
           extracting: false, packetSeq: 0, theme: "auto"}; // theme is in page memory only and survives restart()
 let firstShow = true, curScreen = 0;
 
 // ---------- helpers
 // Fetch one language's interface strings. The five inline languages need no fetch. Returns false on any failure.
+// Run work(signal) and abort its fetch after ms (the timer covers reading the body too). Aborting rejects like any network failure.
+async function withTimeout(ms, work) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), ms);
+  try { return await work(ctl.signal); } finally { clearTimeout(timer); }
+}
 async function loadLang(code) {
   if (T.app_title[code] !== undefined || I18N[code]) return true;
   try {
-    const r = await fetch("i18n/" + code + ".json");
-    if (!r.ok) return false;
-    I18N[code] = await r.json();
-    return true;
+    return await withTimeout(20000, async signal => {
+      const r = await fetch("i18n/" + code + ".json", {signal});
+      if (!r.ok) return false;
+      I18N[code] = await r.json();
+      return true;
+    });
   } catch (e) {
     return false;
   }
@@ -310,23 +329,26 @@ function show(n) {
   }
   firstShow = false;
 }
-async function post(path, body, asText) {
-  let r;
-  try {
-    r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)});
-  } catch (e) { throw new Error(t("err_generic")); }
-  if (!r.ok) {
-    if (r.status === 429) throw new Error(t("err_busy"));
-    let detail = "";
+// ms: give up after this long (default 20 s); a timeout lands on the same err_generic line as any network failure.
+async function post(path, body, ms, asText) {
+  return withTimeout(ms || 20000, async signal => {
+    let r;
     try {
-      const j = await r.json();
-      // a 422 detail is English server text: outside English show the translated generic line instead
-      detail = (typeof j.detail === "string" && !(r.status === 422 && S.view !== "en")) ? j.detail : t("err_invalid");
-    } catch (e) { /* ignore */ }
-    throw new Error(detail || t("err_generic"));
-  }
-  try { return await (asText ? r.text() : r.json()); } // a 200 that is not JSON (captive portal page) must not show a parser error
-  catch (e) { throw new Error(t("err_generic")); }
+      r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body), signal});
+    } catch (e) { throw new Error(t("err_generic")); }
+    if (!r.ok) {
+      if (r.status === 429) throw new Error(t("err_busy"));
+      let detail = "";
+      try {
+        const j = await r.json();
+        // a 422 detail is English server text: outside English show the translated generic line instead
+        detail = (typeof j.detail === "string" && !(r.status === 422 && S.view !== "en")) ? j.detail : t("err_invalid");
+      } catch (e) { /* ignore */ }
+      throw new Error(detail || t("err_generic"));
+    }
+    try { return await (asText ? r.text() : r.json()); } // a 200 that is not JSON (captive portal page) must not show a parser error
+    catch (e) { throw new Error(t("err_generic")); }
+  });
 }
 // "4812.40" or "$4,812.4" -> 481240 ; invalid -> null. String math, no floats.
 function dollarsToCents(s) {
@@ -363,7 +385,7 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
                      "home_estimate_note", "home_one_approval", "home_bill_reduction",
                      "r_packet", "r_no_packet", "home_not_eligible", "rem_follow",
-                     "rem_apply", "home_bill_deadline", "r_deadline_passed"];
+                     "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_other_route"];
 function machineTranslated(key) {
   return S.view !== "en" && !(T[key] && T[key][S.view]) && !!(I18N[S.view] && I18N[S.view][key]);
 }
@@ -457,7 +479,7 @@ function qrFigure() {
   try {
     if (typeof qrcode !== "function" || !window.matchMedia("(min-width: 900px)").matches) return null;
     const q = qrcode(0, "M");
-    q.addData(location.origin + "/?hospital=cumberland_synthetic");
+    q.addData(location.origin + "/?hospital=vumc");
     q.make();
     return el("figure", {class: "qr"},
       el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),
@@ -473,7 +495,7 @@ function renderStart() {
   const qr = qrFigure();
   fill(root, el("div", {class: "stack-8"},
     title,
-    S.fromQr ? el("p", {class: "chip"}, ...tNodes("chip_selected", {name: "Cumberland General Hospital (SYNTHETIC)"})) : null,
+    S.fromQr ? el("p", {class: "chip"}, ...tNodes("chip_selected", {name: HOSPITALS[S.fromQr]})) : null,
     el("p", {class: "notice"}, ...tSafe("notice")),
     el("div", {class: "stack-3"},
       el("label", {for: "lang-select", class: "sr-only"}, t("pick_lang")),
@@ -554,15 +576,17 @@ async function onFile(ev) {
   fd.append("file", upload);
   let failMsg = t("read_failed");
   try {
-    const r = await fetch("/extract", {method: "POST", body: fd});
-    if (seq !== S.extractSeq) return;
-    if (!r.ok) {
-      if (r.status === 413) failMsg = t("err_too_big");
-      else if (r.status === 415) failMsg = t("err_type");
-      else if (r.status === 429) failMsg = t("err_busy");
-      throw new Error("extract");
-    }
-    const bill = await r.json();
+    const bill = await withTimeout(60000, async signal => {
+      const r = await fetch("/extract", {method: "POST", body: fd, signal});
+      if (seq !== S.extractSeq) return null;
+      if (!r.ok) {
+        if (r.status === 413) failMsg = t("err_too_big");
+        else if (r.status === 415) failMsg = t("err_type");
+        else if (r.status === 429) failMsg = t("err_busy");
+        throw new Error("extract");
+      }
+      return await r.json();
+    });
     if (seq !== S.extractSeq) return;
     S.bill = bill;
     if (curScreen === 2) showMsg(""); // the message box belongs to the screen the user is on
@@ -679,7 +703,7 @@ async function submitAnswers() {
     const result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     if (seq !== S.submitSeq) return;
     showBusy(t("load_explain"));
-    const explain = await post("/explain", {bill: S.bill, answers: S.answers, result});
+    const explain = await post("/explain", {bill: S.bill, answers: S.answers, result}, 45000);
     if (seq !== S.submitSeq) return; // checked BEFORE the assignments: a cancelled submit must not overwrite a newer result
     S.result = result; S.explain = explain;
   } catch (e) {
@@ -710,8 +734,34 @@ function deadlineLine(d) { // the English sentence with its date highlighted
   return el("span", {lang: "en", dir: "ltr"}, d.text_en.slice(0, i), el("mark", {class: "hl"}, d.date), d.text_en.slice(i + d.date.length));
 }
 function phoneLink(p) { return el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "tel:" + String(p).replace(/[^\d+]/g, "")}, p)); }
+// "Want a person to help?" card. phone: the hospital's financial-assistance phone, or null when there is no policy for the hospital.
+function helpCard(phone) {
+  const li = (...kids) => el("li", {lang: "en", dir: "ltr"}, ...kids);
+  const ext = (href, text) => el("a", {href, target: "_blank", rel: "noopener"}, text);
+  return panel("", el("h3", null, t("help_title")), el("p", {class: "muted"}, t("help_note")),
+    el("ul", null,
+      phone ? li("The hospital's financial assistance office: ", phoneLink(phone)) : null,
+      li("Dollar For (free help applying, English and Spanish): ", ext("https://dollarfor.org", "dollarfor.org")),
+      li("Tennessee Justice Center (TennCare help)", TJC_PHONE ? ": " : null, TJC_PHONE ? phoneLink(TJC_PHONE) : null),
+      li(el("a", {href: "tel:211"}, "211"), ": dial 211 for local help")));
+}
+function docUrl(url) { // a policy document's own page, shown as a link after its label (http/https only)
+  return typeof url === "string" && /^https?:\/\//i.test(url) ? [" ", el("a", {href: url, target: "_blank", rel: "noopener"}, url)] : [];
+}
+function resultActions(primary) {
+  return actions([
+    el("button", {type: "button", onclick: () => show(3)}, t("back")),
+    el("button", {type: "button", onclick: () => show(6)}, t("home_open")),
+    ghostRestart()], primary || null);
+}
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
+  if (r.hospital_matches_policy === false) { // no policy for this hospital: no estimate at all, only the warning and where to get help
+    const none = panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch_any")));
+    none.setAttribute("role", "note");
+    fill(root, el("div", {class: "stack-8"}, screenTitle(t("r_title")), none, helpCard(null), resultActions()));
+    return;
+  }
   const english = S.view === "en";
   const fb = S.explain.fallback_used;
   // One view at a time: the translated text, or English (the toggle, or when the number check failed).
@@ -721,6 +771,7 @@ function renderResult() {
   const nativeLines = showNative ? S.explain.text.split("\n") : [];
   const nativeDir = dirOf(S.lang);
   const eligible = r.tier.eligible;
+  const otherRoute = !eligible && typeof r.tier.other_route_en === "string" && r.tier.other_route_en !== ""; // above the tiers, but the hospital has another way
   // Footnote markers are numbered in the order they are created, so build the page top to bottom.
   const notes = makeNotes();
   const hero = panel("hero",
@@ -729,14 +780,15 @@ function renderResult() {
       el("p", {class: "lead"}, ...tNodes("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year}), notes.mark(r.fpl.citation))),
     el("p", {class: "decides"}, ...tSafe("r_decides")));
   const policyUsed = typeof r.policy_hospital_name === "string" ? el("p", {class: "muted"}, ...tNodes("r_policy_used", {name: r.policy_hospital_name})) : null;
-  const mismatch = r.hospital_matches_policy === false
-    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch")))
-    : null;
-  if (mismatch) mismatch.setAttribute("role", "note");
   const tierBlock = Array.isArray(r.tiers) && r.tiers.length
     ? [el("p", {class: "excerpt-head"}, t("r_tier")), el("div", {class: "tbl"}, tierTable(r))]
     : [panel("", el("h3", null, t("r_tier")), englishOnly("p", {class: "stat"}, r.tier.label_en))];
   const tierNote = el("p", {class: "muted tbl-note"}, t("r_policy_en"), notes.mark(r.tier.citation));
+  const conds = Array.isArray(r.conditions) ? r.conditions : [];
+  const condPanel = conds.length
+    ? panel("", el("h3", null, t("r_conditions")),
+        el("ul", null, ...conds.map(c => el("li", null, englishOnly("span", null, c.text_en), notes.mark(c.citation)))))
+    : null;
   const now = new Date();
   const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
   const deadline = panel("warn", el("h3", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
@@ -745,13 +797,14 @@ function renderResult() {
   const explain = panel("explain", el("h3", null, t("r_about")),
     ...enLines.map(l => el("p", {dir: "ltr", lang: "en"}, l)),
     ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, ...isolate(l))));
-  const docs = el("ol", {class: "docs"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, notes.mark(d.citation)))));
+  const docs = el("ol", {class: "docs"}, ...r.documents.map(d => el("li", null, el("span", {lang: "en", dir: "ltr"}, d.label_en, ...docUrl(d.url), notes.mark(d.citation)))));
   const docsPanel = eligible ? panel("", el("h3", {class: "with-icon"}, icon("file"), t("r_docs")), docs) : null;
   const c = r.contacts;
   const contactPanel = eligible
     ? panel("", el("h3", null, t("r_contact"), notes.mark(c.citation)),
         el("dl", {class: "kv"},
-          el("dt", null, t("r_email")), el("dd", null, el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "mailto:" + c.email}, c.email))),
+          c.email ? el("dt", null, t("r_email")) : null,
+          c.email ? el("dd", null, el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "mailto:" + c.email}, c.email))) : null,
           el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.phone))))
     : panel("", el("h3", null, t("r_payplan"), notes.mark(c.citation)),
         el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
@@ -762,20 +815,19 @@ function renderResult() {
     toggle,
     hero,
     policyUsed,
-    mismatch,
     el("div", {class: "stack-3"}, ...tierBlock, tierNote),
-    eligible ? deadline : null,
+    condPanel,
+    eligible || otherRoute ? deadline : null,
     explain,
     showNative ? el("p", {class: "muted"}, ...tSafe("ai_note")) : null,
     fb && !english ? el("p", {class: "muted"}, t("r_fallback")) : null,
     el("div", {class: "grid-md-2"}, docsPanel, contactPanel),
-    eligible ? null : el("p", null, ...tSafe("r_no_packet")),
+    eligible ? null
+      : otherRoute ? el("div", {class: "stack-3"}, el("p", null, ...tSafe("r_other_route")), englishOnly("p", null, r.tier.other_route_en))
+      : el("p", null, ...tSafe("r_no_packet")),
+    helpCard(c.phone),
     notes.list(),
-    actions([
-      el("button", {type: "button", onclick: () => show(3)}, t("back")),
-      el("button", {type: "button", onclick: () => show(6)}, t("home_open")),
-      ghostRestart()],
-      eligible ? el("button", {type: "button", class: "primary", onclick: () => { show(5); loadPacket(); }}, el("span", null, ...tSafe("r_packet"))) : null)));
+    resultActions(eligible ? el("button", {type: "button", class: "primary", onclick: () => { show(5); loadPacket(); }}, el("span", null, ...tSafe("r_packet"))) : null)));
 }
 
 // ---------- screen 6: home (all bills from this visit)
@@ -861,7 +913,9 @@ function renderHome() {
         el("p", {class: "big-money", dir: "ltr"}, money(h.estimate_cents)),
         el("p", {class: "lead"}, ...tSafe("home_estimate", {amt: money(h.estimate_cents)})),
         el("p", {class: "muted"}, ...tSafe("home_estimate_note")))
-    : panel("hero", el("p", {class: "lead"}, ...tSafe("home_not_eligible")));
+    : h.tier && h.tier.other_route_en
+      ? panel("hero", el("p", {class: "lead"}, ...tSafe("r_other_route")), englishOnly("p", {class: "muted"}, h.tier.other_route_en))
+      : panel("hero", el("p", {class: "lead"}, ...tSafe("home_not_eligible")));
   const covers = eligible && h.one_application_covers_all
     ? panel("ok",
         el("p", null, ...tSafe("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
@@ -918,7 +972,7 @@ async function loadPacket() {
   showBusy(t("load_packet"));
   setBusy(print, true);
   try {
-    const page = await post("/packet", {bill: S.bill, answers: S.answers, result: S.result}, true);
+    const page = await post("/packet", {bill: S.bill, answers: S.answers, result: S.result}, 45000, true);
     if (seq !== S.packetSeq || curScreen !== 5) return;
     const frame = el("iframe", {id: "packet-frame", title: t("p_title"), sandbox: "allow-modals allow-same-origin"});
     fill(paper, frame);
@@ -944,7 +998,8 @@ function restart() {
   showMsg(""); show(1);
 }
 
-S.fromQr = new URLSearchParams(location.search).get("hospital") === "cumberland_synthetic";
+const qrKey = new URLSearchParams(location.search).get("hospital");
+S.fromQr = Object.prototype.hasOwnProperty.call(HOSPITALS, qrKey) ? qrKey : null;
 document.getElementById("theme-btn").addEventListener("click", () => {
   S.theme = {auto: "light", light: "dark", dark: "auto"}[S.theme];
   applyTheme();

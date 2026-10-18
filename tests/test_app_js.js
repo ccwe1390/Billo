@@ -112,8 +112,14 @@ Object.assign(globalThis, {
   window: {matchMedia: () => ({matches: false}), addEventListener() {}},
   location: {search: "", origin: "http://x"},
   confirm: () => true,
-  fetch: (url, opts) => new Promise((resolve, reject) => { fetchQueue.push({url: String(url), opts, resolve, reject}); }),
-  setTimeout: (fn, ms) => { timers.push({fn, ms}); return timers.length; }, // never fires: keeps the process short-lived
+  fetch: (url, opts) => new Promise((resolve, reject) => {
+    fetchQueue.push({url: String(url), opts, resolve, reject});
+    if (opts && opts.signal) opts.signal.addEventListener("abort", () => { // like a browser: an aborted fetch rejects with an AbortError
+      const e = new Error("The operation was aborted."); e.name = "AbortError"; reject(e);
+    });
+  }),
+  setTimeout: (fn, ms) => { timers.push({fn, ms}); return timers.length; }, // never fires by itself: tests call timers[timers.length - 1].fn()
+  clearTimeout: () => {},
 });
 Object.defineProperty(globalThis, "navigator", {value: {language: "en-US"}, configurable: true, writable: true});
 URL.createObjectURL = blob => { lastBlob = blob; return "blob:fake"; };
@@ -539,6 +545,222 @@ test("i3. Home, every bill from another hospital: no 'Up to $0.00', the differen
   const txt = byId("s6").textContent;
   assert.ok(!txt.includes("$0.00"), "Home shows an estimate of $0.00");
   assert.ok(txt.includes("Different hospital"), "different-hospital note missing");
+});
+
+// j. real-policies UI (plan D5, D8, D10, D11, D12, D13, D15, D16, D17)
+const CITE2 = {source: "VUMC FAP", page: 9, effective_date: "2026-07-01", url: "http://u2"};
+async function landResult(result) { // drive the real submit path and return the Result screen node
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), result); await flush();
+  respond(take("/explain"), makeExplain("X")); await p;
+  assert.strictEqual(A.curScreen, 4, "did not reach the Result screen");
+  return byId("s4");
+}
+const links = node => node.all().filter(n => n.tag === "a");
+const hrefs = node => links(node).map(n => n.getAttribute("href"));
+const items = node => node.all().filter(n => n.tag === "li").map(n => n.textContent);
+const NO_ROUTE = "Ask the hospital about the catastrophic route.";
+function otherRouteResult() {
+  const r = makeResult(400, false);
+  r.tier.other_route_en = NO_ROUTE;
+  return r;
+}
+test("j1. conditions panel: heading, English items with footnote marks, between the tier note and the deadline", "plan D8", async () => {
+  const r = makeResult(115);
+  r.conditions = [{text_en: "Income is adjusted gross income.", citation: CITE2}, {text_en: "Clarksville has its own terms.", citation: CITE}];
+  const s4 = await landResult(r);
+  const txt = s4.textContent;
+  assert.ok(txt.includes(T.r_conditions.en), "conditions heading missing");
+  const li = s4.all().filter(n => n.tag === "li" && n.textContent.includes("Income is adjusted gross income."))[0];
+  assert.ok(li, "condition item missing");
+  assert.ok(li.all().some(n => n.classList.contains("fn-mark")), "condition has no footnote mark");
+  assert.ok(li.all().some(n => n.getAttribute("lang") === "en" && n.textContent === "Income is adjusted gross income."), "condition text is not English-only");
+  assert.ok(items(s4).some(x => x.startsWith("Clarksville has its own terms.")), "second condition missing");
+  const iCond = txt.indexOf(T.r_conditions.en), iTier = txt.indexOf(T.r_policy_en.en), iDead = txt.indexOf("Apply by");
+  assert.ok(iTier >= 0 && iTier < iCond && iCond < iDead, "order must be tier note, conditions, deadline (" + [iTier, iCond, iDead] + ")");
+  assert.ok(s4.all().some(n => n.tag === "ol" && n.classList.contains("notes") && n.textContent.includes("VUMC FAP")), "condition citation not in the footnotes");
+});
+test("j2. conditions absent, empty or missing: no conditions heading", "plan D8", async () => {
+  let s4 = await landResult(makeResult(115));
+  assert.ok(!s4.textContent.includes(T.r_conditions.en), "heading shown with no conditions field");
+  const r = makeResult(115); r.conditions = [];
+  s4 = await landResult(r);
+  assert.ok(!s4.textContent.includes(T.r_conditions.en), "heading shown for an empty list");
+});
+test("j3. no policy for the hospital: only the title, the warning and the help card (no office line)", "plan D5", async () => {
+  const r = makeResult(250);
+  r.hospital_matches_policy = false;
+  r.documents = [{label_en: "DOCLABEL", citation: CITE}];
+  r.conditions = [{text_en: "CONDTEXT", citation: CITE}];
+  const s4 = await landResult(r);
+  const txt = s4.textContent;
+  assert.ok(txt.includes(T.r_mismatch_any.en), "r_mismatch_any missing");
+  assert.ok(txt.includes(T.help_title.en) && txt.includes(T.help_note.en), "help card missing");
+  assert.ok(txt.includes("Dollar For") && txt.includes("Tennessee Justice Center") && txt.includes("dial 211"), "help items missing");
+  assert.ok(!txt.includes("financial assistance office"), "hospital-office line must be omitted");
+  assert.ok(!txt.includes("(555) 123-4567") && !hrefs(s4).some(h => h.startsWith("tel:555")), "hospital phone shown");
+  for (const gone of ["%", "Deadline", "Apply by", "EXPLAIN-X", "DOCLABEL", "CONDTEXT", "a@b.com", "Tier", T.r_tier.en, T.r_docs.en, T.r_contact.en, T.r_about.en])
+    assert.ok(!txt.includes(gone), "no-policy screen still shows: " + gone);
+  assert.ok(!s4.all().some(n => n.className === "pct"), "percent shown");
+  assert.ok(!s4.all().some(n => n.tag === "table"), "tier table shown");
+  assert.ok(!s4.all().some(n => n.tag === "button" && n.classList.contains("primary")), "packet button shown");
+  assert.ok(s4.all().some(n => n.classList.contains("warn")), "warning is not a warn panel");
+});
+test("j4. other route: r_other_route plus the hospital's English text, deadline kept, no r_no_packet, still no packet button", "plan D10", async () => {
+  const s4 = await landResult(otherRouteResult());
+  const txt = s4.textContent;
+  assert.ok(txt.includes(T.r_other_route.en), "r_other_route missing");
+  assert.ok(txt.includes(NO_ROUTE), "tier.other_route_en missing");
+  assert.ok(s4.all().some(n => n.getAttribute("lang") === "en" && n.textContent === NO_ROUTE), "other_route_en is not English-only");
+  assert.ok(txt.includes("Apply by"), "deadline panel must stay for the other route");
+  assert.ok(!txt.includes(T.r_no_packet.en), "r_no_packet shown with an other route");
+  assert.ok(!s4.all().some(n => n.tag === "button" && n.classList.contains("primary")), "packet button shown");
+  const plain = await landResult(makeResult(400, false)); // ineligible, no other route: unchanged
+  assert.ok(plain.textContent.includes(T.r_no_packet.en) && !plain.textContent.includes("Apply by"), "plain ineligible result changed");
+});
+test("j5. Home, not eligible with an other route: r_other_route instead of home_not_eligible", "plan D10", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(false); h.tier = {eligible: false, other_route_en: NO_ROUTE};
+  S.home = h; A.show(6);
+  let txt = byId("s6").textContent;
+  assert.ok(txt.includes(T.r_other_route.en), "Home lacks r_other_route");
+  assert.ok(!txt.includes(T.home_not_eligible.en), "Home still shows home_not_eligible");
+  resetApp(); S.answers = {}; S.bill = {};
+  const h2 = makeHome(false); h2.tier = {eligible: false};
+  S.home = h2; A.show(6);
+  txt = byId("s6").textContent;
+  assert.ok(txt.includes(T.home_not_eligible.en) && !txt.includes(T.r_other_route.en), "no other route: Home must keep home_not_eligible");
+});
+test("j6. help card on eligible, ineligible and no-policy results; TJC shows its verified number", "plan D15", async () => {
+  const noPolicy = makeResult(250); noPolicy.hospital_matches_policy = false;
+  for (const [name, r] of [["eligible", makeResult(115)], ["ineligible", makeResult(400, false)], ["other route", otherRouteResult()], ["no policy", noPolicy]]) {
+    const s4 = await landResult(r);
+    const its = items(s4);
+    assert.ok(s4.textContent.includes(T.help_title.en), name + ": no help title");
+    assert.ok(its.includes("Dollar For (free help applying, English and Spanish): dollarfor.org"), name + ": Dollar For line: " + JSON.stringify(its));
+    assert.ok(hrefs(s4).includes("https://dollarfor.org"), name + ": Dollar For link");
+    assert.ok(its.includes("Tennessee Justice Center (TennCare help): (615) 255-0331"), name + ": TJC line must carry the verified number: " + JSON.stringify(its));
+    assert.ok(its.includes("211: dial 211 for local help") && hrefs(s4).includes("tel:211"), name + ": 211 line");
+    const office = its.filter(x => x.startsWith("The hospital's financial assistance office: "));
+    if (name === "no policy") assert.strictEqual(office.length, 0, "office line on a no-policy result");
+    else {
+      assert.strictEqual(office.length, 1, name + ": office line count");
+      assert.ok(office[0].includes("(555) 123-4567") && hrefs(s4).includes("tel:5551234567"), name + ": office phone link");
+    }
+    const card = s4.all().filter(n => n.tag === "li" && n.textContent.startsWith("Dollar For"))[0];
+    assert.strictEqual(card.getAttribute("lang"), "en", name + ": help items are English-only");
+  }
+});
+test("j7. contacts.email null: no email row, phone row kept", "plan D16", async () => {
+  const r = makeResult(115); r.contacts.email = null;
+  let s4 = await landResult(r);
+  assert.ok(!s4.textContent.includes(T.r_email.en), "email label shown");
+  assert.ok(!hrefs(s4).some(h => h.startsWith("mailto:")), "mailto link shown");
+  assert.ok(s4.textContent.includes("(555) 123-4567"), "phone missing");
+  s4 = await landResult(makeResult(115));
+  assert.ok(hrefs(s4).includes("mailto:a@b.com") && s4.textContent.includes(T.r_email.en), "email row lost when present");
+});
+test("j8. a document with a url shows its label followed by a link; unsafe urls are not linked", "plan D11", async () => {
+  const r = makeResult(115);
+  r.documents = [{label_en: "Application form", url: "https://vumc.example/form.pdf", citation: CITE},
+                 {label_en: "Bad form", url: "javascript:alert(1)", citation: CITE}, {label_en: "Plain doc", citation: CITE}];
+  const s4 = await landResult(r);
+  const li = s4.all().filter(n => n.tag === "li" && n.textContent.startsWith("Application form"))[0];
+  assert.ok(li, "document item missing");
+  const a = links(li).find(n => n.getAttribute("href") === "https://vumc.example/form.pdf");
+  assert.ok(a && a.textContent === "https://vumc.example/form.pdf", "document link missing");
+  assert.ok(li.textContent.indexOf("Application form") < li.textContent.indexOf("https://vumc.example/form.pdf"), "link must follow the label");
+  assert.ok(!hrefs(s4).some(h => h.startsWith("javascript:")), "javascript: url was linked");
+  assert.ok(!hrefs(s4).includes(undefined), "link without href");
+});
+test("j9. Start chip names the hospital from S.fromQr (string key or null); the QR points at ?hospital=vumc", "plan D13", () => {
+  resetApp(); S.fromQr = null; A.show(1);
+  assert.ok(!byId("s1").all().some(n => n.classList.contains("chip")), "chip shown with no hospital");
+  S.fromQr = "vumc"; A.show(1);
+  assert.ok(byId("s1").textContent.includes("Vanderbilt University Medical Center selected"), "chip text: " + byId("s1").textContent);
+  S.fromQr = "ascension_saint_thomas"; A.show(1);
+  assert.ok(byId("s1").textContent.includes("Ascension Saint Thomas selected"), "AST chip");
+  S.fromQr = "cumberland_synthetic"; A.show(1);
+  assert.ok(byId("s1").textContent.includes("Cumberland General Hospital (SYNTHETIC) selected"), "Cumberland chip");
+  S.fromQr = null;
+  assert.ok(/location\.origin \+ "\/\?hospital=vumc"/.test(src), "Start-screen QR must encode origin + /?hospital=vumc");
+});
+test("j10. SAFETY_KEYS has r_mismatch_any and r_other_route; the new T rows are in the five inline languages", "plan D12", () => {
+  assert.ok(A.SAFETY_KEYS.includes("r_mismatch_any") && A.SAFETY_KEYS.includes("r_other_route"));
+  for (const k of ["r_conditions", "r_mismatch_any", "r_other_route", "help_title", "help_note"])
+    for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(typeof T[k][l] === "string" && T[k][l].length > 5, k + "." + l);
+  resetApp();
+  S.view = "da";
+  for (const key of ["r_mismatch_any", "r_other_route"]) {
+    I18N.da = {[key]: "DA-" + key};
+    const nodes = A.tSafe(key);
+    assert.ok(nodesText(nodes).includes("DA-" + key) && nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), key + ": no English gloss");
+  }
+});
+test("j11. timeout: a timed-out /evaluate shows the generic error and stays on Questions (20 s)", "plan D17", async () => {
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  take("/evaluate"); // the request stays pending; only the timer fires
+  assert.strictEqual(timers[timers.length - 1].ms, 20000, "/evaluate timeout");
+  timers[timers.length - 1].fn();
+  await p; await flush();
+  assert.strictEqual(A.curScreen, 3, "left the Questions screen");
+  assert.strictEqual(S.busy, false);
+  assert.ok(S.result === null, "a result was stored");
+  assert.strictEqual(byId("alert").hidden, false, "no error shown");
+  assert.strictEqual(byId("alert").textContent, T.err_generic.en);
+  assert.strictEqual(byId("q-go").disabled, false, "See my result should be usable again");
+});
+test("j12. timeout: a timed-out /explain (45 s) lands on the same error path", "plan D17", async () => {
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  take("/explain");
+  assert.strictEqual(timers[timers.length - 1].ms, 45000, "/explain timeout");
+  timers[timers.length - 1].fn();
+  await p; await flush();
+  assert.strictEqual(A.curScreen, 3);
+  assert.ok(S.result === null && S.explain === null, "half a result was stored");
+  assert.strictEqual(byId("alert").textContent, T.err_generic.en);
+});
+test("j13. timeout: a timed-out /packet (45 s) shows the error and a retry button", "plan D17", async () => {
+  const s4 = await landResult(makeResult(115));
+  const btn = s4.all().find(n => n.tag === "button" && n.classList.contains("primary"));
+  assert.ok(btn, "no packet button");
+  btn.click();
+  assert.strictEqual(A.curScreen, 5);
+  take("/packet");
+  assert.strictEqual(timers[timers.length - 1].ms, 45000, "/packet timeout");
+  timers[timers.length - 1].fn();
+  await flush();
+  assert.strictEqual(byId("alert").textContent, T.err_generic.en);
+  assert.ok(byId("packet-retry"), "no retry button");
+});
+test("j14. timeout: a language file that does not arrive in 20 s falls back to English with the error", "plan D17", async () => {
+  resetApp(); A.show(1);
+  const sel = byId("lang-select");
+  sel.value = "th";
+  const done = sel.dispatch("change");
+  take("i18n/th.json");
+  assert.strictEqual(timers[timers.length - 1].ms, 20000, "i18n timeout");
+  timers[timers.length - 1].fn();
+  await done; await flush();
+  assert.strictEqual(S.view, "en");
+  assert.strictEqual(byId("alert").hidden, false, "no error shown");
+});
+test("j15. timeout: /extract gets 60 s and a timeout lands on the 'could not read' path", "plan D17", async () => {
+  resetApp(); A.show(2);
+  const file = new File([new Uint8Array(10)], "bill.png", {type: "image/png"});
+  const done = byId("bill-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  take("/extract");
+  assert.strictEqual(timers[timers.length - 1].ms, 60000, "/extract timeout");
+  timers[timers.length - 1].fn();
+  await done; await flush();
+  assert.ok(S.bill && S.bill.fields.hospital_name.value === null, "a blank bill should be shown after the timeout");
+  assert.strictEqual(S.extracting, false);
+  assert.strictEqual(byId("alert").textContent, T.read_failed.en);
 });
 
 // ---------- run

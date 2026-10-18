@@ -92,6 +92,7 @@ the dated entry, not the digest.
 - [BD - Presenter demo kit (artifact) incl. EOB drafts](#appendix-bd---presenter-demo-kit-artifact-incl-eob-drafts-2026-10-18-1134-cdt) (10-18)
 - [BE - Phase 3 EOB merged and deployed (ba6d1f0)](#appendix-be---phase-3-eob-merged-and-deployed-ba6d1f0-2026-10-18-1149-cdt) (10-18)
 - [BF - Remove photo + Sources dropdown (a0684aa, not live); swarm plan held; quick usability brief](#appendix-bf---remove-photo--sources-dropdown-a0684aa-not-live-swarm-plan-held-quick-usability-brief-2026-10-18-1155-cdt) (10-18)
+- [BG - Review fixes live (af1d5f6); swarm results; kit remade](#appendix-bg---review-fixes-live-af1d5f6-swarm-results-kit-remade-2026-10-18-1207-cdt) (10-18)
 
 ---
 
@@ -1888,3 +1889,27 @@ Slip: lc6 was run twice by a command error, about 20 extra vision calls (cents).
 - Swarm plan written to ~/.claude/task-plans/tnhacks26-swarm.md (30 Sonnet probes, 10 on the core journey). Evan: "wait on the swarm plan", so it has not launched.
 - /research-brief "very quick" on usability: docs/research/2026-10-18_usability-quick-brief.md. Verdict: Billow already follows most established practices; the structural gap (many fields per screen vs GOV.UK one-thing-per-page) is not a minutes fix. Stage 10.5 was skipped (stated in the brief).
 - Correction to record BD: its time range ends 11:36, but the clock read 11:35 at commit.
+
+# Appendix BG - Review fixes live (af1d5f6); swarm results; kit remade (2026-10-18 12:07 CDT)
+**When:** 2026-10-18 ~11:57-12:10 CDT.
+
+**Phase 3 review fixes (f13 Opus O1 #1, #2, #5), af1d5f6, deployed 12:06 CDT on Evan's word "deploy the medium fixes":**
+- the letter button shows only when a flag has a letter line (a different-visit-only card no longer leads to a /dispute 422);
+- EOB text reads are cut to 200 characters (a long read no longer 422s /check and hides the whole card);
+- the EOB read-failure message offers another photo or Not yet (that step has no hand entry).
+Tests n3 + an API test; m4 updated; 77 JS tests. All 9 suites ALL PASS. Served app.js = commit (CRLF-normalised sha a5d2b0f59a5e) on http + https; 77/77 JS tests pass against the live file. Rollback: deploy.ps1 -Commit af1d5f6 -Rollback restores deeebda. O1 #3/#4 (bill lines without dates; insurer name abbreviations -> different visit) are limits to state in the pitch, not fixed.
+
+**Swarm (Workflow, 35 Sonnet agents, run 11:57-12:05 against deeebda):** 35/35 returned; 263 requests, 47 paid; no 429 reported; 81 findings (0 crit, 2 high, 11 med, 68 low). Re-checked here:
+- Already fixed by af1d5f6 (swarm tested the earlier build): U05 n3/m4 and P20 (letter button on a different-visit-only card).
+- HIGH S08, real: on eob-08 the vision read returns insurer_phone = the customer-service number (800) 555-0150, not the appeal number (800) 555-0199 printed in the denial box. The card says "Insurer phone", so the text is accurate, but the kit had claimed 0199; kit v8 corrected. Not fixed in code (would need a prompt change and a new vision gate).
+- MED, open:
+  - P17: the English /explain says "Free care" to an insured VUMC family; the underinsured condition is listed separately. Known feature-review flaw 1; option 2 was never approved.
+  - U04: the pending flag says "Wait for your insurer's summary before paying", which reads as advice to withhold payment.
+  - P23: the dashboard's COUNT_ROWS omits checks_run, disputes and eobs_read.
+  - U01: the EOB service-line row overflows at about 640-720 px (not at 375 px).
+  - U03: the disabled-button reason is not announced (no aria-live).
+  - U02/P19: 54 Phase 2/3 keys are English in the 27 machine languages (known: S7 cut).
+  - U04: the letter says "explanation of benefits" while the UI says "insurance summary".
+- Probe gaps: P27 blocked (its script omitted answers.language, so all requests 422); P15 never got a successful /check; several journeys skipped /dispute to stay in budget.
+
+**Kit:** remade as version 6 (all three demos, every pair photo, the Remove photo / Sources notes, a "never say: works on real EOBs" row). v7 corrected the Sources step wording, v8 the pair-08 phone, v9 the live version.

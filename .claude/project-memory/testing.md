@@ -2,3 +2,6 @@ STATUS: pointer (2026-10-18 10:22 CDT) - 6 test files: 5 Python plain-assert scr
 - 11:11 CDT - f10: 6 files, node test_app_js 50 tests. f12 (Phase 2, not merged): 8 files (+ test_checks.py 20 tests,
   test_dispute.py 11 tests), node 65 tests (k1-k15 fail on the old app.js). V1 vision gate (reported before 11:09): new prompt 106 vs old 99
   of 108 fields (re-scored by Opus with the f12 normalizer), CT duplicate read 2/2, max latency 12.3 s.
+- 2026-10-18 12:08 CDT - f10 (live af1d5f6): 9 files - numlock, engine, api, policy_page, answer_key, checks (21), dispute (21),
+  eob_checks (25), node test_app_js (77). Live probe swarm 11:57-12:05: 35 Sonnet agents, 263 requests (47 paid), findings in
+  record BG; the JS harness can test the live file: APP_JS=<downloaded app.js> node tests/test_app_js.js.

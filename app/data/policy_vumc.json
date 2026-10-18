@@ -50,7 +50,7 @@
       "discount_percent": 0,
       "label_en": "Not eligible for the income tiers - catastrophic assistance may apply",
       "eligible": false,
-      "other_route_en": "VUMC may still help through Catastrophic Financial Assistance if your unreimbursed VUMC medical bills in one year are more than your household's yearly income.",
+      "other_route_en": "VUMC may still help through Catastrophic Financial Assistance if your unreimbursed VUMC medical bills in one year are more than your household's yearly income; you would still pay 15% to 30% of your yearly gross income (Appendix F).",
       "citation": {
         "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
         "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=9",
@@ -94,8 +94,19 @@
       }
     },
     {
+      "id": "pay_stubs",
+      "label_en": "Pay stubs for the most recent 3 months, and any Social Security, disability, W-2 or unemployment papers",
+      "required_if": "always",
+      "citation": {
+        "source": "VUMC Financial Assistance Application (English)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-application-english.pdf#page=1",
+        "page": 1,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
       "id": "proof_income",
-      "label_en": "Proof of income: three months of pay stubs, or W-9, 1099, food stamp or disability award letters, other official government income documents, an employer letter, or one year of bank statements",
+      "label_en": "If you have no current tax return: VUMC may accept a W-9, 1099, food stamp or disability award letters, other official government income documents, an employer letter, or one year of bank statements",
       "required_if": "always",
       "citation": {
         "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
@@ -123,6 +134,42 @@
         "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
         "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=9",
         "page": 9,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "With Catastrophic Financial Assistance you still pay part of the bill: from 15% of yearly gross income (income up to $50,000) to 30% (income over $100,000).",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=22",
+        "page": 22,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "Some services are not covered at all, for example cosmetic or other not medically necessary services, Vanderbilt Birth Center services, and transplant services for uninsured patients (except fulminant hepatic failure). See Appendix A.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=17",
+        "page": 17,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "VUMC staff decide each application case by case; the tiers above are the policy's income guidelines, not a promise.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=2",
+        "page": 2,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "VUMC counts as family: you, your married or common-law spouse (even if living elsewhere), and your children under 18 who live at home. Your household size may differ from what you typed.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=3",
+        "page": 3,
         "effective_date": "2026-07-01"
       }
     },
@@ -163,7 +210,7 @@
       }
     },
     {
-      "text_en": "The 85% discount is applied in percentage increments based on income and family size, so it can be lower than 85%.",
+      "text_en": "VUMC says the 85% discount is applied \"in percentage increments based upon income and family size\"; ask VUMC what your exact discount would be.",
       "citation": {
         "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
         "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=8",
@@ -194,7 +241,7 @@
   "contacts": {
     "phone": "(615) 936-3938",
     "email": "financial.assistance@vumc.org",
-    "payment_plan_phone": "(615) 936-0910",
+    "payment_plan_phone": "(615) 936-3938",
     "citation": {
       "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
       "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=15",

@@ -24,7 +24,7 @@
       "id": "free_care",
       "max_percent": 250,
       "discount_percent": 100,
-      "label_en": "Free care (100% charity care)",
+      "label_en": "100% charity care (a nominal fee may apply)",
       "eligible": true,
       "citation": {
         "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
@@ -144,6 +144,28 @@
       }
     },
     {
+      "id": "assets",
+      "label_en": "Proof of all assets owned by any household member (bank, investment, trust, money market and mutual fund accounts)",
+      "required_if": "always",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "medical_bills",
+      "label_en": "Your outstanding medical bills, if any (Ascension may use them to qualify you)",
+      "required_if": "always",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=2",
+        "page": 2,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
       "id": "medicaid_decision",
       "label_en": "Approval or denial of eligibility for Medicaid and/or state-funded medical assistance",
       "required_if": "always",
@@ -156,7 +178,7 @@
     }
   ],
   "coverage_period": null,
-  "coverage_note_en": "Ascension's policy does not say whether one application covers several bills; ask the hospital. An application completed less than six months earlier can be used again.",
+  "coverage_note_en": "Ascension's policy does not say whether one application covers several bills; ask the hospital.",
   "conditions": [
     {
       "text_en": "Above 400% of the poverty level: under the Means Test you may still get 79% if your total medical debt (from any provider) is at least your household's yearly gross income.",
@@ -168,7 +190,7 @@
       }
     },
     {
-      "text_en": "Only for residents of 13 Middle Tennessee counties: Cannon, Davidson, DeKalb, Hickman, Rutherford, Warren, White, Montgomery, Putnam, Sumner, Williamson, Wilson and Humphreys (or continuing care from another Ascension facility).",
+      "text_en": "Only for residents of 13 Middle Tennessee counties: Cannon, Davidson, DeKalb, Hickman, Rutherford, Warren, White, Montgomery, Putnam, Sumner, Williamson, Wilson and Humphreys (or continuing care from another Ascension facility where you already qualified).",
       "citation": {
         "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
         "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=1",
@@ -195,7 +217,7 @@
       }
     },
     {
-      "text_en": "Uninsured patients must work with a financial counselor to apply for Medicaid or other public programs first.",
+      "text_en": "Uninsured patients who may be eligible for Medicaid or other public programs must work with a financial counselor to apply for them (unless approved by presumptive scoring).",
       "citation": {
         "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
         "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=5",
@@ -204,7 +226,7 @@
       }
     },
     {
-      "text_en": "Ascension may also decide eligibility by presumptive scoring, without a full application.",
+      "text_en": "Presumptive scoring can give 100% charity care without a full application, for the unpaid balance of one episode of care.",
       "citation": {
         "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
         "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=4",
@@ -213,11 +235,47 @@
       }
     },
     {
-      "text_en": "The policy names its hospitals (DeKalb, Hickman, Highlands, River Park, Rutherford, Midtown, Stones River, West, Three Rivers, Hospital for Specialty Surgery); Ascension Saint Thomas Behavioral Health and Rehabilitation hospitals are not named and are not covered by this estimate.",
+      "text_en": "The policy names its hospitals (DeKalb, Hickman, Highlands, River Park, Rutherford, Midtown, Stones River, West, Three Rivers, Hospital for Specialty Surgery); the separate Ascension Saint Thomas Behavioral Health Hospital and Rehabilitation Hospital are not named, so this estimate does not cover their bills (behavioral health care at the named hospitals is covered).",
       "citation": {
         "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
         "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=1",
         "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Even with assistance, Ascension may charge a nominal flat fee: no more than the lesser of its AGB amount or the greater of $20 or 10% of what you owe.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=4",
+        "page": 4,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "If your insurance treats Ascension as out-of-network, help may be reduced or denied. After a denial you have 14 calendar days to send more information.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=4",
+        "page": 4,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Ascension may consider an application completed less than six months earlier.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=5",
+        "page": 5,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Ascension's application form counts all monthly income, for example child support and alimony, not only wages. This estimate used the yearly income you typed.",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=4",
+        "page": 4,
         "effective_date": "2025-07-01"
       }
     },

@@ -124,6 +124,22 @@ Nashville General's 501(c)(3) status: not checked. CFPB medical-debt rule,
 CMS price transparency, state screening mandates, Tennessee statutes:
 pending (merge).
 
+Update 2026-10-17 23:50 CDT (agent-reported, NOT yet re-verified by the
+orchestrator; full text in docs/research/raw/2026-10-17_hospital-economics-regulation.md):
+- CFPB medical-debt credit-reporting rule: vacated 2025-07-11 (E.D. Tex.),
+  no reissue found. No enacted Tennessee screening or medical-debt law;
+  Tennessee does not require hospitals to have a FAP (Hilltop 2016 profile).
+- Screening mandates (the states where hospitals have a reason to pay):
+  CO, OR, IL, WA in force; CA from 2027-07-01; six states require
+  presumptive eligibility by July 2027 (CA, DE, IL, MD, NC, OR).
+- Dollar For's own Nov 2025 analysis: covering every eligible patient cuts
+  hospital net revenue by at most 0.7%; collection-cost savings unmeasured.
+  So the hospital-pays model has a weak case in Tennessee: a loss, not a
+  saving, with no legal push. This weakens any "hospitals buy it" row below.
+- Hospital vendor prices for screening/PFS: none public (MISSING). The
+  closest buyer evidence is the LA County RFP, funded by a payer plus a
+  public-health coalition, not one hospital.
+
 ## F3. Comparables and hospital economics
 
 Pending (merge). Only prior figure: Mediloop at $129 per bill (crowding

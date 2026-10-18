@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 07:43 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AT).
+**Last updated: 2026-10-18 07:51 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AU).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -72,18 +72,16 @@ snapshot; history lives in the record (Phase 0, Appendices A-AT).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## STATUS (2026-10-18 07:43 CDT) - read this first
-- **LIVE: 5af2f1f on http AND https://207.211.181.174/** (deployed by Evan
-  2026-10-18 00:07 CDT; live checks passed 00:09: es/he/th journeys, extract,
-  packets, app.js equal to f10; record AR). 32 language options live.
-  Rollback target: c30be63 (VM ~/backup-before-5af2f1f.tar).
-- **On f10, NOT deployed yet:** audit 3 code fixes (record AT): the Result
-  screen no longer shows "Apply by" to ineligible families; deadline lines get
-  the English line under machine translations; deploy-remote.sh now checks the
-  engine loads and /stats answers after restart, and exits FAILED otherwise.
-  NEXT: Evan runs `powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1
-  -Commit 984a537` from the repo root (984a537 = the fixes; later commits are
-  docs only); then Claude runs the live checks.
+## STATUS (2026-10-18 07:51 CDT) - read this first
+- **LIVE: 984a537 on http AND https://207.211.181.174/** (deployed by Evan
+  2026-10-18 ~07:48 CDT; the new health check passed; live checks 07:50 pass:
+  es/he/th journeys, extract, packets, served app.js equal to f10; record AU).
+  32 language options; the Result screen hides "Apply by" for ineligible
+  families; deadline lines show English under machine translations.
+  Rollback target: 5af2f1f (`deploy.ps1 -Commit 984a537 -Rollback`).
+- Deploy command (any folder): `powershell -ExecutionPolicy Bypass -File
+  C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`. One
+  "curl: (7) Connection refused" line during start-up is normal (retry loop).
 - Presenter sheet docs/2026-10-17_pitch-corrections.md was rewritten at 07:40
   to match the live app (audit 3 fix 3) and can be handed to presenters.
 - Audit 3 (docs/2026-10-18_audit-3.md, record AS): 4 high / 12 med / 21 low,
@@ -100,7 +98,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AT).
   (.sh kept LF by .gitattributes). Re-running the same -Commit overwrites its
   backup (audit 3 finding 10, open).
 - Git: origin/f10 = 5a7fd84; local f10 is ahead (docs + audit 3 fixes, not
-  pushed); local main = 5af2f1f (not pushed; origin/main ff7a539).
+  pushed); local main = 984a537 (not pushed; origin/main ff7a539).
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on bill-02);
   the rollback was not rehearsed live; spikes/synthetic-bill/
   phone-photo-bill-02.png is not a faithful photo (table rows offset; audit 3

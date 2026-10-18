@@ -117,3 +117,7 @@
   main = 5af2f1f (not pushed). 07:4x: deploy-remote.sh / rollback-remote.sh now
   fail unless the engine loads (m._rules()) and /stats answers after restart
   (984a537, record AT; first used on the next deploy).
+- 2026-10-18 ~07:48 CDT - Evan deployed 984a537 (audit 3 fixes). The health
+  check ran for the first time and passed after one refused curl during
+  start-up. Backup ~/backup-before-984a537.tar (= 5af2f1f app); rollback target
+  5af2f1f. Live checks 07:50 pass (record AU). Local main = 984a537.

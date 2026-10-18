@@ -80,6 +80,7 @@ the dated entry, not the digest.
 - [AR - Deploy 5af2f1f verified live, f10 pushed, main moved, cold assessments of 4 briefs](#appendix-ar---deploy-5af2f1f-verified-live-f10-pushed-main-moved-cold-assessments-of-4-briefs-2026-10-18-0013-cdt) (10-18)
 - [AS - Audit 3 (whole project, 2 workers): 4 highs on the Result screen, deploy check, presenter sheet, HANDOFF](#appendix-as---audit-3-whole-project-2-workers-4-highs-on-the-result-screen-deploy-check-presenter-sheet-handoff-2026-10-18-0037-cdt) (10-18)
 - [AT - Audit 3 pre-1PM fixes: presenter sheet, HANDOFF, Result-screen deadline, safety lines, deploy health check](#appendix-at---audit-3-pre-1pm-fixes-presenter-sheet-handoff-result-screen-deadline-safety-lines-deploy-health-check-2026-10-18-0744-cdt) (10-18)
+- [AU - Deploy 984a537 live (audit 3 fixes), health check worked, live checks pass](#appendix-au---deploy-984a537-live-audit-3-fixes-health-check-worked-live-checks-pass-2026-10-18-0751-cdt) (10-18)
 
 ---
 
@@ -1659,3 +1660,12 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **Verification:** 6 test files ALL PASS (Opus re-run: 5 py + node, 27 node tests); bash -n OK; .sh still LF; node --check OK. Browser (fake OCI, localhost:8765): household 1 person, $250,000 -> Result 1566%, not eligible, no "Apply by", no Deadline panel; 0 console errors.
 
 **Not done:** deploy (Evan: deploy.ps1 -Commit 984a537, then Claude's live checks); audit 3 items 5-7, 9, 10, 16-37 and A1-A3 decisions; nothing pushed.
+
+# Appendix AU - Deploy 984a537 live (audit 3 fixes), health check worked, live checks pass (2026-10-18, ~07:51 CDT)
+**When:** 2026-10-18 07:48-07:51 CDT. Evan ran `deploy.ps1 -Commit 984a537` (the relative path failed first because his prompt was in C:\Users\daruw; the full path worked).
+
+**Deploy output (Evan's paste):** backup 1126400 bytes ~/backup-before-984a537.tar; "import check: ok" (now includes m._rules()); one "curl: (7) ... Connection refused" while uvicorn started - the new 10-try loop then got /stats; "DEPLOYED 984a537 (service active, /stats 200)". First real run of the health check.
+
+**Live checks 07:50 (live_check.py, real OCI, n=1, http and https):** 26 of 28 pass (GET /, app.js equal to f10, i18n/he.json, extract, es/he/th evaluate + explain numbers_match + packet no fallback); the 2 "fails" are the known over-strict check on raw /household JSON (deadline data stays in the API; Home and now Result hide it). Served app.js contains `eligible ? deadline : null` on both protocols. Service active; journal 15 min: no error/warn/traceback lines. VM backups: before-cc3c333, c30be63, 5af2f1f, 984a537.
+
+**State:** LIVE = 984a537; rollback target 5af2f1f (deploy.ps1 -Commit 984a537 -Rollback). Local main fast-forwarded 5af2f1f -> 984a537 (not pushed).

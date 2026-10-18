@@ -69,6 +69,7 @@ the dated entry, not the digest.
 - [AG - Deploy go; live restart blocked by the auto-mode classifier; PowerShell deploy script for Evan](#appendix-ag---deploy-go-live-restart-blocked-by-the-auto-mode-classifier-powershell-deploy-script-for-evan-2026-10-17-1930-cdt) (10-17)
 - [AH - Deployed: D1 cc3c333, HTTPS (Let's Encrypt IP certificate), D2 c30be63 - F10 and the new UI live](#appendix-ah---deployed-d1-cc3c333-https-lets-encrypt-ip-certificate-d2-c30be63---f10-and-the-new-ui-live-2026-10-17-1943-cdt) (10-17)
 - [AI - All 29 Oracle Translate languages (31 codes) + Hindi: dropdown, machine-translated interface, safety-line guard](#appendix-ai---all-29-oracle-translate-languages-31-codes--hindi-dropdown-machine-translated-interface-safety-line-guard-2026-10-17-2013-cdt) (10-17)
+- [AJ - Whole-project audit 2 (8 agents: 6 code, 2 docs) + F11 PRD draft](#appendix-aj---whole-project-audit-2-8-agents-6-code-2-docs--f11-prd-draft-2026-10-17-2049-cdt) (10-17)
 
 ---
 
@@ -1347,3 +1348,41 @@ from the repo (scripts/dump_ui_strings.js added).
 files are unreviewed machine output); phone check of the dropdown; deploy
 (Evan runs deploy.ps1). Browsers that cached an old i18n file keep it until
 they revalidate (seen in testing); first-time visitors are unaffected.
+
+# Appendix AJ - Whole-project audit 2 (8 agents: 6 code, 2 docs) + F11 PRD draft (2026-10-17 20:49 CDT)
+**When:** 2026-10-17 20:17-20:48 CDT. Evan asked for /audit-code and
+/audit-docs on the whole project with 8 agents (6 code, 2 docs), then the
+F11 PRD draft (section F11 in PRD_ROADMAP.md, DRAFT, roadmap only, written
+from four rounds of questions to Evan) while the audit ran.
+
+**Report:** docs/2026-10-17_audit-2.md (full findings, edge cases, verified
+negatives, coverage, fix order). The findings pass changed no code.
+
+**Headline:** 5 high, 18 med, 10 low. Highs reproduced by the session model:
+(1) FieldIn.value accepts lists/dicts, bypassing the 200-char cap - a
+50,000-item account_number sent 339,539 chars to OCI Language in one /packet;
+(2) paid calls are limited per IP only, no global cap; (3) the presenters'
+pitch-corrections sheet tells the team to cut features now live; (4)
+features.md says F9 Home/reminders/QR/dashboard "Not built" (Claude left that
+clause when editing the line at 20:14); (5) the tests never execute app.js -
+0 of 16 browser mutants were caught. Also confirmed: an ineligible household
+is still told to apply on Home; the Terraform state file holding the VM
+private key is still in Downloads (Evan to delete). Three policy questions
+put to Evan: a global paid-call cap, who vouches for the 31 machine/draft
+languages, and a browser test harness.
+
+**Solid (verified two ways by workers):** no secrets in 55 revisions; packet
+HTML injection-safe; tier math 0 mismatches over 20,216 boundary cases; rate
+limiter and counters exact under concurrency; every injected OCI failure
+falls back cleanly; asset hashes match; record structure intact.
+
+**Corrections forward (from the audit):** record AI's "119 of 119" and "3,201
+strings" are 118 keys and 3,174 strings on disk (more_langs removed in the
+same entry); record AE's "about 45 minutes ahead" was 2 h 45 min ahead.
+
+**Cost:** 8 auditors, 0 delegates, 555 tool calls, ~1.98M subagent tokens,
+~31 min wall clock.
+
+**Open:** every fix awaits Evan's approval (fix order in the report, section
+7). Live is unchanged (c30be63); f10 carries the 32-language change, not
+deployed.

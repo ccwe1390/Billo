@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 20:14 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AI).
+**Last updated: 2026-10-17 20:50 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AJ).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -86,6 +86,11 @@ snapshot; history lives in the record (Phase 0, Appendices A-AI).
   `deploy/` (not in the repo). Rollback target now: cc3c333.
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on
   bill-02); the rollback was not rehearsed live.
+- AUDIT 2 (record AJ, docs/2026-10-17_audit-2.md): 5 high / 18 med / 10 low,
+  fixes await Evan (fix order in section 7). Do first: Evan deletes the
+  tfState file in Downloads (holds the VM key); do NOT hand presenters
+  docs/2026-10-17_pitch-corrections.md until it is updated (it says to cut
+  features that are live). PRD F11 (personal app) is a DRAFT, roadmap only.
 - ON f10, NOT DEPLOYED (record AI): 32 languages (all 31 Oracle Translate
   codes + Hindi) from app/data/languages.json; Start-screen dropdown; 27
   machine-translated interface files app/static/i18n/<code>.json (built by
@@ -153,7 +158,7 @@ opc@207.211.181.174. UI on main/live: "Paper Trail" (Web Awesome CSS + IBM Plex)
 Dipayan's design system ported (record AF; light/dark, Atkinson
 Hyperlegible, no Web Awesome); policy table with your row highlighted and
 footnoted citations kept. Record is
-current through Appendix AI. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AJ. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if

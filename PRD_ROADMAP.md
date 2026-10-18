@@ -598,3 +598,135 @@ and the UI port (record AF) are live at c30be63 on http and https
 browser checks (record AE/AF), live journeys on both schemes, /household
 estimate 883765 with one approval covering all 5 bills. Still open: the
 real-phone checks (photo upload, QR scan on bill-02) - Evan.
+
+### F11. DRAFT (2026-10-17 20:30 CDT) - a personal, app-like BillScan (roadmap)
+
+**Status: DRAFT, ROADMAP ONLY - nothing ships before judging (Evan,
+2026-10-17 ~20:20).** Written by Claude; scope and answers below come from
+four rounds of questions to Evan the same evening. Owner after the
+hackathon: undecided (open item O-1). Target user: not decided - kept open
+and ready to change (O-2); the design must work for an adult child helping
+a parent, a patient alone, and a caseworker (fast reset).
+
+**Rule changes this section proposes (each needs Evan's final OK when it is
+built, not now):**
+- Hard rule 3 (never ask for a name) -> amended: an OPTIONAL nickname, kept
+  only on the phone, never sent to the server, labelled "any word - not your
+  real name". Risk named: a name field can still deter people afraid of
+  immigration consequences; the field is off the main path (Settings only).
+- Hard rule 4 (keep nothing) -> amended: an opt-in "Keep on this phone"
+  switch, OFF by default (F11.3).
+- "The server keeps nothing" -> amended for push reminders only (F11.7): the
+  server keeps a push address and a bill summary until the last reminder.
+
+**Rules for every F11 feature:** F10's rules (synthetic data in every demo;
+the engine decides; every number number-locked); new strings hand-written in
+en/es/ar/zh-CN/zh-TW and built for the other 27 with scripts/build_i18n.py,
+then back-translated (F11.9); safety lines keep the English guard (tSafe);
+no new runtime third-party requests; reduced motion respected; works at
+375 px in rtl (ar, he).
+
+#### F11.1 Installable app + offline shell - size S
+- `manifest.webmanifest` (BillScan, standalone, theme colours from the
+  tokens, 192/512 + maskable icons from a new SVG mark).
+- Service worker caching ONLY the static shell (html, css, js, fonts, i18n)
+  with a commit-versioned cache; offline screen: "Reading a bill needs a
+  connection". Never caches API responses. Also ends stale-cache problems
+  seen in record AI.
+- Done-check: manifest parsed and SW active in the browser; offline reload
+  shows the shell; install on Android and iPhone.
+
+#### F11.2 App navigation and subtle motion - size M
+- Phones: bottom tab bar Home / Bills / Help; the 5-step stepper only inside
+  "Add a bill". Desktop keeps the centred card.
+- Motion (Evan: subtle): 150-200 ms slide/fade between screens, a gentle
+  reveal of the percent, haptic tick on Android (navigator.vibrate) on
+  confirm and result; all off under prefers-reduced-motion.
+- Sticky primary action on phones; first-run 3-card intro (what it does /
+  what is kept / the hospital decides), skippable.
+- Done-check: en + ar + he at 375 and 1280 px, light + dark; reduced-motion
+  emulation shows no animation; 0 console errors.
+
+#### F11.3 "Keep on this phone" (opt-in, off by default) - size M
+- Off: today's behaviour. On: language, theme, text size, nickname,
+  household answers and confirmed bill fields (never the photo) in this
+  browser's localStorage only.
+- Expiry (Evan): everything deletes itself 30 days after the last bill's
+  application deadline; checked on every app start.
+- Shared phones (Evan): warning in the switch text ("only on a phone you
+  alone use") + one-tap "Delete everything from this phone" on Home and
+  Help. No PIN.
+- Returning visit: "Welcome back[, nickname]" Home with bills and deadlines.
+- Done-check: nothing written while off (storage dump test); on -> reload
+  restores; delete -> storage empty; expiry tested with a fixed clock.
+
+#### F11.4 Case tracker + documents checklist - size M
+- Per bill: status chips the user sets (Gathering documents / Sent /
+  Waiting / Decision received), document check-offs with a progress ring,
+  deadline countdown from the engine's deadline (number-locked).
+- Home "Next step" card: the single most urgent action across bills.
+- Persists only with F11.3 on; otherwise for the visit.
+- Done-check: countdown = deadline - today in a test; a status change never
+  alters any number or tier.
+
+#### F11.5 Read aloud + text size - size S
+- Read aloud with the phone's own speech (speechSynthesis, no network) for
+  the explanation and the letter, shown only when the phone has a voice for
+  the chosen language.
+- Text size A- / A / A+ (100/115/130%), reflow with no sideways scroll.
+- Done-check: 130% at 375 px has no sideways scroll; button hidden without a
+  voice.
+
+#### F11.6 Share the packet - size S
+- Web Share API (phone share sheet) with the packet as a file; desktop:
+  Save as PDF via print. BillScan uploads nothing.
+- Done-check: share sheet opens on Android and iPhone; desktop falls back.
+
+#### F11.7 Push reminders - size L (Evan chose this over .ics only)
+- Opt-in per bill: "Remind me before the deadline". Uses the Web Push API
+  with VAPID keys (generated once, private key in OCI Vault); the browser's
+  push service delivers (Apple/Google/Mozilla endpoints are the user's own
+  browser vendor - note for hard rule 11: these are the browser's requests,
+  not a third party the page loads).
+- Server stores (Evan): the push subscription + a bill summary (hospital
+  name, amount due, deadline) + up to 2 reminder dates, so the text can say
+  "Cumberland General: apply by 2027-05-29 ($1,858.50)".
+- Where (Evan): a small SQLite file on the existing VM, encrypted at rest
+  with a key from OCI Vault; one VM = one point of failure (accepted for a
+  pilot). A systemd timer sends due reminders hourly.
+- Retention: each row deleted after its last reminder or on "stop
+  reminders"; a "delete my reminders" link in every notification.
+- RISK, named: with real users this is health-related financial data on a
+  server. Before any real user: privacy notice, consent text, Vault-managed
+  key rotation, backup policy, and a review of state privacy law. iPhone
+  push works only for an installed web app (iOS 16.4+), so F11.1 comes first.
+- .ics download stays as the no-account fallback.
+- Done-check: subscribe -> row stored encrypted -> reminder delivered on
+  Android and an installed iPhone app -> row gone after the last reminder;
+  the DB file is unreadable without the Vault key.
+
+#### F11.8 Ask about my result (guarded) - LATER, after F11.1-F11.7
+- Answers from a fixed context only (engine result, policy rules, facts),
+  canned refusals for medical, legal and other-hospital questions, number
+  lock on every answer, a red-team question set that must pass before
+  launch. Not a chat tab; a "Questions about this result?" box.
+
+#### F11.9 Translation quality programme
+- Evan recruits native-speaker reviewers for as many languages as possible;
+  every language without a reviewer gets an automated back-translation check
+  of EVERY string (today only 3 safety strings x 26 languages were checked,
+  record AI); strings that fail stay English (build_i18n.py DROP).
+- Each language shows "Machine translated" or "Reviewed by a native speaker"
+  in Settings.
+
+#### F11.10 Success measure (Evan)
+- Usability test: 5 people, including 2 non-English speakers, complete "add
+  a bill -> packet" unaided on a phone; time to packet and errors recorded
+  in experiments.md. Pass bar: 5/5 complete, median under 3 minutes (Claude's
+  proposed bar - Evan to confirm).
+
+**Build order (after the hackathon):** F11.1 -> F11.2 -> F11.6 -> F11.5 ->
+F11.3 -> F11.4 -> F11.9 (continuous) -> F11.7 -> F11.8.
+
+**Open items:** O-1 owner; O-2 target user; O-3 pass bar for F11.10;
+O-4 whether Dipayan's React app becomes the shell for F11.2 (team).

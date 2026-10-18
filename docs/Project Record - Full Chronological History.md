@@ -66,6 +66,7 @@ the dated entry, not the digest.
 - [AD - F10 approved; build started on branch f10 (deploy on hold)](#appendix-ad---f10-approved-build-started-on-branch-f10-deploy-on-hold-2026-10-17-1835-cdt) (10-17)
 - [AE - F10 built on branch f10, deploy-ready (not deployed)](#appendix-ae---f10-built-on-branch-f10-deploy-ready-not-deployed-2026-10-17-1846-cdt) (10-17)
 - [AF - UI port: Dipayan's design system in the vanilla app (light/dark, Atkinson)](#appendix-af---ui-port-dipayans-design-system-in-the-vanilla-app-lightdark-atkinson-2026-10-17-1921-cdt) (10-17)
+- [AG - Deploy go; live restart blocked by the auto-mode classifier; PowerShell deploy script for Evan](#appendix-ag---deploy-go-live-restart-blocked-by-the-auto-mode-classifier-powershell-deploy-script-for-evan-2026-10-17-1930-cdt) (10-17)
 
 ---
 
@@ -1189,3 +1190,34 @@ native.css path (pre-existing).
 **Open:** the team's UI decision is now mostly about PR #1's fate; the
 vanilla app carries both the design and the features. Deploy still waits
 for Evan's go; the D2 phone check should cover light and dark.
+
+# Appendix AG - Deploy go; live restart blocked by the auto-mode classifier; PowerShell deploy script for Evan (2026-10-17 19:30 CDT)
+**When:** 2026-10-17 19:26-19:29 CDT.
+
+**What:** Evan said "go" (deploy phase of the F10 plan). Nothing was
+deployed: Claude's first deploy command (git archive piped over SSH, then
+a backup, import check, swap and restart on the VM) was refused by the
+Claude Code auto-mode classifier as "Production Deploy". This is separate
+from the SSH permission Evan granted at 16:58 (reads and the earlier
+c4a28f0 deploy worked); the classifier now blocks restarting the live
+service. Claude did not work around it. main was NOT fast-forwarded (it
+stays at abfe317 until the matching deploy is done).
+
+**Deploy plan as now staged** (supersedes the D2/D3/D4 split in the F10
+plan): D1 = cc3c333 (server fixes R1-R3, F10.2 rule, BillScan rename,
+photo downscaling, old Paper Trail UI) -> HTTPS -> D2 = c30be63 (Home,
+reminders, dashboard, QR and the ported UI together; the UI port touches
+every screen, so D3/D4 can no longer ship separately).
+
+**Run by Evan:** Evan's terminal is Windows PowerShell 5.1, where a pipe
+carries text and would corrupt `git archive` output, and `sh` is absent.
+Claude wrote deploy.ps1 (git archive -o to a file, scp, then ssh running
+deploy-remote.sh: backup tar ~/backup-before-<commit>.tar, unpack to
+~/stage-<commit>, FAKE_OCI=1 import check, swap, restart, print service
+state and uvicorn process count) and a -Rollback switch (rollback-remote.sh
+restores the backup). Checks: both .sh files LF-only and `bash -n` clean;
+deploy.ps1 parses with 0 errors under PowerShell 5.1.26100. Not yet run.
+The scripts sit in the session scratchpad, not the repo.
+
+**State at 19:29:** live app.js sha256 c33d08fc... = c4a28f0's; f10 and
+ui-max at c30be63, pushed; working tree clean.

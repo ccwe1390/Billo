@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 19:21 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AF).
+**Last updated: 2026-10-17 19:31 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AG).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -69,20 +69,25 @@ snapshot; history lives in the record (Phase 0, Appendices A-AF).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## F10 STATUS (19:21 CDT) - read this first
+## F10 STATUS (19:31 CDT) - read this first
 - Product renamed **BillScan**. F10 (PRD) is BUILT on branch `f10`
   (UI commit efe50f0 + its docs commit, pushed; `ui-max` = same
   head), deploy-ready, NOT deployed: the live server still runs c4a28f0
-  (main). Evan holds the deploy until the team confirms the demo UI.
+  (main = abfe317). Evan said "go" at 19:26 (record AG), but the auto-mode
+  classifier refuses Claude's live restart ("Production Deploy"), so Evan
+  runs the deploy himself in PowerShell 5.1 with deploy.ps1 (session
+  scratchpad `deploy/`; record AG describes it). Next: D1.
 - UI port (record AF): Dipayan's design system (PR #1) now lives in the
   vanilla app on f10 - light/dark following the phone, Atkinson
   Hyperlegible, his components plus busy/retry/focus fixes. PR #1 itself
   stays open; the vanilla app carries both the design and all F10 features.
-- On Evan's "go": fast-forward main to f10, then deploy in order D1
-  (R1-R3 + F10.2 data, rollback rehearsal) -> HTTPS (Let's Encrypt IP cert,
-  certbot >= 5.4 in /opt/certbot, approved incl. the agreement with no
-  email; 30-min box) -> D2 Home + reminders -> D3 dashboard -> D4 QR; each
-  with backup tar, `import app.main` check before restart, live journey.
+- Deploy order (go given): D1 = cc3c333 (R1-R3 + F10.2, old UI; rollback
+  rehearsal) -> HTTPS (Let's Encrypt IP cert, certbot >= 5.4 in
+  /opt/certbot, approved incl. the agreement with no email; 30-min box) ->
+  D2 = c30be63 (Home, reminders, dashboard, QR, ported UI in one restart;
+  D3/D4 merged into D2, record AG). Each: backup tar, `import app.main`
+  check before restart, then Claude runs the live journey; main is
+  fast-forwarded to the deployed commit after each passes.
   Plan: ~/.claude/task-plans/tnhacks26-f10.md. Then /landing-check and
   /docs-sync.
 - If the team picks React: every server change is additive, so the React
@@ -135,7 +140,7 @@ HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
 DIRECTION fork + F9 amendments), then the record's last 3 appendices and
 .claude/project-memory/operations.md (VM details).
 
-State (2026-10-17 17:00 CDT): "Bill to Help" - bill photo -> hospital
+State (2026-10-17 19:31 CDT): "BillScan" (formerly Bill to Help) - bill photo -> hospital
 financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
 zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
@@ -146,7 +151,7 @@ opc@207.211.181.174. UI on main/live: "Paper Trail" (Web Awesome CSS + IBM Plex)
 Dipayan's design system ported (record AF; light/dark, Atkinson
 Hyperlegible, no Web Awesome); policy table with your row highlighted and
 footnoted citations kept. Record is
-current through Appendix AF. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AG. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if
@@ -157,7 +162,9 @@ ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
 OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
-Next, in order: (1) presenters adopt docs/2026-10-17_pitch-corrections.md;
+Next, in order: (0) DEPLOY - Evan runs deploy.ps1 -Commit cc3c333 (D1),
+Claude runs the live journey, then HTTPS, then D2 = c30be63 (record AG);
+(1) presenters adopt docs/2026-10-17_pitch-corrections.md;
 (2) pre-mortem T1/T3/T8 (Evan: organizers, phone test, budget alert); V1
 done (record AC); (3) fluent review of es/ar/zh strings
 (TODO-REVIEW in app.js); feature freeze ~23:00 Sat.

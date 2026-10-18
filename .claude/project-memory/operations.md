@@ -91,3 +91,11 @@
   the number check, 10.7 s total; es not-eligible explanation passes; hi
   packet passes (translator command_a) in 15.7 s. journalctl: no warnings.
   Rollback target: 116d631.
+- 2026-10-17 19:26-19:30 CDT - Evan said "go"; Claude's deploy of cc3c333
+  was refused by the auto-mode classifier ("Production Deploy") even though
+  SSH reads are allowed. Nothing changed on the VM (live app.js = c4a28f0).
+  Evan runs deploys from Windows PowerShell 5.1 with deploy.ps1 (record
+  AG): git archive -o file + scp (never a PS 5.1 pipe: it corrupts binary),
+  then deploy-remote.sh on the VM (backup ~/backup-before-<c>.tar, stage,
+  import check, swap, restart). The unit runs one uvicorn process (no
+  --workers flag; counters are per process).

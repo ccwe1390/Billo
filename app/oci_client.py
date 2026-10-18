@@ -53,7 +53,7 @@ def _genai_client():
     from oci.generative_ai_inference import GenerativeAiInferenceClient
     return GenerativeAiInferenceClient(
         service_endpoint=GENAI_ENDPOINT, **_auth(),
-        retry_strategy=oci.retry.NoneRetryStrategy(), timeout=(10, 120))
+        retry_strategy=oci.retry.NoneRetryStrategy(), timeout=(10, 40))  # under the app's 45 s wait, so an abandoned call ends
 
 
 def _chat(model_id, content_parts, json_mode, max_tokens=600):

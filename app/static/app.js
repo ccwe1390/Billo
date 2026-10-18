@@ -707,7 +707,7 @@ async function submitAnswers() {
     let explain = null; // no policy for the hospital: no estimate to explain, so no /explain call
     if (result.hospital_matches_policy !== false) {
       showBusy(t("load_explain"));
-      explain = await post("/explain", {bill: S.bill, answers: S.answers, result}, 45000);
+      explain = await post("/explain", {bill: S.bill, answers: S.answers}, 45000); // no result: the server recomputes it (saves ~11 KB uplink)
     }
     if (seq !== S.submitSeq) return; // checked BEFORE the assignments: a cancelled submit must not overwrite a newer result
     S.result = result; S.explain = explain;
@@ -981,7 +981,7 @@ async function loadPacket() {
   showBusy(t("load_packet"));
   setBusy(print, true);
   try {
-    const page = await post("/packet", {bill: S.bill, answers: S.answers, result: S.result}, 45000, true);
+    const page = await post("/packet", {bill: S.bill, answers: S.answers}, 45000, true); // the server recomputes the result
     if (seq !== S.packetSeq || curScreen !== 5) return;
     const frame = el("iframe", {id: "packet-frame", title: t("p_title"), sandbox: "allow-modals allow-same-origin"});
     fill(paper, frame);

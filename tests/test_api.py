@@ -902,6 +902,21 @@ finally:
     reset_limits()
 assert main.MultiPartParser.spool_max_size == main.MAX_IMAGE_BYTES
 
+# ---- security audit 2026-10-18 #1: JSON bodies over 64 KiB get a 413 before parsing, with or without Content-Length
+reset_limits()
+_ok_eval = json.dumps({"bill": bill, "answers": ANS_DICT}).encode()
+st, _h, jb = call("POST", "/evaluate", _ok_eval, JSON_H)
+assert st == 200 and json.loads(jb)["tier"]["id"] == "free_care", (st, jb[:200])        # a real body still works
+_big = b'{"pad": "' + b"a" * (main.MAX_JSON_BYTES + 1) + b'"}'
+for _path in ("/evaluate", "/household", "/explain", "/packet"):
+    for _wl in (True, False):
+        st, hh, jb = call("POST", _path, _big, JSON_H, with_length=_wl)
+        assert st == 413 and json.loads(jb)["detail"] == "Request is too large.", (_path, _wl, st, jb[:120])
+        assert all(hh.get(k) == v for k, v in SEC_H.items()), hh
+st, _h, _b = call("POST", "/evaluate", b" " * (main.MAX_JSON_BYTES - 2) + b"{}", JSON_H)
+assert st == 422, st                                                       # just under the cap: parsed as usual
+assert main._hits == {} and not main._global_hits                          # refused bodies spent no paid-call budget
+
 # ---- fix 22: counters photos_read, packets, fallbacks, household_views move on their routes
 _saved_counts = main._counts.copy()
 try:

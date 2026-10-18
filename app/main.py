@@ -58,6 +58,41 @@ async def invalid_request(request, exc):
     return JSONResponse({"detail": errors}, status_code=422)
 
 
+MAX_JSON_BYTES = 64 * 1024  # every JSON body the app sends is a few KB (security audit 2026-10-18 #1)
+TOO_LARGE = "Request is too large."
+
+
+class _JsonBodyCap:
+    """POST bodies other than /extract: 413 once the declared length or the bytes read pass MAX_JSON_BYTES,
+    before the body is parsed. Counting the bytes read also caps a chunked body with no Content-Length.
+    The 413 is raised as an HTTPException from inside the route, so the security headers still apply. It must be the
+    innermost middleware (added first): behind a BaseHTTPMiddleware the error arrives wrapped and becomes a 400."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] != "POST" or scope["path"] == "/extract":
+            return await self.app(scope, receive, send)
+        declared = dict(scope["headers"]).get(b"content-length", b"")
+        seen = 0
+
+        async def capped():
+            nonlocal seen
+            if declared.isdigit() and int(declared) > MAX_JSON_BYTES:
+                raise HTTPException(413, TOO_LARGE)
+            message = await receive()
+            seen += len(message.get("body", b""))
+            if seen > MAX_JSON_BYTES:
+                raise HTTPException(413, TOO_LARGE)
+            return message
+
+        await self.app(scope, capped, send)
+
+
+app.add_middleware(_JsonBodyCap)
+
+
 @app.middleware("http")
 async def refuse_big_upload(request, call_next):
     # Runs before FastAPI parses the multipart body, so an oversize file is never spooled to disk.

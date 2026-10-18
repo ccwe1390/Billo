@@ -350,7 +350,7 @@ test("f0. submitAnswers happy path sends the right payload and lands the result"
   assert.strictEqual(b.answers.for_whom, "self");
   respond(ev, makeResult(115)); await flush();
   const ex = take("/explain");
-  assert.strictEqual(bodyOf(ex).result.percent_of_fpl, 115, "/explain must receive the /evaluate result");
+  assert.ok(!("result" in bodyOf(ex)) && bodyOf(ex).answers.household_size === 3, "/explain must send bill + answers only (the server recomputes the result)");
   respond(ex, makeExplain("A")); await p;
   assert.strictEqual(S.result.percent_of_fpl, 115);
   assert.strictEqual(A.curScreen, 4);
@@ -814,7 +814,8 @@ test("j13. timeout: a timed-out /packet (45 s) shows the error and a retry butto
   assert.ok(btn, "no packet button");
   btn.click();
   assert.strictEqual(A.curScreen, 5);
-  take("/packet");
+  const pk = take("/packet");
+  assert.ok(!("result" in bodyOf(pk)) && bodyOf(pk).bill && bodyOf(pk).answers, "/packet must send bill + answers only");
   assert.strictEqual(timers[timers.length - 1].ms, 45000, "/packet timeout");
   timers[timers.length - 1].fn();
   await flush();

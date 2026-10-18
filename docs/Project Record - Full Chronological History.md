@@ -70,6 +70,7 @@ the dated entry, not the digest.
 - [AH - Deployed: D1 cc3c333, HTTPS (Let's Encrypt IP certificate), D2 c30be63 - F10 and the new UI live](#appendix-ah---deployed-d1-cc3c333-https-lets-encrypt-ip-certificate-d2-c30be63---f10-and-the-new-ui-live-2026-10-17-1943-cdt) (10-17)
 - [AI - All 29 Oracle Translate languages (31 codes) + Hindi: dropdown, machine-translated interface, safety-line guard](#appendix-ai---all-29-oracle-translate-languages-31-codes--hindi-dropdown-machine-translated-interface-safety-line-guard-2026-10-17-2013-cdt) (10-17)
 - [AJ - Whole-project audit 2 (8 agents: 6 code, 2 docs) + F11 PRD draft](#appendix-aj---whole-project-audit-2-8-agents-6-code-2-docs--f11-prd-draft-2026-10-17-2049-cdt) (10-17)
+- [AK - Docs sync after audit 2: stale live-doc statements corrected](#appendix-ak---docs-sync-after-audit-2-stale-live-doc-statements-corrected-2026-10-17-2051-cdt) (10-17)
 
 ---
 
@@ -1386,3 +1387,29 @@ same entry); record AE's "about 45 minutes ahead" was 2 h 45 min ahead.
 **Open:** every fix awaits Evan's approval (fix order in the report, section
 7). Live is unchanged (c30be63); f10 carries the 32-language change, not
 deployed.
+
+# Appendix AK - Docs sync after audit 2: stale live-doc statements corrected (2026-10-17 20:51 CDT)
+**When:** 2026-10-17 ~20:50 CDT. /docs-sync after audit 2 (record AJ). Evan
+asked for it "before pushing"; the audit commit b50fec7 had already been
+pushed when the request arrived, so this pass is a second push.
+
+**What changed (docs only, no code):** the stale statements audit 2 found in
+live docs, each against the evidence in docs/2026-10-17_audit-2.md:
+- HANDOFF: live build c30be63 (was c4a28f0 in the state table); "5 test
+  files" (was 4); the handoff prompt's live UI line (no Web Awesome); TLS no
+  longer a blocker; axe "clean" scoped to the old UI; gate time 9.7 s (11.8 s
+  was the re-run, record Z); R1-R3 spelled out; the deploy scripts' full temp
+  path with a warning that they are not in the repo.
+- Bins: features.md (F10 features are live), security.md (HTTPS live, open
+  audit items), testing.md (5 scripts, only 2 set FAKE_OCI, no app.js test),
+  tooling.md (deploy is deploy.ps1), gotchas.md and dependencies.md (dated
+  SUPERSEDES lines for Hindi protection and the recorded VM versions).
+- PRD F4: dated addendum - 10 bills and the 20-household key exist; the
+  10-bill accuracy run is still open.
+- docs/2026-10-17_pitch-corrections.md: a dated PARTLY SUPERSEDED banner - the
+  rows that say QR, Home and the dashboard are not built are wrong since
+  record AH; the QR's real-phone scan is still unchecked.
+
+**Not done here (await Evan, audit 2 fix order):** every code finding; the
+untranslated or garbled machine strings; the remaining low doc items (record
+front matter, glossary, people.md commit count).

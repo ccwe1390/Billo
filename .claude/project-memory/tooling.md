@@ -1,1 +1,1 @@
-STATUS: pointer (2026-10-17 16:50 CDT) - No build step, no linter installed. Record entries only via append-record-entry.js. Deploy: operations.md (git archive HEAD app + ssh).
+STATUS: pointer (2026-10-17 16:50 CDT) - No build step, no linter installed. Record entries only via append-record-entry.js. Deploy: Evan runs deploy.ps1 in PowerShell 5.1 (record AG; never pipe git archive in PS 5.1); see operations.md and HANDOFF for the script path.

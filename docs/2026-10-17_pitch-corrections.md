@@ -1,5 +1,17 @@
 # Pitch corrections - what rev2 says vs what the build does (DRAFT for Evan)
 
+> **2026-10-17 20:52 CDT - PARTLY SUPERSEDED (audit 2 #3). Do not use the rows
+> below that say QR, the five-bill Home or the dashboard are "not built", or that
+> 2 bills / 11 languages exist.** Since record AH (19:41) these are LIVE: the
+> Home screen with all 5 bills and "Up to $8,837.65 could be reduced", reminders
+> + calendar file, the ?hospital= chip and a QR on synthetic bill-02 (it encodes
+> the app address with ?hospital=; a real-phone scan is NOT yet checked), and
+> /dashboard.html. 10 synthetic bills
+> exist. Live has 11 languages; 32 codes are built on f10, not deployed. Keep the
+> 1:24 and 1:42 beats, but say "synthetic" and "the hospital decides". The other
+> rows (VUMC, brackets, prior art) still stand.
+
+
 Written 2026-10-17 by Claude from the full audit (docs/2026-10-17_full-audit.md,
 finding A1). The pitch, demo script and judge answers live in
 docs/2026-10-17_HackTN26_Health_Access_Plan_rev2.txt, which is kept as written.

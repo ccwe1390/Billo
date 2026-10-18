@@ -347,6 +347,11 @@ Five screens:
 
 **Never cut:** extraction, confirmation, the cited rule result, the packet.
 
+- 2026-10-17 20:52 CDT addendum (audit 2 #23): the "2 bills" and "no 20-household key"
+  notes above are superseded - 10 synthetic bills + answer_key.json exist (commit 0239267)
+  and tests/test_answer_key.py checks 20 hand-computed households (ALL PASS). The
+  10-bill reading-accuracy run is still not done.
+
 ### F5. Validation (rubric: "Have real customers provided input?")
 - **V1 (first hour, no people needed):** give the synthetic bill to Claude,
   ChatGPT, and Gemini (free tiers), 3 runs each, in English and Arabic, with

@@ -1,1 +1,1 @@
-STATUS: pointer (2026-10-17 20:14 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 32 languages on f10 (record AI; live c30be63 has 11). Not built: PRD F9 Home/Dad's bills, reminders, QR entry, partner dashboard.
+STATUS: pointer (2026-10-17 20:14 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 32 languages on f10 (record AI; live c30be63 has 11). Also built and LIVE (record AH): F10.1 Home/all bills, F10.2 coverage rule, F10.3 reminders + .ics, F10.4 QR chip + Start QR, F10.5 dashboard. Roadmap: PRD F11 (DRAFT).

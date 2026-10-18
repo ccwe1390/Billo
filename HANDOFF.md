@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 20:50 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AJ).
+**Last updated: 2026-10-17 20:52 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AK).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -41,7 +41,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AJ).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (on f10 since record AI: 32 codes from app/data/languages.json, dropdown, no tiers; live c30be63 still has tier 1 en/es/ar/zh-CN/zh-TW + tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53; the live server runs c4a28f0 (audit fixes, deployed 16:58 CDT, live journey 10.7 s; operations.md) | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (on f10 since record AI: 32 codes from app/data/languages.json, dropdown, no tiers; live c30be63 still has tier 1 en/es/ar/zh-CN/zh-TW + tier 2 vi/fr/ko/ru/de/hi); 5 test files ALL PASS; live with real OCI since 14:53; the live server runs c30be63 (F10 + UI port, deployed 19:41 CDT, record AH; c4a28f0 was the 16:58 build) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -72,7 +72,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AJ).
 ## F10 STATUS (19:43 CDT) - read this first
 - **LIVE: c30be63 (main) on http AND https://207.211.181.174/** (record AH).
   F10 (Home, coverage rule, reminders + .ics, QR chip + Start QR,
-  dashboard /dashboard.html), R1-R3 and the UI port (record AF: Dipayan's
+  dashboard /dashboard.html), R1-R3 (R1 parallel Hindi, R2 20-household answer key, R3 photo downscaling) and the UI port (record AF: Dipayan's
   design system, light/dark, Atkinson) are all live. Live journeys pass on
   both; Hindi packet ~5-7 s.
 - HTTPS: Let's Encrypt IP certificate (lineage billscan-ip, expires
@@ -82,8 +82,9 @@ snapshot; history lives in the record (Phase 0, Appendices A-AJ).
 - Deploys are run by Evan in PowerShell 5.1 (the auto-mode classifier
   refuses Claude's live restarts, record AG): deploy.ps1 -Commit <c>, and
   deploy.ps1 -Commit <c> -Rollback restores the backup taken before <c>
-  (VM ~/backup-before-<c>.tar). Scripts are in this session's scratchpad
-  `deploy/` (not in the repo). Rollback target now: cc3c333.
+  (VM ~/backup-before-<c>.tar). Scripts (not in the repo, temp folder - copy them
+  somewhere safe): %TEMP%\claude\C--ClaudeCode-TNHacks27\f68dbcb1-d488-4fb0-9c45-c5a72e045bf8\scratchpad\deploy\ (deploy.ps1, deploy-remote.sh,
+  rollback-remote.sh, https.ps1, https-remote.sh). Rollback target now: cc3c333.
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on
   bill-02); the rollback was not rehearsed live.
 - AUDIT 2 (record AJ, docs/2026-10-17_audit-2.md): 5 high / 18 med / 10 low,
@@ -106,7 +107,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AJ).
   (rev2's pitch still says QR, VUMC, PDF, Dad's bills, a database).
 - Interview / task-comparison results ([N], [x], [y] in the pitch); V1 is done
   (record AC: 13/13 raise assistance, 0/13 give the window or a letter).
-- Project LICENSE (legal call); TLS needs a domain.
+- Project LICENSE (legal call). TLS is DONE (record AH: IP certificate, expires 2026-10-24, no auto-renewal).
 - Budget alert: still UNCONFIRMED (the VM is E5.Flex, a paid shape).
 - Delete the downloaded Terraform state JSON from Downloads (it holds the SSH key).
 - Ask organizers: submission form, repo, video.
@@ -118,7 +119,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AJ).
    `docs/2026-10-17_HackTN26_Health_Access_Plan_rev2.txt`). Times: schedule
    file wins (1:00 PM finish, 9:00 PM venue close).
 1. DONE: gate 1 (14:22) and the 5:00 PM gate (14:53) - a blurred bill photo
-   -> cited result -> Spanish explanation + packet on the OCI server, 11.8 s.
+   -> cited result -> Spanish explanation + packet on the OCI server, 9.7 s (gate run; 11.8 s re-run, record Z).
 2. DONE 15:40: "Paper Trail" design live (record W, commit c689291).
 3. 3:00 PM VUMC gate passed with nobody opening VUMC's PDF: synthetic
    hospital stands unless Evan says otherwise.
@@ -126,7 +127,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AJ).
    ~15:49). Keep the live URL stable; record a backup video before it.
 5. DONE 18:03: T2 V1 chatbot test (record AC). Open:
    T3 real-phone test (Evan, later), budget alert. Done: MySQL/HeatWave
-   deleted (record X), axe audit clean (docs/2026-10-17_accessibility-audit.md),
+   deleted (record X), axe audit clean on the OLD Paper Trail UI only (c689291; not re-run on the ported UI - audit 2 #20),
    reviewer screenshots sent (ar, zh-CN, zh-TW).
 6. DONE 16:08: the 6 bugs from record X fixed and live (commit 116d631,
    record Y).
@@ -152,13 +153,13 @@ financial-assistance packet. Live: 11 languages (tier 1 en/es/ar/
 zh-CN/zh-TW). On f10, not deployed: 32 languages with a dropdown (record AI). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
 instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
-gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
-4 test files ALL PASS. SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
-opc@207.211.181.174. UI on main/live: "Paper Trail" (Web Awesome CSS + IBM Plex). UI on f10:
+gate passed (rendered blur-3 PNG -> cited result -> Spanish packet, 9.7 s gate run; 11.8 s re-run).
+5 test files ALL PASS. SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
+opc@207.211.181.174. UI on main/live and f10:
 Dipayan's design system ported (record AF; light/dark, Atkinson
 Hyperlegible, no Web Awesome); policy table with your row highlighted and
 footnoted citations kept. Record is
-current through Appendix AJ. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AK. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if

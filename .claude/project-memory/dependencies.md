@@ -22,3 +22,7 @@
   The VM venv's installed versions are NOT recorded (an SSH read was denied
   by the session's permission mode); `pip freeze` there before relying on it.
   The redeploy (`git archive HEAD app`) does not reinstall requirements.
+- 2026-10-17 20:52 CDT - SUPERSEDES "VM versions NOT recorded" above: read at
+  16:58 and equal to the pins (operations.md): fastapi 0.143.3, starlette
+  1.8.0, pydantic 2.14.1, uvicorn 0.54.0, python-multipart 0.0.32, oci
+  2.188.0, Python 3.12.15.

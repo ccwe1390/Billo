@@ -69,3 +69,6 @@
   REQUIRED. Passing "allowed" numbers there (the engine's discount "0" for a
   not-eligible tier) made every non-English not-eligible explanation fall
   back. Required = numbers in the English facts; locked = allowed only.
+- 2026-10-17 20:52 CDT - SUPERSEDES the Hindi line above: since c4a28f0 the Hindi
+  path masks numbers and the hospital name like every language
+  (oci_client.translate_genai_many -> protect_numbers/restore_numbers).

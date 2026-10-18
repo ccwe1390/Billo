@@ -65,6 +65,7 @@ the dated entry, not the digest.
 - [AC - V1 chatbot test: 13/13 raise assistance, 0/13 give the window or a letter](#appendix-ac---v1-chatbot-test-1313-raise-assistance-013-give-the-window-or-a-letter-2026-10-17-1803-cdt) (10-17)
 - [AD - F10 approved; build started on branch f10 (deploy on hold)](#appendix-ad---f10-approved-build-started-on-branch-f10-deploy-on-hold-2026-10-17-1835-cdt) (10-17)
 - [AE - F10 built on branch f10, deploy-ready (not deployed)](#appendix-ae---f10-built-on-branch-f10-deploy-ready-not-deployed-2026-10-17-1846-cdt) (10-17)
+- [AF - UI port: Dipayan's design system in the vanilla app (light/dark, Atkinson)](#appendix-af---ui-port-dipayans-design-system-in-the-vanilla-app-lightdark-atkinson-2026-10-17-1921-cdt) (10-17)
 
 ---
 
@@ -1114,3 +1115,77 @@ errors. bill-02 renders with a sharp QR and the date blurred only at blur 3/5.
 **Not done:** axe re-run (axe-core is not on disk; a download needs Evan's
 OK); the 10-bill accuracy run (planned after the freeze); deploy, HTTPS and
 the phone checks wait for Evan's go.
+
+# Appendix AF - UI port: Dipayan's design system in the vanilla app (light/dark, Atkinson) (2026-10-17 19:21 CDT)
+**When:** 2026-10-17 ~18:55-19:20 CDT. Branch `ui-max` cut from f10, commit
+efe50f0, f10 fast-forwarded to it, both pushed. NOT deployed: the live
+server still runs c4a28f0 (landing-check fetched the live app.js and
+matched it to c4a28f0).
+
+**What:** Evan asked to "analyze the UIUX design scheme and structure from
+[Dipayan's] branch and port over all the best ideas and templates. Then
+change the current UIUX to max." Dipayan's React app (origin/feature/frontend
+a2aaa24, PR #1) had the stronger design system; our vanilla app had every
+F10 feature, the audit fixes and the race guards. His design system was
+ported into the vanilla app (app/static); PR #1 stays open for the team.
+
+**Decisions (Evan, ~19:00):** hybrid theme - his dark palette becomes our
+dark theme, a matching light theme in the same tokens, the phone's
+light/dark setting picks (plus an in-memory toggle, no storage); vendor
+Atkinson Hyperlegible. Claude's choices, fixed before the agents started:
+drop Web Awesome from every page (files kept on disk); 17px base
+(html 106.25%), so 3rem controls = 51px; errors get their own role=alert
+region; focus kept on same-screen re-renders by element id inside show().
+
+**How:** plan-split rule. Two Sonnet agents with disjoint files against a
+written component contract (class names and DOM shapes): A = style.css
+(rewrite), fonts.css, dashboard.html; B = app.js. Opus wrote index.html
+(the shell both agents built against), downloaded the 4 Atkinson woff2 +
+LICENSE from jsDelivr (@fontsource/atkinson-hyperlegible@5.3.0; every
+hash equal to jsDelivr's listing; values in NOTICE.md), reviewed both diffs
+on disk and ran the checks.
+
+**Ported from his design:** colour tokens (light theme derived; WCAG
+ratios computed 19:03, all text >= 4.5, non-text >= 3), Atkinson
+Hyperlegible for Latin (Plex kept for Arabic, Devanagari, and via
+:lang(vi)/:lang(ru) for Vietnamese and Russian, which Atkinson lacks),
+option buttons with a radio dot, field rows on solid state surfaces plus
+words, the 4.5rem percent headline, tier table with the "You" row, deadline
+panel with a highlighted date, 5-segment stepper with labels, actions row
+(primary on top on mobile), 5fr/6fr bill layout at >= 1024px, white packet
+paper, +/- size stepper, "$"-prefixed income box.
+
+**Beyond his design ("max"):** separate status/alert live regions at the
+top; busy spinners and a disabled upload during a read; a packetSeq guard
+and Retry buttons on packet and Home errors; a "why disabled" line under
+Continue and See result; Start over asks first; phone and email as
+tel:/mailto: links; footnote marks link to their notes; translated +/-
+labels (his read "-1"/"+1"); visible 3px focus ring on buttons (his had
+none); 12 new T keys in 5 languages (TODO-REVIEW).
+
+**Bug found in review:** restart() set extractSeq/submitSeq/homeSeq back to
+0 (pre-existing). Symptom (not observed, by reasoning): an upload in flight
+across a Start over could carry seq 1 and match the next upload's seq 1,
+overwriting its fields. Fix: restart() bumps every counter instead of
+resetting it.
+
+**Verification:** tests engine, numlock, api, policy_page, answer_key ALL
+PASS. Browser, fake mode: full journey s1-s6 at 1280px light + dark and at
+375px Arabic light; 0 console errors; no sideways scroll on any screen;
+focus stays on a tapped language button and on the tax buttons; Arabic-
+Indic income digits parse (139% for 3 people, $38,000); Home shows
+$8,837.65 and 5 bills; theme toggle cycles light/dark/auto with translated
+labels; all requests go to the page's own host; sampled dark contrast
+7.55-15.52. Not checked: a real phone, Firefox (checkbox tick drawn by
+::after on appearance:none), forced-colors mode.
+
+**Landing-check (fresh agent):** code SAFE - both branches = working tree,
+no page loads Web Awesome, every referenced file exists, the 4 hashes and
+the LICENSE hash re-derive, the dev server serves the committed files.
+Collateral it found (fixed by this docs pass): no record entry yet; HANDOFF
+and ui.md still described Web Awesome + IBM Plex; NOTICE.md gave a wrong
+native.css path (pre-existing).
+
+**Open:** the team's UI decision is now mostly about PR #1's fate; the
+vanilla app carries both the design and the features. Deploy still waits
+for Evan's go; the D2 phone check should cover light and dark.

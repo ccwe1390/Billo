@@ -6,7 +6,7 @@ license text is in the repo next to the files.
 | Component | Where | License | License file |
 |---|---|---|---|
 | Web Awesome CSS (Fonticons; files kept, no page loads them since 2026-10-17) | app/static/vendor/webawesome/ | MIT | app/static/vendor/webawesome/LICENSE.md |
-| Font Awesome Free SVGs embedded in Web Awesome's native.css | app/static/vendor/webawesome/native.css | per fontawesome.com/license/free (attribution comments kept in the file; terms not re-read) | - |
+| Font Awesome Free SVGs embedded in Web Awesome's native.css | app/static/vendor/webawesome/styles/native.css | per fontawesome.com/license/free (attribution comments kept in the file; terms not re-read) | - |
 | IBM Plex Sans, Sans Arabic, Sans Devanagari | app/static/fonts/ | SIL Open Font License 1.1 | app/static/fonts/OFL-*.txt |
 | Phosphor icons | app/static/icons/ | MIT | app/static/icons/LICENSE-phosphor.txt |
 | qrcode-generator 2.0.4 (Kazuhiko Arase) | app/static/vendor/qrcode-generator/qrcode.js | MIT | app/static/vendor/qrcode-generator/LICENSE |

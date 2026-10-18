@@ -172,3 +172,10 @@ Standing decisions (what is decided NOW). History lives in the record.
   qrcode-generator 2.0.4 (download approved), product renamed "BillScan".
   Built on branch f10; NOTHING deploys until Evan says go. Dipayan's React
   PR #1 is out of scope; which UI teammates demo is undecided (Evan).
+- 2026-10-17 ~19:00 CDT - UI design (Evan, record AF): Dipayan's design
+  system is ported into the vanilla app, not adopted as a React app. Hybrid
+  theme: his dark palette = our dark theme, a matching light theme, the
+  phone's setting picks (in-memory toggle, no storage). Atkinson Hyperlegible
+  vendored (download approved). Web Awesome dropped from all pages (Claude's
+  call; two cascades + a dark theme). PR #1 stays open; its fate is the
+  team's call.

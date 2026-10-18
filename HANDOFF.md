@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 18:47 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-Y).
+**Last updated: 2026-10-17 19:21 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AF).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -69,11 +69,15 @@ snapshot; history lives in the record (Phase 0, Appendices A-Y).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## F10 STATUS (18:47 CDT) - read this first
+## F10 STATUS (19:21 CDT) - read this first
 - Product renamed **BillScan**. F10 (PRD) is BUILT on branch `f10`
-  (head adfa78e, pushed), deploy-ready, NOT deployed: the live server still
-  runs c4a28f0 (main). Evan holds the deploy until the team picks the demo
-  UI (our vanilla app vs Dipayan's React PR #1, which is out of scope).
+  (UI commit efe50f0 + its docs commit, pushed; `ui-max` = same
+  head), deploy-ready, NOT deployed: the live server still runs c4a28f0
+  (main). Evan holds the deploy until the team confirms the demo UI.
+- UI port (record AF): Dipayan's design system (PR #1) now lives in the
+  vanilla app on f10 - light/dark following the phone, Atkinson
+  Hyperlegible, his components plus busy/retry/focus fixes. PR #1 itself
+  stays open; the vanilla app carries both the design and all F10 features.
 - On Evan's "go": fast-forward main to f10, then deploy in order D1
   (R1-R3 + F10.2 data, rollback rehearsal) -> HTTPS (Let's Encrypt IP cert,
   certbot >= 5.4 in /opt/certbot, approved incl. the agreement with no
@@ -138,10 +142,11 @@ http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
 instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
 gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
 4 test files ALL PASS. SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
-opc@207.211.181.174. UI: "Paper Trail" design (policy table with your row
-highlighted, footnoted citations; vendored Web Awesome CSS + IBM Plex;
-brief in docs/research/2026-10-17_design-system-brief.md). Record is
-current through Appendix AA. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+opc@207.211.181.174. UI on main/live: "Paper Trail" (Web Awesome CSS + IBM Plex). UI on f10:
+Dipayan's design system ported (record AF; light/dark, Atkinson
+Hyperlegible, no Web Awesome); policy table with your row highlighted and
+footnoted citations kept. Record is
+current through Appendix AF. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if

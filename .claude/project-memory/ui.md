@@ -50,3 +50,22 @@ third-party requests.
 - 2026-10-17 16:50 CDT - `docs/design/` was never created. Mockups live in
   docs/research/2026-10-17_design-directions.html; the dated accessibility
   audit is docs/2026-10-17_accessibility-audit.md. Use those paths.
+
+## 2026-10-17 19:21 CDT - UI port: new design system (record AF, commit efe50f0)
+- Design system = Dipayan's feature/frontend tokens (PR #1) ported into
+  app/static: dark theme = his palette, light theme derived in the same
+  tokens (contrast computed: text >= 4.5, non-text >= 3); the phone's
+  prefers-color-scheme picks, a header toggle (Auto/Light/Dark) overrides
+  in page memory only. Component contract: plan in record AF.
+- Web Awesome: NO page loads it since efe50f0 (files kept on disk under
+  app/static/vendor/webawesome/; the 15:29 table row above is history).
+- Base size 17px (html 106.25%); controls 3rem = 51px, so rule 10 (>= 48px)
+  still holds. Focus ring 3px solid --ring, offset 2px, on buttons too.
+- Fonts: new family 'BillScan' in fonts/fonts.css = Atkinson Hyperlegible
+  (latin, latin-ext) + Plex Arabic + Plex Devanagari. 'BillPlex' (all 12
+  Plex faces) is kept for :lang(vi) and :lang(ru), which Atkinson lacks.
+| Asset | Version | Files | Bytes | License | Where |
+|---|---|---|---|---|---|
+| Atkinson Hyperlegible | @fontsource/atkinson-hyperlegible 5.3.0 | 4 woff2 (latin, latin-ext x 400/700) + LICENSE | 53,488 | OFL-1.1 (Braille Institute) | app/static/fonts/ |
+| qrcode-generator (missing from the 15:29 table; added 2026-10-17 F10) | 2.0.4 | dist/qrcode.js + LICENSE | 56,694 (js) | MIT | app/static/vendor/qrcode-generator/ |
+  Hashes for both: NOTICE.md.

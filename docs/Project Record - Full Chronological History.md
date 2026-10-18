@@ -72,6 +72,7 @@ the dated entry, not the digest.
 - [AJ - Whole-project audit 2 (8 agents: 6 code, 2 docs) + F11 PRD draft](#appendix-aj---whole-project-audit-2-8-agents-6-code-2-docs--f11-prd-draft-2026-10-17-2049-cdt) (10-17)
 - [AK - Docs sync after audit 2: stale live-doc statements corrected](#appendix-ak---docs-sync-after-audit-2-stale-live-doc-statements-corrected-2026-10-17-2051-cdt) (10-17)
 - [AL - Audit 2 fixes on f10: cost caps, ineligible flow, races, translation back-check, browser tests](#appendix-al---audit-2-fixes-on-f10-cost-caps-ineligible-flow-races-translation-back-check-browser-tests-2026-10-17-2331-cdt) (10-17)
+- [AM - Market research launched: stats, features, sustainability (partial saved), Middle TN hospital policies](#appendix-am---market-research-launched-stats-features-sustainability-partial-saved-middle-tn-hospital-policies-2026-10-17-2337-cdt) (10-17)
 
 ---
 
@@ -1472,3 +1473,37 @@ string; "Up to $0.00" when every bill is another hospital's).
 **Open:** deploy (Evan runs deploy.ps1 with the f10 head); audit 2 #3, #4,
 #7 (Evan deletes the tfState file), #12, #16, #32, #33; human review of all
 machine translations.
+
+# Appendix AM - Market research launched: stats, features, sustainability (partial saved), Middle TN hospital policies (2026-10-17 23:37 CDT)
+**When:** 2026-10-17 ~23:20-23:40 CDT. Market research launched while the
+audit fixes waited for deploy. Evan asked for the handoff to be written even
+if the research agents had not finished; this entry records what exists.
+
+**Launched (research-brief protocol, stage 8.5 citation re-fetch each):**
+1. Customer-base statistics for the pitch (US medical debt, charity-care
+   eligible-but-not-enrolled, LEP population US/TN, uninsured TN, bill
+   errors, caregivers) - slide-ready stats + "stats to NOT use".
+2. Features users need (patients, LEP, family helpers, navigators) - 10
+   ranked candidates with evidence, effort and rule risk + "do not build".
+3. Sustainability / business model - SAVED PARTIAL as
+   docs/research/2026-10-17_sustainability-brief.md (commit ed1a696):
+   verified unit economics only - Large Cohere $0.0156 per 10,000
+   characters, OCI Language $10.00 per 1,000 translation transactions after
+   the first 1,000, E5 $0.03/OCPU-h + $0.002/GB-h (Oracle price list, list
+   updated 2026-10-08) -> ~$0.04-$0.15 per non-English journey and ~$30/month
+   hosting (estimates; image billing undocumented). Funding evidence
+   (comparables' 990s, presumptive-screening vendor prices, Oct-2026
+   regulation status, funders) is being collected by a second agent for a
+   merge. Working hypothesis, untested: grant-funded pilot, then a flat
+   subscription for nonprofit hospitals behind conflict firewalls; no
+   contingency fees.
+4. Middle Tennessee hospitals (5 agents): a census of acute-care hospitals by
+   licensed beds with the cut at 75% of the region's beds, and each
+   hospital's financial-assistance policy (FPL thresholds, discounts,
+   application window, documents, presumptive eligibility, languages) for
+   the Vanderbilt, HCA TriStar, Ascension Saint Thomas and other systems.
+
+**State at this entry:** briefs 1, 2, 3b and the 5 hospital agents were still
+running. Their results exist only inside this Claude session until saved to
+docs/research/; if the next session finds no such files, the research was
+not saved and must be re-run (the prompts are summarized above).

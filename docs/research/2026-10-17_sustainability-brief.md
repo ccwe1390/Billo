@@ -1,9 +1,8 @@
 # Research brief - How BillScan sustains itself financially
 
 **Date:** 2026-10-17 (written 23:23-23:40 CDT; saved 23:45 CDT)
-**Status: PARTIAL.** The comparables-funding and hospital-economics /
-regulation collection did not complete in the first run; a second agent is
-collecting it and its findings will be merged below (section "Merge").
+**Status: PARTIAL.** Merge 1 (comparables, prices, funders) added
+23:40 CDT, unverified by the orchestrator; regulation status still pending.
 Until then the model ranking is an assumption-driven hypothesis table, not
 an evidence-tested verdict. Do not quote it to judges as settled.
 **Question:** Which revenue or funding model can pay BillScan's operating
@@ -226,6 +225,93 @@ vendor, not two independent sources.
 - tn.gov Commerce debt-adjusting PDF (404, UNREACHABLE)
 - Project files: PRD_ROADMAP.md, docs/research/2026-10-17_bill-decoder-crowding.md, .claude/project-memory/budget.md and operations.md, app/main.py, app/oci_client.py, app/data/policy_cumberland_synthetic.json
 
-## Merge
+## Merge 1 - comparables, prices, funders (2026-10-17 ~23:40 CDT)
 
-(pending - comparables, hospital economics, regulation status, funders)
+Source: the first run's comparables sub-agent, which reported after the
+partial save. Tier: REPORTED by that agent with its own confidence labels;
+the orchestrator did NOT re-fetch these citations (stage 8.5 not applied to
+this section). Treat every figure as a lead until re-checked.
+
+**Headline lead: Connecticut.** Conn. Gen. Stat. 38a-1053(b) (P.A. 25-168
+sec. 182, effective 2025-07-01): "The Office of the Healthcare Advocate shall
+contract with a vendor to develop an online hospital financial assistance
+portal", which may include a "screening tool to help determine whether
+patients may be eligible for hospital financial assistance"; from
+2026-07-01 hospitals must give the Office their program links. Statute text
+pulled by the agent (high confidence). No RFP or award amount found (next
+place to look: CTsource BidBoard). This is the closest public-sector match
+to BillScan found anywhere; nothing similar was found in Tennessee.
+
+**Comparables are donor-funded, not fee-funded.**
+- Dollar For (EIN 46-0889864; ProPublica 990s): FY2025 revenue $1,460,202,
+  of which contributions $1,413,942 and program service revenue $25,000
+  (first earned revenue); expenses $1,644,067; FY2024 revenue $1,678,080.
+  "entirely funded by donations from foundations, individuals, and
+  corporations" (dollarfor.org/financials). Nonprofit partners pay nothing;
+  "paid partnerships with for-profit partners" exist, prices unpublished.
+  Self-reported impact: $175,117,442 "debt crushed", 55,776 applications (as
+  of 2026-10-05). Funding risk: two biggest donors withdrew at the start of
+  2026 (KFF Health News podcast, Jan 2026; seen via search summary, medium).
+  Named grants (aggregator of 990 Schedule I, medium): Greater Houston
+  Community Foundation $400k (2023) and $300k (2024); Draper Richards Kaplan
+  $100k/yr; M J Murdock $131.5k x2; Aphorism $200k; Dovetail $200k.
+- Undue Medical Debt (Medical Debt Resolution Inc, EIN 47-1442997): FY2025
+  revenue $62,529,512, contributions $61,149,489, program service revenue $0
+  (2022-2025). Government payments buy debt: NYC "$18 million over three
+  years" (2024-01-22, nyc.gov, high); Illinois "$10 million" (hfs.illinois.gov,
+  high); Connecticut "$6.5 million" ARPA (2026-06-03, high); Michigan $4.5M
+  (medium); New Jersey $10M FY2024 (medium); Washington DC $900,000 at one
+  cent per dollar plus 15% admin, cap $1,035,000 (DC DHCF RFA text, high);
+  Memphis TN $159,202.77 for about $17M of debt (2026-10, medium).
+- Tennessee Justice Center (EIN 62-1630417): 2024 revenue $4,972,010, almost
+  all contributions.
+
+**Patient-paid competitors (their own pricing pages; VENDOR-SELF-REPORTED):**
+Goodbill 20% of savings capped at $1,000; Resolve $249 deposit + 25% of
+savings ($5k-$15k bills); CareRoute 25% of savings (18% for subscribers)
+capped at $1,000; Mediloop $129 flat or $499/year; Sheer Health free / $60 /
+$95 per month; Claimable $39.95 flat; Fight Health Insurance free, pay what
+you want. BillScan's free, no-success-fee stance is distinctive against
+these - and the contingency model is ruled out here on principle.
+
+**Hospital-paid vendors: no public price exists.** Experian, TransUnion,
+Waystar (PARO), Optum/Change, Cedar, Flywire, Collectly - prices MISSING
+after vendor sites, review sites, 10-Ks, HFMA and board-minute searches.
+Pattern only: presumptive charity screening is "usually a tiered-based, per
+transaction" cost (Healthrise / Trinity Health in HFMA, 2025-12-16, high);
+Experian Coverage Discovery is contingency-priced ("pay Experian Health only
+when they get paid", 2022 brochure, high); Cedar Pay 1-4% of collections
+(single former-executive interview, low). Flywire 2025 revenue $623.0M,
+"more than 150 healthcare systems" (10-K).
+
+**Funders (Tennessee):** Memorial Foundation 209 grants totaling $5,587,750
+in 2025 (average ~$26.7k; access to care a priority; medium); HCA Healthcare
+Foundation $2.1M to 89 Middle Tennessee nonprofits (2026-06-24, average
+~$23.6k); Community Foundation of Middle Tennessee health grants $318,175 in
+its 2022 cycle and an Undue drive (Middle TN goal $620,000); BlueCross
+BlueShield of Tennessee Foundation community grants $5k-$20k (low). National:
+RWJF $2.4M to Community Catalyst for hospital financial-policy work and
+$190,000 to Georgia Watch; no RWJF, Arnold or Commonwealth grant to a
+comparable tool found (MISSING).
+
+**What this does to the hypotheses (orchestrator's reading, not re-verified):**
+- H2 (grants) gains: every comparable runs on donations; Tennessee grants
+  average ~$24-27k, enough for cloud plus part-time work for a pilot, not a
+  salaried team.
+- H5 (government) gains a concrete, current target: Connecticut's mandated
+  vendor contract; governments already pay nonprofits (Undue) at scale, though
+  for debt purchase rather than navigation.
+- H1 (hospital-paid) is unpriced: no public vendor price, and the market
+  norm is per-transaction or contingency - which would recreate the
+  conflict this brief rules out. H1 stays a hypothesis.
+- Revised working path: grant-funded pilot (H2) -> pursue the Connecticut
+  portal contract or a similar state navigation contract (H5) -> a flat,
+  non-contingent nonprofit-hospital subscription only after a pilot (H1).
+
+Searches that came up empty (per the agent): vendor prices for Cedar,
+Collectly, Experian, TransUnion, Waystar, Optum; Arnold Ventures and
+Commonwealth Fund grants to medical-debt groups; any Dollar For government
+contract; the Connecticut portal RFP; Arizona's state amount; Tennessee
+Justice Center's named funders. Still pending: Oct-2026 status of the CFPB
+medical-debt rule, CMS price transparency, state screening mandates and
+Tennessee statutes (second agent, research-money-2).

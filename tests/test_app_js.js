@@ -80,7 +80,7 @@ const docEl = new FakeNode("html");
 const body = new FakeNode("body");
 const mk = (tag, id, attrs) => { const n = new FakeNode(tag); n.attrs.id = id; Object.assign(n, attrs || {}); root.append(n); return n; };
 ["app-title", "theme-btn", "stepper", "steps", "step-cap", "main", "status", "alert", "foot"].forEach(id => mk("div", id));
-for (let i = 1; i <= 6; i++) mk("section", "s" + i);
+for (let i = 1; i <= 7; i++) mk("section", "s" + i);
 const doc = {
   activeElement: null, body, documentElement: docEl,
   createElement: tag => new FakeNode(tag),
@@ -1124,6 +1124,221 @@ test("k15. new strings: ins_medicaid and the chk_/lines_ rows exist in all five 
   resetApp(); S.view = "da"; I18N.da = {chk_safety: "DA-safety"};
   const nodes = A.tSafe("chk_safety");
   assert.ok(nodesText(nodes).includes("DA-safety") && nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), "no English gloss in a machine language");
+});
+
+// m. Insurance-summary (EOB) step: screen 7 between Bill and Questions when the bill says "insured"
+const EOB_NAMES = ["insurer_name", "provider_name", "date_of_service", "claim_number", "claim_status", "amount_billed_cents",
+                   "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "denial_reason", "appeal_deadline", "insurer_phone"];
+function eobRead(withLines) { // what POST /extract returns for an insurance summary
+  const v = {insurer_name: "Acme Health", provider_name: "VUMC", date_of_service: "2026-03-04", claim_number: "C123", claim_status: "partially_paid",
+             amount_billed_cents: 500000, plan_discount_cents: 200000, plan_paid_cents: 150000, patient_owes_cents: 12345, denial_reason: null,
+             appeal_deadline: "2026-09-01", insurer_phone: "800-555-0100"};
+  const fields = {};
+  for (const n of EOB_NAMES) fields[n] = {value: v[n], confidence: 0.9, confirmed: false};
+  return {contract_version: 1, fields, lines: withLines === false ? null : {read: true, confirmed: false, items: [
+    {date: "2026-03-04", description: "Office visit", amount_billed_cents: 30000, patient_owes_cents: 2500},
+    {date: "2026-03-04", description: "Lab panel", amount_billed_cents: 20000, patient_owes_cents: 9845}]}};
+}
+function openEobAsk(ins, dos) { // the Bill screen with the given insurance and service date, then Continue
+  resetApp(); S.bill = fullBill();
+  S.bill.fields.insurance_status.value = ins;
+  S.bill.fields.date_of_service.value = dos === undefined ? "2026-03-04" : dos;
+  A.show(2);
+  byId("bill-next").click();
+}
+async function uploadEob(reply, status) { // pick a photo on the ask state and answer /extract; returns the request
+  const file = new File([new Uint8Array(10)], "eob.png", {type: "image/png"});
+  const done = byId("eob-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  const req = take("/extract");
+  if (reply === undefined) return req; // left pending
+  respond(req, reply, status);
+  await done; await flush();
+  return req;
+}
+async function openEobConfirm(withLines) { openEobAsk("insured"); await uploadEob(eobRead(withLines)); }
+function tickAllEob() { for (const n of EOB_NAMES) tick("e-" + n + "-ok", true); }
+function setAnswers() { S.size = "3"; S.income = "38,000"; S.tax = true; }
+
+test("m1. Continue on the Bill screen shows the insurance-summary screen for 'insured' only; self_pay and medicaid go straight to the questions", "eob", () => {
+  openEobAsk("insured");
+  assert.strictEqual(A.curScreen, 7, "insured did not go to screen 7");
+  const txt = byId("s7").textContent;
+  assert.ok(txt.includes("Your insurance summary") && txt.includes("Do you have your insurer's summary for this visit? It usually says 'This is not a bill.'"), txt);
+  assert.ok(txt.includes("Add a photo") && txt.includes("Not yet"), "ask buttons missing");
+  assert.ok(byId("eob-file") && byId("eob-file").getAttribute("accept") === "image/png,image/jpeg", "file input missing");
+  byId("eob-back").click();
+  assert.strictEqual(A.curScreen, 2, "Back did not return to the Bill screen");
+  for (const ins of ["self_pay", "medicaid", "unknown"]) {
+    openEobAsk(ins);
+    assert.strictEqual(A.curScreen, 3, ins + " must skip the insurance-summary step");
+  }
+});
+test("m2. 'Not yet' goes to the questions; /check carries eob_not_yet true and no eob; /dispute too", "eob", async () => {
+  openEobAsk("insured");
+  byId("eob-notyet").click();
+  assert.strictEqual(A.curScreen, 3);
+  assert.strictEqual(S.eobNotYet, true); assert.strictEqual(S.eob, null);
+  setAnswers();
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  const ck = take("/check");
+  assert.strictEqual(bodyOf(ck).eob_not_yet, true, "eob_not_yet missing from /check");
+  assert.ok(!("eob" in bodyOf(ck)), "eob must not be sent after Not yet");
+  respond(take("/explain"), makeExplain("N")); respond(ck, flagsCheck()); await p;
+  byId("s4").all().find(n => n.tag === "button" && n.textContent === T.chk_letter.en).click();
+  const d = bodyOf(take("/dispute"));
+  assert.strictEqual(d.eob_not_yet, true); assert.ok(!("eob" in d));
+});
+test("m3. Upload posts /extract with kind=eob, the bill's date_of_service and a 60 s timeout; no date means the key is omitted", "eob", async () => {
+  openEobAsk("insured", "2026-03-04");
+  const mark = timers.length;
+  const file = new File([new Uint8Array(10)], "eob.png", {type: "image/png"});
+  const done = byId("eob-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  assert.strictEqual(S.eobExtracting, true);
+  assert.ok(byId("status").textContent.includes("Reading the insurance summary"), "no reading status");
+  assert.strictEqual(byId("eob-file").disabled, true, "file input stays enabled while reading");
+  const req = take("/extract");
+  assert.strictEqual(timers[mark].ms, 60000, "timeout");
+  const fd = req.opts.body;
+  assert.strictEqual(fd.get("kind"), "eob"); assert.strictEqual(fd.get("date_of_service"), "2026-03-04");
+  assert.ok(fd.get("file"), "no file part");
+  respond(req, eobRead()); await done; await flush();
+  assert.ok(byId("e-insurer_name"), "confirm state not shown after the read");
+  openEobAsk("insured", null);
+  const r2 = await uploadEob(undefined);
+  assert.strictEqual(r2.opts.body.get("kind"), "eob"); assert.strictEqual(r2.opts.body.has("date_of_service"), false, "blank date must be omitted");
+});
+test("m4. A 422 shows the not-an-insurance-summary message and the ask state again; other failures show the read-failed message", "eob", async () => {
+  openEobAsk("insured");
+  await uploadEob({detail: "This doesn't look like an insurance summary."}, 422);
+  assert.strictEqual(A.curScreen, 7);
+  assert.ok(byId("alert").textContent === "This doesn't look like an insurance summary. Try another photo, or tap Not yet.", byId("alert").textContent);
+  assert.strictEqual(S.eobDraft, null);
+  assert.ok(byId("eob-file") && byId("eob-file").disabled === false && byId("eob-notyet").disabled === false, "ask state not restored");
+  await uploadEob("<html>gateway</html>", 502);
+  assert.strictEqual(byId("alert").textContent, T.read_failed.en);
+  assert.ok(byId("eob-file") && S.eobExtracting === false);
+  await uploadEob({contract_version: 1}, 200); // 200 with no fields is a failed read
+  assert.strictEqual(byId("alert").textContent, T.read_failed.en);
+  assert.strictEqual(S.eobDraft, null);
+});
+test("m5. Confirm state: Continue stays disabled until every field and the lines are confirmed; any edit unticks", "eob", async () => {
+  await openEobConfirm();
+  assert.strictEqual(byId("e-patient_owes_cents").value, "123.45", "money not shown in dollars");
+  assert.strictEqual(byId("e-insurer_name").value, "Acme Health");
+  assert.strictEqual(byId("e-claim_status").value, "partially_paid");
+  assert.deepStrictEqual(byId("e-claim_status").children.map(o => o.getAttribute("value")), ["", "paid", "partially_paid", "denied", "pending"]);
+  assert.strictEqual(byId("e-appeal_deadline").getAttribute("type"), "date");
+  assert.strictEqual(byId("eline-0-desc").value, "Office visit");
+  assert.strictEqual(byId("eline-1-owes").value, "98.45");
+  assert.strictEqual(byId("eob-next").disabled, true);
+  for (const n of EOB_NAMES.slice(0, 11)) tick("e-" + n + "-ok", true);
+  assert.strictEqual(byId("eob-next").disabled, true, "enabled with one field open");
+  tick("e-" + EOB_NAMES[11] + "-ok", true);
+  assert.strictEqual(byId("eob-next").disabled, true, "enabled with the lines unconfirmed");
+  assert.ok(byId("eob-why").textContent.includes(T.why_lines.en), "no reason: " + byId("eob-why").textContent);
+  tick("eob-lines-ok", true);
+  assert.strictEqual(byId("eob-next").disabled, false, "still disabled with everything confirmed");
+  assert.ok(S.eob && S.eob.fields.insurer_name.confirmed === true && S.eob.lines.confirmed === true, "S.eob not set when confirmed");
+  const edits = [["e-insurer_name", "Acme", "input"], ["e-patient_owes_cents", "99.50", "input"], ["e-claim_status", "denied", "change"], ["e-appeal_deadline", "2026-10-01", "input"]];
+  for (const [id, v, ev] of edits) {
+    byId(id).value = v; byId(id).dispatch(ev);
+    assert.strictEqual(byId(id + "-ok").checked, false, id + ": field still ticked after an edit");
+    assert.strictEqual(byId("eob-next").disabled, true, id + ": Continue stayed enabled");
+    assert.strictEqual(S.eob, null, id + ": S.eob stays set while a field is unconfirmed");
+    tick(id + "-ok", true);
+    assert.strictEqual(byId("eob-next").disabled, false, id + ": re-ticking should re-enable");
+  }
+  assert.strictEqual(S.eobDraft.fields.patient_owes_cents.value, 9950);
+  assert.strictEqual(S.eobDraft.fields.claim_status.value, "denied");
+  for (const [id, v, check] of [["eline-0-desc", "Visit", () => assert.strictEqual(S.eobDraft.lines.items[0].description, "Visit")],
+                                ["eline-0-date", "2026-03-05", () => assert.strictEqual(S.eobDraft.lines.items[0].date, "2026-03-05")],
+                                ["eline-1-billed", "250", () => assert.strictEqual(S.eobDraft.lines.items[1].amount_billed_cents, 25000)],
+                                ["eline-1-owes", "$1.5", () => assert.strictEqual(S.eobDraft.lines.items[1].patient_owes_cents, 150)]]) {
+    tick("eob-lines-ok", true);
+    assert.strictEqual(byId("eob-next").disabled, false, id + ": setup");
+    typeIn(id, v);
+    check();
+    assert.strictEqual(S.eobDraft.lines.confirmed, false, id + ": edit did not untick");
+    assert.strictEqual(byId("eob-lines-ok").checked, false, id + ": checkbox still ticked");
+    assert.strictEqual(byId("eob-next").disabled, true, id + ": Continue stayed enabled after a line edit");
+  }
+  tick("eob-lines-ok", true);
+  byId("eline-0-rm").click();
+  assert.strictEqual(S.eobDraft.lines.items.length, 1); assert.strictEqual(byId("eline-1-desc"), null, "rows not re-rendered");
+  assert.strictEqual(byId("eob-next").disabled, true, "removing a row must untick");
+  tick("eob-lines-ok", true);
+  byId("eob-next").click();
+  assert.strictEqual(A.curScreen, 3);
+  assert.strictEqual(S.eobNotYet, false);
+});
+test("m6. A summary read with no lines needs no lines checkbox; 'Use a different photo' returns to the ask state", "eob", async () => {
+  await openEobConfirm(false);
+  assert.strictEqual(byId("eob-lines-ok"), null, "lines checkbox shown with no lines");
+  tickAllEob();
+  assert.strictEqual(byId("eob-next").disabled, false, "blocked with no lines to confirm");
+  byId("eob-retake").click();
+  assert.strictEqual(S.eobDraft, null); assert.strictEqual(S.eob, null);
+  assert.ok(byId("eob-file"), "ask state not shown");
+});
+test("m7. /check and /dispute carry the confirmed eob (and no eob_not_yet); /packet is unchanged", "eob", async () => {
+  await openEobConfirm();
+  tickAllEob(); tick("eob-lines-ok", true);
+  byId("eob-next").click();
+  setAnswers();
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  const ck = take("/check");
+  const b = bodyOf(ck);
+  assert.deepStrictEqual(Object.keys(b).sort(), ["bill", "eob"], "/check body keys");
+  assert.deepStrictEqual(b.eob, JSON.parse(JSON.stringify(S.eob)));
+  assert.strictEqual(b.eob.fields.patient_owes_cents.value, 12345);
+  assert.strictEqual(b.eob.fields.insurer_name.confirmed, true);
+  assert.strictEqual(b.eob.lines.confirmed, true); assert.strictEqual(b.eob.lines.items.length, 2);
+  respond(take("/explain"), makeExplain("E")); respond(ck, flagsCheck()); await p;
+  byId("s4").all().find(n => n.tag === "button" && n.textContent === T.chk_letter.en).click();
+  const d = bodyOf(take("/dispute"));
+  assert.deepStrictEqual(Object.keys(d).sort(), ["answers", "bill", "eob"], "/dispute body keys");
+  assert.strictEqual(d.eob.fields.claim_status.value, "partially_paid");
+  A.show(4);
+  byId("s4").all().find(n => n.tag === "button" && n.classList.contains("primary")).click();
+  assert.deepStrictEqual(Object.keys(bodyOf(take("/packet"))).sort(), ["answers", "bill"], "/packet body must not gain eob");
+});
+test("m8. restart, a new bill photo, and switching insurance away from 'insured' clear the summary; a reply after a restart is dropped", "eob", async () => {
+  await openEobConfirm(); tickAllEob(); tick("eob-lines-ok", true);
+  assert.ok(S.eob, "setup");
+  A.restart();
+  assert.strictEqual(S.eob, null); assert.strictEqual(S.eobDraft, null); assert.strictEqual(S.eobNotYet, false);
+  openEobAsk("insured");
+  const file = new File([new Uint8Array(10)], "eob.png", {type: "image/png"});
+  const done = byId("eob-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  const req = take("/extract");
+  A.restart();
+  respond(req, eobRead()); await done; await flush();
+  assert.strictEqual(S.eobDraft, null, "a stale reply landed after restart"); assert.strictEqual(S.eobExtracting, false);
+  await openEobConfirm(); tickAllEob(); tick("eob-lines-ok", true);
+  A.show(2);
+  const sel = byId("f-insurance_status");
+  sel.value = "self_pay"; sel.dispatch("change");
+  assert.strictEqual(S.eob, null, "switching to self_pay kept S.eob"); assert.strictEqual(S.eobDraft, null);
+  openEobAsk("insured"); byId("eob-notyet").click(); A.show(2);
+  assert.strictEqual(S.eobNotYet, true);
+  const f2 = new File([new Uint8Array(10)], "bill.png", {type: "image/png"});
+  const d2 = byId("bill-file").dispatch("change", {target: {files: [f2]}});
+  await flush();
+  assert.strictEqual(S.eobNotYet, false, "a new bill photo kept eobNotYet");
+  respond(take("/extract"), fullBill()); await d2;
+});
+test("m9. new strings: every eob_ key and eob_f_<field> exists in all five inline languages; en text is exact", "eob", () => {
+  const keys = ["eob_title", "eob_ask", "eob_add", "eob_not_yet", "eob_reading", "eob_not_eob", "eob_hint", "eob_blank", "eob_retake", "eob_lines_title",
+                "eob_l_date", "eob_billed", "eob_owes", "eob_lines_ok", "eob_st_paid", "eob_st_partially_paid", "eob_st_denied", "eob_st_pending"]
+    .concat(EOB_NAMES.map(n => "eob_f_" + n));
+  for (const k of keys) for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(T[k] && typeof T[k][l] === "string" && T[k][l].length >= 2, k + "." + l);
+  assert.strictEqual(T.eob_lines_ok.en, "These match my insurance summary.");
+  assert.strictEqual(T.eob_not_eob.en, "This doesn't look like an insurance summary. Try another photo, or tap Not yet.");
 });
 
 // ---------- run

@@ -1312,7 +1312,7 @@ def pair_bill(pid):
     if k["bill"] == "bill-13.png":
         b = key_bill("bill-13")
     else:
-        flds = {"hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)", "statement_date": "2026-10-17",
+        flds = {"hospital_name": k["eob"]["provider_name"], "statement_date": "2026-10-17",  # the pair's hospital (fictional Cumberland)
                 "account_number": "PAIR-" + pid, "amount_due_cents": k["bill_amount_due_cents"],
                 "date_of_service": k["bill_date_of_service"], "insurance_status": "insured"}
         b = {"contract_version": 1,

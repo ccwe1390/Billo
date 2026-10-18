@@ -8,7 +8,7 @@
       "eob_file": "eob-10.png",
       "eob": {
         "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
-        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "provider_name": "Cumberland General Hospital (SYNTHETIC)",
         "date_of_service": "2026-09-12",
         "claim_number": "CLM-SYN-1023",
         "claim_status": "paid",
@@ -67,7 +67,7 @@
       "eob_file": "eob-06.png",
       "eob": {
         "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
-        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "provider_name": "Cumberland General Hospital (SYNTHETIC)",
         "date_of_service": "2026-09-12",
         "claim_number": "CLM-SYN-0612",
         "claim_status": "paid",
@@ -157,7 +157,7 @@
       "eob_file": "eob-08.png",
       "eob": {
         "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
-        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "provider_name": "Cumberland General Hospital (SYNTHETIC)",
         "date_of_service": "2026-09-20",
         "claim_number": "CLM-SYN-0822",
         "claim_status": "denied",
@@ -218,7 +218,7 @@
       "eob_file": "eob-09.png",
       "eob": {
         "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
-        "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+        "provider_name": "Cumberland General Hospital (SYNTHETIC)",
         "date_of_service": "2026-08-02",
         "claim_number": "CLM-SYN-0609",
         "claim_status": "paid",

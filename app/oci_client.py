@@ -133,7 +133,7 @@ def extract_eob(image_bytes, mime, date_of_service):
         # The fields printed on spikes/synthetic-eob/eob-06.
         return {
             "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
-            "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+            "provider_name": "Cumberland General Hospital (SYNTHETIC)",
             "date_of_service": "09/12/2026",
             "claim_number": "CLM-SYN-0612",
             "claim_status": "paid",

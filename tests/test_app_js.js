@@ -305,12 +305,12 @@ test("e3. tSafe: inline languages and English get no gloss", "", () => {
   assert.strictEqual(A.machineTranslated("start"), false, "key absent from I18N.da is not machine translated");
   assert.ok(!A.tSafe("start").some(n => typeof n !== "string" && n.classList.contains("en-gloss")), "non-safety key got a gloss");
 });
-test("e4. tSafe gloss covers the new safety keys (r_packet, r_no_packet, home_not_eligible, rem_follow; ics_deadline is plain .ics text, not DOM)", "audit-2 SAFETY_KEYS", () => {
+test("e4. tSafe gloss covers the new safety keys (r_packet, r_no_packet, home_not_eligible, rem_follow, rem_apply, home_bill_deadline, r_deadline_passed; ics_deadline is plain .ics text, not DOM)", "audit-2 SAFETY_KEYS", () => {
   resetApp();
   S.view = "da";
-  for (const key of ["r_packet", "r_no_packet", "home_not_eligible", "rem_follow"]) {
+  for (const key of ["r_packet", "r_no_packet", "home_not_eligible", "rem_follow", "rem_apply", "home_bill_deadline", "r_deadline_passed"]) {
     I18N.da = {[key]: "DA-" + key};
-    const nodes = A.tSafe(key, {phone: "555"});
+    const nodes = A.tSafe(key, {phone: "555", date: "2027-05-29"});
     const text = nodesText(nodes);
     assert.ok(text.includes("DA-" + key), key + ": translation missing");
     assert.ok(nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), key + ": no English gloss (add it to SAFETY_KEYS)");
@@ -352,6 +352,23 @@ test("f0. submitAnswers happy path sends the right payload and lands the result"
   const pct = byId("s4").all().find(n => n.className === "pct");
   assert.ok(pct && pct.textContent === "115%", "result screen should show 115%");
   assert.ok(byId("s4").textContent.includes("EXPLAIN-A"));
+});
+test("f5. Result screen, not eligible: no Deadline panel and no 'Apply by'; eligible still shows it", "audit-3 #1", async () => {
+  resetApp(); setupQuestions();
+  let p = A.submitAnswers();
+  let ev = take("/evaluate");
+  respond(ev, makeResult(400, false)); await flush();
+  let ex = take("/explain");
+  respond(ex, makeExplain("N")); await p;
+  assert.ok(!byId("s4").textContent.includes("Apply by"), "ineligible result shows 'Apply by'");
+  assert.ok(!byId("s4").textContent.includes("Deadline"), "ineligible result shows the Deadline panel");
+  resetApp(); setupQuestions();
+  p = A.submitAnswers();
+  ev = take("/evaluate");
+  respond(ev, makeResult(115)); await flush();
+  ex = take("/explain");
+  respond(ex, makeExplain("E")); await p;
+  assert.ok(byId("s4").textContent.includes("Apply by"), "eligible result lost the 'Apply by' line");
 });
 test("f1. a stale /evaluate reply (older submit) never replaces the newer result", "fix 10", async () => {
   resetApp(); setupQuestions();

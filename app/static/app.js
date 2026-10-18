@@ -362,7 +362,8 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 // meaning in some languages (back-translation check 2026-10-17), and the English is what counts.
 const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
                      "home_estimate_note", "home_one_approval", "home_bill_reduction",
-                     "r_packet", "r_no_packet", "home_not_eligible", "rem_follow"];
+                     "r_packet", "r_no_packet", "home_not_eligible", "rem_follow",
+                     "rem_apply", "home_bill_deadline", "r_deadline_passed"];
 function machineTranslated(key) {
   return S.view !== "en" && !(T[key] && T[key][S.view]) && !!(I18N[S.view] && I18N[S.view][key]);
 }
@@ -740,7 +741,7 @@ function renderResult() {
   const today = now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
   const deadline = panel("warn", el("h3", {class: "with-icon"}, icon("calendar"), t("r_deadline")),
     el("p", {lang: "en", dir: "ltr"}, deadlineLine(r.deadline), notes.mark(r.deadline.citation)),
-    r.deadline.date < today ? el("p", {class: "warn-text"}, t("r_deadline_passed")) : null);
+    r.deadline.date < today ? el("p", {class: "warn-text"}, ...tSafe("r_deadline_passed")) : null);
   const explain = panel("explain", el("h3", null, t("r_about")),
     ...enLines.map(l => el("p", {dir: "ltr", lang: "en"}, l)),
     ...nativeLines.map(l => el("p", {dir: nativeDir, lang: S.lang}, ...isolate(l))));
@@ -763,7 +764,7 @@ function renderResult() {
     policyUsed,
     mismatch,
     el("div", {class: "stack-3"}, ...tierBlock, tierNote),
-    deadline,
+    eligible ? deadline : null,
     explain,
     showNative ? el("p", {class: "muted"}, ...tSafe("ai_note")) : null,
     fb && !english ? el("p", {class: "muted"}, t("r_fallback")) : null,
@@ -876,7 +877,7 @@ function renderHome() {
       el("span", {class: "bill-amt", dir: "ltr"}, money(b.amount_due_cents))),
     other ? el("p", {class: "bill-warn", role: "note"}, t("r_mismatch_title")) : null,
     // another hospital's bill: this policy's deadline and reduction do not apply to it
-    eligible && !other ? el("p", {class: "bill-meta"}, ...tNodes("home_bill_deadline", {date: b.deadline.date}),
+    eligible && !other ? el("p", {class: "bill-meta"}, ...tSafe("home_bill_deadline", {date: b.deadline.date}),
       " ", ...tSafe("home_bill_reduction", {amount: money(b.reduction_cents)})) : null);
   }));
   const c = h.contacts;
@@ -885,7 +886,7 @@ function renderHome() {
     el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
   const reminders = !eligible ? null : panel("",
     el("h3", null, t("rem_title")),
-    el("p", null, ...tNodes("rem_apply", {date: h.earliest_deadline.date})),
+    el("p", null, ...tSafe("rem_apply", {date: h.earliest_deadline.date})),
     el("p", null, ...tSafe("rem_follow", {phone: h.contacts.phone})),
     el("p", null, t("rem_reuse")),
     el("div", null, el("button", {type: "button", onclick: () => downloadIcs(h)}, t("rem_ics"))));

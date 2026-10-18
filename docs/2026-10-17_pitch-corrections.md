@@ -63,6 +63,16 @@ Evan or a teammate should say it in their own words.
 29%, 52%, $14B, 2,984, 95,000 (already listed), plus $7 billion bad debt,
 Tennessee 175% of cost, VUMC 24% of charges, 9.3% uninsured, 282,294
 renewals. Open each source before it goes on a slide, or cut it.
+**2026-10-17 23:52 CDT update - most of these were re-opened in
+docs/research/2026-10-17_presentation-stats-brief.md (agent brief, not yet
+cold-assessed).** In short: 95,000 -> 91,000 (CBPP 2026-03-19); 9.3% ->
+9.7% (ACS 2024); 29% / 52% / $7B / $14B are all Dollar For (an interested
+source with an unpublished survey method), so say "Dollar For found..." and
+keep $14B off the market slide; "52% never told" -> "52% got no information
+from their hospital"; 2,984 verified (AHA 2026); 175%, VUMC 24% and 282,294
+still unverified there. VUMC's current policy (agent report
+docs/research/raw/2026-10-17_mtn-vumc.md) gives AGB 24% and free care at or
+below 300% FPG.
 Verified 2026-10-17 by Claude against the Federal Register notice
 (2026-00755, published 2026-01-15, effective 2026-01-13): the 2026 poverty
 guidelines $15,960 for 1 person, $33,000 for 4, +$5,680 per person (the

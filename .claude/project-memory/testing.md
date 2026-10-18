@@ -5,3 +5,4 @@ STATUS: pointer (2026-10-18 10:22 CDT) - 6 test files: 5 Python plain-assert scr
 - 2026-10-18 12:08 CDT - f10 (live af1d5f6): 9 files - numlock, engine, api, policy_page, answer_key, checks (21), dispute (21),
   eob_checks (25), node test_app_js (77). Live probe swarm 11:57-12:05: 35 Sonnet agents, 263 requests (47 paid), findings in
   record BG; the JS harness can test the live file: APP_JS=<downloaded app.js> node tests/test_app_js.js.
+- 2026-10-18 12:14 CDT - node test_app_js 78 tests (n4 + m5-m8 for the one confirm box); 9 files ALL PASS on 189163e.

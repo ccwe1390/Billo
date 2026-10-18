@@ -30,7 +30,7 @@ Code:
 - testing.md - framework, layout, coverage/frozen rules (updated 2026-10-18)
 - tooling.md - build/lint/format/CI + required commands (updated 2026-10-17)
 - data.md - Synthea snapshot command, row counts, determinism, adjustment gap (updated 2026-10-17)
-- security.md - pointer: limits, headers, auth model (updated 2026-10-17)
+- security.md - pointer: limits, headers, auth model (updated 2026-10-18)
 - features.md - built vs not built (updated 2026-10-18)
 - performance.md - journey timing (updated 2026-10-17)
 - ui.md - accessibility, RTL, design/asset/a11y evidence rules (updated 2026-10-17)

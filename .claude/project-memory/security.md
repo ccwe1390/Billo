@@ -4,3 +4,5 @@ STATUS: pointer (2026-10-17 16:50 CDT) - No auth by design; AnswersIn extra="for
   the HTTPException arrives wrapped and becomes a 400). OCI GenAI read timeout 40 s. Security audit 2026-10-18 open items:
   opc runs the app with NOPASSWD sudo (harden after the event), instance-principal scope unverified (Evan checks the
   console), no daily cost cap, http :80 without CSP/HSTS, pending OS updates, swapfile vs "nothing is stored" (record BB).
+- 2026-10-18 12:14 CDT - EOB text reads cut to 200 chars (af1d5f6). Human check is now one "This is correct" box per screen
+  (189163e): still a person confirming every value before use (important.md 1), but weaker than per-field ticks (record BH).

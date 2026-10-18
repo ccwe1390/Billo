@@ -21,3 +21,5 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
 - 2026-10-18 11:56 CDT - LIVE ba6d1f0: Phase 3 insurance check (EOB photo or "Not yet"; pending, different visit, denied,
   charged more / not on EOB / totals / credit / billed more; insurer letter). Built, NOT live (a0684aa): Remove photo on the
   Bill screen; Sources in a dropdown closed by default (records BE, BF).
+- 2026-10-18 12:14 CDT - LIVE 189163e: one "This is correct" box per screen (bill 6 fields, EOB 12 fields) instead of one
+  per field; pending flag asks whether you can wait; dashboard counts checks_run, disputes, eobs_read (record BH).

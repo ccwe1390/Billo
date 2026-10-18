@@ -86,6 +86,7 @@ the dated entry, not the digest.
 - [AX - Audit 4 fixes: presenter sheet, HANDOFF, Home gating, no-name bills, deploy f6b6f05](#appendix-ax---audit-4-fixes-presenter-sheet-handoff-home-gating-no-name-bills-deploy-f6b6f05-2026-10-18-1002-cdt) (10-18)
 - [AY - VUMC insured-patient condition (uninsured/underinsured, FAP p.4 + p.6) and pitch line](#appendix-ay---vumc-insured-patient-condition-uninsuredunderinsured-fap-p4--p6-and-pitch-line-2026-10-18-1010-cdt) (10-18)
 - [AZ - Landing check of the audit-4 fixes; B2 reaches Home; deploy e53d1ce](#appendix-az---landing-check-of-the-audit-4-fixes-b2-reaches-home-deploy-e53d1ce-2026-10-18-1022-cdt) (10-18)
+- [BA - Deadline counts from the date of service (feature review flaw 2)](#appendix-ba---deadline-counts-from-the-date-of-service-feature-review-flaw-2-2026-10-18-1029-cdt) (10-18)
 
 ---
 
@@ -1748,3 +1749,14 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 Local main fast-forwarded to e53d1ce; nothing pushed after a959f2b (f10) / bdc76df (main).
 
 **Slips:** record AY's heading says 10:10 CDT; the `date` call right after it read 10:09 (the stamp was written ahead of the clock by about a minute). An edit script assumed CRLF for tests/test_app_js.js (it is LF in the working tree) and stopped on its own uniqueness guard, with nothing written to that file. live_check2.py was run twice (the second run only to count its FAILs): about 6 extra paid /explain + /packet calls.
+
+# Appendix BA - Deadline counts from the date of service (feature review flaw 2) (2026-10-18 10:29 CDT)
+**When:** 2026-10-18 ~10:25-10:30 CDT. Evan: "Yes, fix flaw 2 now: anchor on date_of_service when known, plus the 'earlier if this isn't your first bill' wording. Commit, don't deploy until the audits are in." (Flaw 2 is from a forked side session's feature review, 10:16.)
+
+**Problem:** engine.py set deadline = this statement_date + 240 days, but VUMC and Ascension both count 240 days from the FIRST bill after discharge. A family scanning a later statement got an "Apply by" date (and .ics) that was too late. This was the one flaw where trusting the app could cost the family the help.
+
+**Fix (223013b):** when date_of_service is known and earlier than statement_date, it anchors the deadline. The first post-discharge bill is never before the date of service, so the date can only move earlier, never too late. deadline gains counted_from. Each of the 3 policies gets application_window.service_template_en ("To be safe we counted 240 days from your date of service ... your real deadline is this date or later").
+- Wording deviates from the request: with the service anchor, "earlier if this isn't your first bill" would be false (the shown date is already the earliest possible). That sentence stays only on the statement-anchor path, where the existing text_template_en already says "if not, your deadline is earlier".
+- Effect on the demo: bill-01 goes 2027-05-29 -> 2027-05-10. The household dates are 2027-05-10/18/24/24/30, re-derived by Python date arithmetic, not from the engine.
+
+**Verification:** new test test_deadline_counts_from_date_of_service covers four cases: service before the statement (anchor = service); service equal to or after the statement (anchor = statement); and all 3 templates carry {date} and 240. A mutant with from_service = False fails it. 6/6 suites ALL PASS; 8 date pins in test_engine/test_api were updated. Contracts addendum added. NOT deployed (Evan: wait for the optimization and security audits, running since ~10:24). The pitch sheet has no deadline dates; historical docs (design-directions.html, experiments.md, the contracts example) keep 2027-05-29 as written.

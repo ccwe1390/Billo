@@ -13,3 +13,5 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
   no-name note); Home hides one-approval, reminders, calendar and the policy contact unless the user's
   bill matches. VUMC conditions start with "help is for uninsured/underinsured" (FAP p.4, p.6). NOT
   built: using insurance_status in the estimate (the engine ignores it), pending-insurance detection.
+- 2026-10-18 10:34 CDT - built, NOT deployed (223013b, record BA): Apply by counts from the date of service when
+  known and earlier than the statement (deadline.counted_from), so it can only be earlier than the policy deadline.

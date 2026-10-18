@@ -225,6 +225,7 @@ const T = {
   eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
   srcs:        {en: "Sources", es: "Fuentes", ar: "المصادر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
   eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap Not yet.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque Todavía no.", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "目前无法读取照片。请换一张照片，或点“暂时没有”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
+  why_all:     {en: "Check each detail, then tick \"This is correct\" to continue.", es: "Revise cada dato y marque «Esto es correcto» para continuar.", ar: "راجع كل معلومة، ثم ضع علامة على «هذا صحيح» للمتابعة.", "zh-CN": "请核对每一项，然后勾选“此项正确”继续。", "zh-TW": "請核對每一項，然後勾選「此項正確」繼續。"}, // TODO-REVIEW es+ar+zh
   photo_remove:{en: "Remove photo", es: "Quitar la foto", ar: "إزالة الصورة", "zh-CN": "删除照片", "zh-TW": "刪除照片"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
@@ -597,7 +598,7 @@ function updateBillNext() {
   next.disabled = S.extracting || !S.bill || left > 0 || linesOpen;
   why.hidden = !next.disabled || S.extracting;
   if (why.hidden) fill(why);
-  else fill(why, ...(S.bill ? (left > 0 ? tNodes("why_bill", {n: left}) : [t("why_lines")]) : [t("upload")]));
+  else fill(why, ...(S.bill ? (left > 0 ? [t("why_all")] : [t("why_lines")]) : [t("upload")]));
 }
 // Downscale big photos in the browser (long side 2000 px, JPEG 0.85) so phone photos fit the upload cap.
 // Any failure returns the original file; the server then accepts or refuses it as before.
@@ -688,37 +689,46 @@ function renderFields() {
     } else {
       input = el("input", {type: "text", id, dir: "auto", value: f.value || "", autocomplete: "off"});
     }
-    const cb = el("input", {type: "checkbox", id: id + "-ok"});
     const hint = el("p", {class: "hint", id: id + "-hint"});
     const ok = el("span", {class: "state-ok", "aria-hidden": "true"});
     input.setAttribute("aria-describedby", id + "-hint");
     const wrap = el("div", {class: "field panel"},
-      el("label", {for: id}, t(labelKey) + (REQUIRED.has(name) ? " *" : "")), input, hint,
-      el("label", {class: "check", for: id + "-ok"}, cb, el("span", null, t("confirm"))), ok);
+      el("label", {for: id}, t(labelKey) + (REQUIRED.has(name) ? " *" : "")), input, hint, ok);
     const sync = () => {
       const blank = f.value === null || f.value === "";
       hint.textContent = blank ? t("unreadable") + (REQUIRED.has(name) ? " (" + t("required") + ")" : "") : "";
       hint.hidden = !hint.textContent;
       ok.textContent = f.confirmed ? t("confirmed_word") : "";
       ok.hidden = !f.confirmed;
-      cb.disabled = blank && REQUIRED.has(name);
-      cb.checked = f.confirmed;
       wrap.className = "field panel" + (f.confirmed ? " confirmed" : blank ? " blank" : "");
-      updateBillNext();
     };
     const onEdit = () => {
-      f.value = readInput(name, input); f.confirmed = false; f.confidence = null;
+      f.value = readInput(name, input); f.confidence = null;
+      FIELD_ORDER.forEach(([n]) => { S.bill.fields[n].confirmed = false; }); // any edit unticks the one "This is correct" box
       if (name === "insurance_status" && f.value !== "insured") clearEob(); // no insurance summary without insurance
-      sync();
+      syncAll();
     };
     input.addEventListener(name === "insurance_status" ? "change" : "input", onEdit);
-    cb.addEventListener("change", () => { f.confirmed = cb.checked; sync(); });
     wrap.sync = sync;
     return wrap;
   });
-  fill(box, ...rows, el("section", {class: "panel lines", id: "lines-panel"}));
+  // One "This is correct" box for all six fields (Evan 2026-10-18); disabled while a required field is blank.
+  const allCb = el("input", {type: "checkbox", id: "f-all-ok"});
+  const allBox = el("div", {class: "panel confirm-all"}, el("label", {class: "check", for: "f-all-ok"}, allCb, el("span", null, t("confirm"))));
+  const syncAll = () => {
+    const F = S.bill.fields;
+    allCb.disabled = FIELD_ORDER.some(([n]) => REQUIRED.has(n) && (F[n].value === null || F[n].value === ""));
+    allCb.checked = FIELD_ORDER.every(([n]) => F[n].confirmed);
+    rows.forEach(r => r.sync());
+    updateBillNext();
+  };
+  allCb.addEventListener("change", () => {
+    if (!allCb.disabled) FIELD_ORDER.forEach(([n]) => { S.bill.fields[n].confirmed = allCb.checked; });
+    syncAll();
+  });
+  fill(box, ...rows, allBox, el("section", {class: "panel lines", id: "lines-panel"}));
   renderLines();
-  rows.forEach(r => r.sync());
+  syncAll();
 }
 
 // ---------- charge lines (Bill screen, under the 6 fields): the charge rows the model read, or lines typed by hand
@@ -900,7 +910,7 @@ function eobSync() {
   if (S.eob) S.eobNotYet = false;
   why.hidden = !next.disabled;
   if (why.hidden) fill(why);
-  else fill(why, ...(left > 0 ? tNodes("why_bill", {n: left}) : [t("why_lines")]));
+  else fill(why, ...(left > 0 ? [t("why_all")] : [t("why_lines")]));
 }
 function eobPaintLines() {
   const p = document.getElementById("eob-lines-panel"), L = S.eobDraft && S.eobDraft.lines;
@@ -964,43 +974,48 @@ function renderEobConfirm(root) {
     } else {
       input = el("input", {type: "text", id, dir: "auto", value: f.value || "", autocomplete: "off"});
     }
-    const cb = el("input", {type: "checkbox", id: id + "-ok"});
     const hint = el("p", {class: "hint", id: id + "-hint"});
     const ok = el("span", {class: "state-ok", "aria-hidden": "true"});
     input.setAttribute("aria-describedby", id + "-hint");
     const wrap = el("div", {class: "field panel"},
-      el("label", {for: id}, t("eob_f_" + name)), input, hint,
-      el("label", {class: "check", for: id + "-ok"}, cb, el("span", null, t("confirm"))), ok);
+      el("label", {for: id}, t("eob_f_" + name)), input, hint, ok);
     const sync = () => {
       const blank = f.value === null || f.value === undefined || f.value === "";
       hint.textContent = blank ? t("eob_blank") : "";
       hint.hidden = !hint.textContent;
       ok.textContent = f.confirmed ? t("confirmed_word") : "";
       ok.hidden = !f.confirmed;
-      cb.checked = !!f.confirmed;
       wrap.className = "field panel" + (f.confirmed ? " confirmed" : blank ? " blank" : "");
-      eobSync();
     };
     const onEdit = () => {
       const v = input.value.trim();
       f.value = v === "" ? null : EOB_MONEY.has(name) ? dollarsToCents(v) : v;
-      f.confirmed = false; f.confidence = null; sync();
+      f.confidence = null;
+      EOB_FIELDS.forEach(n => { E.fields[n].confirmed = false; }); // any edit unticks the one box
+      eobSyncAll();
     };
     input.addEventListener(name === "claim_status" ? "change" : "input", onEdit);
-    cb.addEventListener("change", () => { f.confirmed = cb.checked; sync(); });
     wrap.sync = sync;
     return wrap;
   });
+  const eobAllCb = el("input", {type: "checkbox", id: "eob-all-ok"});
+  const eobAllBox = el("div", {class: "panel confirm-all"}, el("label", {class: "check", for: "eob-all-ok"}, eobAllCb, el("span", null, t("confirm"))));
+  const eobSyncAll = () => {
+    eobAllCb.checked = EOB_FIELDS.every(n => E.fields[n].confirmed);
+    rows.forEach(r => r.sync());
+    eobSync();
+  };
+  eobAllCb.addEventListener("change", () => { EOB_FIELDS.forEach(n => { E.fields[n].confirmed = eobAllCb.checked; }); eobSyncAll(); });
   const next = el("button", {type: "button", class: "primary", id: "eob-next", disabled: true, onclick: () => { if (S.eob) { S.eobNotYet = false; show(3); } }}, t("continue_"));
   fill(root, el("div", {class: "stack-8"},
     screenTitle(t("eob_title"), t("eob_hint")),
-    el("div", {id: "eob-fields", class: "stack-3"}, ...rows, el("section", {class: "panel lines", id: "eob-lines-panel"})),
+    el("div", {id: "eob-fields", class: "stack-3"}, ...rows, eobAllBox, el("section", {class: "panel lines", id: "eob-lines-panel"})),
     el("div", {class: "stack-3"},
       actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back")),
                el("button", {type: "button", class: "ghost", id: "eob-retake", onclick: () => { clearEob(); renderEob(); }}, t("eob_retake"))], next),
       el("p", {class: "why", id: "eob-why", hidden: true}))));
   renderEobLines();
-  rows.forEach(r => r.sync());
+  eobSyncAll();
 }
 
 // ---------- screen 3: three questions

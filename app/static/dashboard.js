@@ -8,7 +8,10 @@ var COUNT_ROWS = [
   ["results_not_eligible", "Results: not eligible"],
   ["packets", "Packets made"],
   ["fallbacks", "English fallbacks"],
-  ["household_views", "Home views"]
+  ["household_views", "Home views"],
+  ["checks_run", "Bill checks run"],
+  ["disputes", "Letters to the hospital"],
+  ["eobs_read", "Insurance summaries read"]
 ];
 
 function el(tag, text, cls) {

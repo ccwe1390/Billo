@@ -182,7 +182,7 @@ def test_pair07_pending():
     assert "insurance_unpaid" in ids(r, "bill")
     assert r["total_to_ask_cents"] == p2["total_to_ask_cents"]
     f = flag(r, "pending")
-    assert f["text_en"] == "Your insurance is still processing this visit. Wait for your insurer's summary before paying."
+    assert f["text_en"] == "Your insurance is still processing this visit. Ask the hospital whether you can wait for your insurer's summary before paying."
     assert f["letter_en"] == ("My insurance claim for this visit is still being processed. Please hold this bill "
                               "until it is finished and send me a corrected bill.")
     assert f["amount_cents"] is None and f["citation"] is None and f["line_indexes"] == []

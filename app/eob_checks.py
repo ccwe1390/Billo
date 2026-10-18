@@ -215,7 +215,7 @@ def run(bill, eob=None, not_yet=False, p2=None):
     if not_yet or status == "pending":
         return result([_ins(
             "pending",
-            "Your insurance is still processing this visit. Wait for your insurer's summary before paying.",
+            "Your insurance is still processing this visit. Ask the hospital whether you can wait for your insurer's summary before paying.",
             "My insurance claim for this visit is still being processed. Please hold this bill until it "
             "is finished and send me a corrected bill.",
         )])

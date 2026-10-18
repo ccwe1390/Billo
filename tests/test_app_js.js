@@ -1157,7 +1157,7 @@ async function uploadEob(reply, status) { // pick a photo on the ask state and a
   return req;
 }
 async function openEobConfirm(withLines) { openEobAsk("insured"); await uploadEob(eobRead(withLines)); }
-function tickAllEob() { for (const n of EOB_NAMES) tick("e-" + n + "-ok", true); }
+function tickAllEob() { tick("eob-all-ok", true); } // one "This is correct" box for the whole summary
 function setAnswers() { S.size = "3"; S.income = "38,000"; S.tax = true; }
 
 test("m1. Continue on the Bill screen shows the insurance-summary screen for 'insured' only; self_pay and medicaid go straight to the questions", "eob", () => {
@@ -1234,9 +1234,9 @@ test("m5. Confirm state: Continue stays disabled until every field and the lines
   assert.strictEqual(byId("eline-0-desc").value, "Office visit");
   assert.strictEqual(byId("eline-1-owes").value, "98.45");
   assert.strictEqual(byId("eob-next").disabled, true);
-  for (const n of EOB_NAMES.slice(0, 11)) tick("e-" + n + "-ok", true);
-  assert.strictEqual(byId("eob-next").disabled, true, "enabled with one field open");
-  tick("e-" + EOB_NAMES[11] + "-ok", true);
+  assert.ok(!byId("e-" + EOB_NAMES[0] + "-ok"), "per-field boxes must be gone (one box for all)");
+  tick("eob-all-ok", true);
+  assert.ok(EOB_NAMES.every(n => S.eobDraft.fields[n].confirmed === true), "the one box must confirm every field");
   assert.strictEqual(byId("eob-next").disabled, true, "enabled with the lines unconfirmed");
   assert.ok(byId("eob-why").textContent.includes(T.why_lines.en), "no reason: " + byId("eob-why").textContent);
   tick("eob-lines-ok", true);
@@ -1245,10 +1245,10 @@ test("m5. Confirm state: Continue stays disabled until every field and the lines
   const edits = [["e-insurer_name", "Acme", "input"], ["e-patient_owes_cents", "99.50", "input"], ["e-claim_status", "denied", "change"], ["e-appeal_deadline", "2026-10-01", "input"]];
   for (const [id, v, ev] of edits) {
     byId(id).value = v; byId(id).dispatch(ev);
-    assert.strictEqual(byId(id + "-ok").checked, false, id + ": field still ticked after an edit");
+    assert.strictEqual(byId("eob-all-ok").checked, false, id + ": box still ticked after an edit");
     assert.strictEqual(byId("eob-next").disabled, true, id + ": Continue stayed enabled");
     assert.strictEqual(S.eob, null, id + ": S.eob stays set while a field is unconfirmed");
-    tick(id + "-ok", true);
+    tick("eob-all-ok", true);
     assert.strictEqual(byId("eob-next").disabled, false, id + ": re-ticking should re-enable");
   }
   assert.strictEqual(S.eobDraft.fields.patient_owes_cents.value, 9950);
@@ -1376,6 +1376,23 @@ test("n3. a card whose only flag has no letter line (different visit) shows no l
   const s4 = await landResult(makeResult(115), only);
   assert.ok(s4.textContent.includes("different visit"), "flag not shown");
   assert.ok(!s4.all().some(n => n.tag === "button" && n.textContent === T.chk_letter.en), "letter button shown with no letter line");
+});
+
+test("n4. Bill screen: one \"This is correct\" box confirms all six fields; an edit unticks it; a blank required field disables it", "Evan 2026-10-18", async () => {
+  resetApp(); S.bill = fullBill(); for (const k in S.bill.fields) S.bill.fields[k].confirmed = false; A.show(2);
+  assert.ok(!byId("f-hospital_name-ok"), "per-field boxes must be gone");
+  const box = byId("f-all-ok"); assert.ok(box, "no single confirm box");
+  assert.strictEqual(byId("bill-next").disabled, true, "Continue enabled before confirming");
+  assert.ok(byId("bill-why").textContent.includes(T.why_all.en), "reason text: " + byId("bill-why").textContent);
+  tick("f-all-ok", true);
+  assert.ok(Object.values(S.bill.fields).every(x => x.confirmed === true), "the box must confirm every field");
+  const lp = byId("lines-ok"); if (lp && !lp.checked) tick("lines-ok", true);
+  assert.strictEqual(byId("bill-next").disabled, false, "Continue still disabled with everything confirmed");
+  byId("f-account_number").value = "ZZ-1"; byId("f-account_number").dispatch("input");
+  assert.strictEqual(byId("f-all-ok").checked, false, "an edit must untick the box");
+  assert.ok(Object.values(S.bill.fields).every(x => x.confirmed === false), "an edit must unconfirm every field");
+  byId("f-amount_due_cents").value = ""; byId("f-amount_due_cents").dispatch("input");
+  assert.strictEqual(byId("f-all-ok").disabled, true, "box must be disabled while a required field is blank");
 });
 
 // ---------- run

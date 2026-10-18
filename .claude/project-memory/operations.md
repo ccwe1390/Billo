@@ -149,3 +149,4 @@
   Rollback: deploy.ps1 -Commit af1d5f6 -Rollback (restores deeebda). Served app.js = commit; 77 JS tests pass on the live file.
 - 2026-10-18 12:12 CDT - Claude deployed 189163e (one confirm box, pending wording, dashboard counters). Rollback: deploy.ps1
   -Commit 189163e -Rollback (restores af1d5f6). Live checks pass (record BH).
+- 2026-10-18 12:15 CDT - Claude deployed 02e3d18 (docs-only commits on top of 189163e; app identical). Rollback restores 189163e.

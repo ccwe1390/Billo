@@ -1,5 +1,10 @@
 # Pitch corrections - what rev2 says vs what the build does (DRAFT for Evan)
 
+> **2026-10-18 10:43 CDT - DO NOT SAY (Evan): no error flags, billing-error checks, "we find mistakes on
+> your bill" or dispute letters, on slides, in the demo or in judge answers, unless Phase 2 ("Find errors")
+> is live-checked on http + https by 12:40 CDT (record BB).** Until then the app checks eligibility only;
+> it does not look for billing errors.
+>
 > **2026-10-18 08:51 CDT - THE DEMO NOW USES REAL POLICIES (bdc76df, live 08:48 CDT).**
 > The app holds the real published financial assistance policies of Vanderbilt
 > University Medical Center and Ascension Saint Thomas, read from their PDFs and

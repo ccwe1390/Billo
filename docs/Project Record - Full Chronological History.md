@@ -87,6 +87,7 @@ the dated entry, not the digest.
 - [AY - VUMC insured-patient condition (uninsured/underinsured, FAP p.4 + p.6) and pitch line](#appendix-ay---vumc-insured-patient-condition-uninsuredunderinsured-fap-p4--p6-and-pitch-line-2026-10-18-1010-cdt) (10-18)
 - [AZ - Landing check of the audit-4 fixes; B2 reaches Home; deploy e53d1ce](#appendix-az---landing-check-of-the-audit-4-fixes-b2-reaches-home-deploy-e53d1ce-2026-10-18-1022-cdt) (10-18)
 - [BA - Deadline counts from the date of service (feature review flaw 2)](#appendix-ba---deadline-counts-from-the-date-of-service-feature-review-flaw-2-2026-10-18-1029-cdt) (10-18)
+- [BB - Audits applied and deployed (08265fa + Apache gzip/h2); rename on hold; Phase 2 build decision](#appendix-bb---audits-applied-and-deployed-08265fa--apache-gziph2-rename-on-hold-phase-2-build-decision-2026-10-18-1043-cdt) (10-18)
 
 ---
 
@@ -1760,3 +1761,42 @@ Local main fast-forwarded to e53d1ce; nothing pushed after a959f2b (f10) / bdc76
 - Effect on the demo: bill-01 goes 2027-05-29 -> 2027-05-10. The household dates are 2027-05-10/18/24/24/30, re-derived by Python date arithmetic, not from the engine.
 
 **Verification:** new test test_deadline_counts_from_date_of_service covers four cases: service before the statement (anchor = service); service equal to or after the statement (anchor = statement); and all 3 templates carry {date} and 240. A mutant with from_service = False fails it. 6/6 suites ALL PASS; 8 date pins in test_engine/test_api were updated. Contracts addendum added. NOT deployed (Evan: wait for the optimization and security audits, running since ~10:24). The pitch sheet has no deadline dates; historical docs (design-directions.html, experiments.md, the contracts example) keep 2027-05-29 as written.
+
+# Appendix BB - Audits applied and deployed (08265fa + Apache gzip/h2); rename on hold; Phase 2 build decision (2026-10-18 10:43 CDT)
+**When:** 2026-10-18 ~10:30-10:47 CDT.
+
+**Audits (record BA follow-up).** Evan asked for 2 subagent audits, optimization and security. Both were read-only Sonnet agents; their top findings were re-checked by hand:
+- Optimization: no compression (app.js 86,408 raw bytes with gzip asked for); HTTP/1.1 only; OCI GenAI read timeout 120 s vs the app's 45 s wait; ~11 KB `result` re-uploaded on /explain and /packet. Hindi /explain 13.8 s and /packet 8.6 s (n=1, the agent's live timing; not re-timed).
+- Security: no JSON body cap. refuse_big_upload only covered /extract (main.py), and a 10.4 MB JSON POST took 2.95 s on the single event loop (agent's measurement). No injection, traversal, secret or port issue was found. Other findings: opc runs the app with NOPASSWD sudo; instance-principal scope unverified; no daily cost cap; http :80 has no CSP or HSTS; pending OS updates; a swapfile undercuts "nothing is stored"; isolate() regex is quadratic.
+- The agent's "stop the service at 1 PM" is WRONG for the schedule: the showcase is at 1:05 PM and final pitches at 3:30 PM.
+
+**Evan: "Do 1-4" (body cap, timeout + drop result, Apache compression + HTTP/2, deploy with 223013b).**
+- Apache (VM only, not in the repo):
+  - /etc/httpd/conf.d/bill-to-help-perf.conf (AddOutputFilterByType DEFLATE ... ; DeflateAlterETag NoChange);
+  - `Protocols h2 http/1.1` in the :443 vhost (backup ~/bill-to-help-ssl.conf.before-perf);
+  - configtest Syntax OK, then a reload.
+  - Verified: Content-Encoding gzip on http + https; the decompressed app.js sha equals the deployed commit; If-None-Match -> 304 with and without gzip; ALPN h2; the MPM is event.
+  - Rollback: delete bill-to-help-perf.conf, copy the backup over bill-to-help-ssl.conf, reload httpd.
+- 08265fa:
+  - _JsonBodyCap, an innermost ASGI middleware: any POST except /extract gets a 413 "Request is too large." once the declared length or the bytes read pass 64 KiB. First attempt: as an outer middleware the HTTPException arrived wrapped through BaseHTTPMiddleware and became a 400; moving it innermost fixed that.
+  - OCI GenAI timeout (10, 40).
+  - app.js sends bill + answers only.
+  - Tests: 4 endpoints x with/without Content-Length; just-under-cap still parses; a mutant without the middleware fails; the old app.js fails f0 and j13.
+- Deployed 08265fa ~10:38 CDT (backup-before-08265fa.tar = the e53d1ce app). Live checks pass on http + https:
+  - deadline 2027-05-10 counted_from date_of_service;
+  - 70 KB body -> 413 with nosniff (the first script check said FAIL only because it read the header with the wrong case; curl showed 413 + nosniff + the detail);
+  - /explain and /packet with no result field work; the packet is gzip 3,030 -> 11,742 bytes;
+  - all earlier checks pass, except the stale raw-byte "app.js == local bdc76df" compare.
+
+**Rename BillScan -> Billow.** Evan asked for it via a Sonnet agent. The agent edited 37 files (27 i18n JSON x4, app.js, main.py, html/css/fonts, build_i18n.py, NOTICE.md, 2 pitch-sheet phrases); its checks were all ALL PASS. It is NOT committed: Evan then said "wait not that change", and which change he meant is not yet answered. The edits sit uncommitted in the main checkout.
+
+**Decision 10:37 CDT (Evan): build Phase 2 "Find errors" (option 3) TODAY, "12:40 cut".** Plan: ~/.claude/task-plans/tnhacks26-errorcheck.md, drafted by a forked side session; a cold Opus audit of it was started 10:43.
+- Rules (Evan):
+  - freeze this session's edits to main.py, oci_client.py, app.js, test_api.py and test_app_js.js until the build merges;
+  - build on worktree branch f12 from HEAD;
+  - S1 (render bills 11-14) then V1 (vision gate) first;
+  - stop if V1 makes the 6-field read worse;
+  - HARD CUT: not live-checked on http + https by 12:40 CDT -> no deploy, no presenting;
+  - merge and deploy only on his word; no push.
+- Done now: the pitch sheet's top banner gains a DO NOT SAY line (no error flags or dispute letters unless Phase 2 is live by 12:40). It was committed without the uncommitted rename phrases (staged from HEAD's copy).
+- Slides 6 and 7 were checked against the rev2 text (the deck is not in the repo; Evan edits it).

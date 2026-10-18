@@ -1,0 +1,120 @@
+{
+  "bill-11": {
+    "items": [
+      {
+        "description": "Emergency department visit, high complexity",
+        "quantity": 1,
+        "amount_cents": 221500
+      },
+      {
+        "description": "CT scan, head, without contrast",
+        "quantity": 1,
+        "amount_cents": 138500
+      },
+      {
+        "description": "CT scan, head, without contrast",
+        "quantity": 1,
+        "amount_cents": 138500
+      },
+      {
+        "description": "IV fluids, first hour",
+        "quantity": 1,
+        "amount_cents": 37500
+      },
+      {
+        "description": "IV fluids, each additional hour",
+        "quantity": 1,
+        "amount_cents": 16000
+      },
+      {
+        "description": "Blood test panel, comprehensive",
+        "quantity": 1,
+        "amount_cents": 43680
+      },
+      {
+        "description": "Chest X-ray, single view",
+        "quantity": 1,
+        "amount_cents": 40060
+      }
+    ],
+    "total_charges_cents": 635740,
+    "payments_cents": 0,
+    "amount_due_cents": 635740
+  },
+  "bill-12": {
+    "items": [
+      {
+        "description": "Emergency department visit, moderate complexity",
+        "quantity": 1,
+        "amount_cents": 112500
+      },
+      {
+        "description": "X-ray, wrist, 2 views",
+        "quantity": 1,
+        "amount_cents": 31250
+      },
+      {
+        "description": "Splint application",
+        "quantity": 1,
+        "amount_cents": 22600
+      },
+      {
+        "description": "Blood test panel, basic",
+        "quantity": 1,
+        "amount_cents": 19500
+      }
+    ],
+    "total_charges_cents": 185850,
+    "payments_cents": 20000,
+    "amount_due_cents": 185850
+  },
+  "bill-13": {
+    "items": [
+      {
+        "description": "Clinic visit, established patient",
+        "quantity": 1,
+        "amount_cents": 41200
+      },
+      {
+        "description": "MRI, knee, without contrast",
+        "quantity": 1,
+        "amount_cents": 142000
+      },
+      {
+        "description": "Blood test panel, basic",
+        "quantity": 1,
+        "amount_cents": 16200
+      },
+      {
+        "description": "Physical therapy evaluation",
+        "quantity": 1,
+        "amount_cents": 21200
+      }
+    ],
+    "total_charges_cents": 220600,
+    "payments_cents": 0,
+    "amount_due_cents": 220600
+  },
+  "bill-14": {
+    "items": [
+      {
+        "description": "Clinic visit, established patient",
+        "quantity": 1,
+        "amount_cents": 21800
+      },
+      {
+        "description": "Urinalysis",
+        "quantity": 1,
+        "amount_cents": 6800
+      },
+      {
+        "description": "Rapid strep test",
+        "quantity": 1,
+        "amount_cents": 2400
+      }
+    ],
+    "total_charges_cents": 31000,
+    "payments_cents": 0,
+    "amount_due_cents": 31000
+  }
+}

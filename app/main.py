@@ -1,7 +1,7 @@
 """Billow - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
 
-Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet, /household;
-GET /stats; static UI at /.
+Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet, /household, /check,
+/dispute; GET /stats; static UI at /.
 """
 import asyncio
 import collections
@@ -16,7 +16,7 @@ import threading
 import time
 from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
@@ -25,7 +25,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.formparsers import MultiPartParser
 
-from app import numlock, oci_client
+from app import checks, dispute, numlock, oci_client
 
 log = logging.getLogger("bill_to_help")
 
@@ -200,10 +200,46 @@ _BILL_FIELDS = ("hospital_name", "statement_date", "account_number", "amount_due
                 "date_of_service", "insurance_status")
 
 
+class LineItemIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    date: Optional[str] = None
+    description: str
+    quantity: Optional[int] = Field(None, ge=1, le=999, strict=True)
+    amount_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+
+    @field_validator("date")
+    @classmethod
+    def _date_is_iso(cls, v):
+        if v is not None:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+                raise ValueError("date must be YYYY-MM-DD")
+            datetime.strptime(v, "%Y-%m-%d")  # a ValueError here is a validation error
+        return v
+
+    @field_validator("description")
+    @classmethod
+    def _description_is_one_line(cls, v):
+        v = re.sub(" {2,}", " ", _CONTROL.sub(" ", v))  # same cleaning as a field value: it ends up in a letter
+        if len(v) > 120:
+            raise ValueError("description is too long")
+        return v
+
+
+class LinesIn(BaseModel):
+    """The charge lines under the six fields (plan D3). The engine ignores them; checks.run reads them."""
+    model_config = ConfigDict(extra="forbid")
+    items: List[LineItemIn] = Field(max_length=40)
+    total_charges_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    payments_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    confirmed: bool = False
+    read: bool = False
+
+
 class BillIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     contract_version: Literal[1] = CONTRACT_VERSION
     fields: Dict[str, FieldIn]
+    lines: Optional[LinesIn] = None
 
     @field_validator("fields")
     @classmethod
@@ -316,9 +352,61 @@ def _norm_insurance(v):
     t = s.lower()
     if any(k in t for k in _SELF_PAY):
         return "self_pay"
+    if "pending" in t or any(k in t for k in ("no medicaid", "not medicaid", "no tenncare", "not tenncare")):
+        return "unknown"  # "Medicaid pending" / "No Medicaid" do not say the person has coverage (O2 #3)
+    if "tenncare" in t or "medicaid" in t:  # before the general insured match (plan D4)
+        return "medicaid"
     if any(k in t for k in _INSURED):
         return "insured"
     return "unknown"
+
+
+def _norm_payments(v):
+    """Payments and adjustments are often printed as -$200.00 or ($200.00): stored as a positive amount."""
+    if v is None or isinstance(v, bool):
+        return None
+    m = re.fullmatch(r"\s*\$?\s*\(?\s*[-\u2212]?\s*\$?\s*[-\u2212]?\s*([\d.,]+)\s*\)?\s*", str(v))
+    return _norm_cents(m.group(1)) if m else None
+
+
+def _norm_quantity(v):
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, float) and v.is_integer():
+        v = int(v)
+    if isinstance(v, str) and v.strip().isdigit():
+        v = int(v.strip())
+    return v if isinstance(v, int) and 1 <= v <= 999 else None
+
+
+MAX_LINES = 40
+MAX_LINE_CENTS = 10 ** 9  # LinesIn limit: a bigger read becomes None instead of a 422 on every later call (O2 #1)
+
+
+def _line_cents(c):
+    return c if c is not None and c <= MAX_LINE_CENTS else None
+
+
+def _norm_lines(raw):
+    """The model's line_items, total_charges and payments_and_adjustments -> BillIn.lines (unconfirmed).
+    No line_items key: None (the reply was from the old six-field prompt or the model left it out)."""
+    if "line_items" not in raw:
+        return None
+    rows = raw.get("line_items")
+    rows = rows if isinstance(rows, list) else []
+    items = []
+    # shortcut: rows past MAX_LINES are dropped (the test bills print 3-7); the person sees the table and the
+    # total, and lines_sum flags the gap.
+    for row in rows[:MAX_LINES]:
+        if not isinstance(row, dict):
+            continue
+        desc = re.sub(" {2,}", " ", _CONTROL.sub(" ", str(row.get("description") or ""))).strip()[:120]
+        items.append({"date": _norm_date(row.get("date")), "description": desc,
+                      "quantity": _norm_quantity(row.get("quantity")),
+                      "amount_cents": _line_cents(_norm_cents(row.get("amount")))})
+    return {"items": items, "total_charges_cents": _line_cents(_norm_cents(raw.get("total_charges"))),
+            "payments_cents": _line_cents(_norm_payments(raw.get("payments_and_adjustments"))),
+            "confirmed": False, "read": True}
 
 
 def normalize_bill(raw):
@@ -341,6 +429,7 @@ def normalize_bill(raw):
             k: {"value": v, "confidence": 0.0 if v is None else None, "confirmed": False}
             for k, v in values.items()
         },
+        "lines": _norm_lines(raw),
     }
 
 
@@ -470,7 +559,8 @@ def explain(body: ResultIn):
 
 # ---------------------------------------------------------------- /packet
 
-_INSURANCE_LABEL = {"self_pay": "Self-pay (no insurance)", "insured": "Insured", "unknown": "Unknown"}
+_INSURANCE_LABEL = {"self_pay": "Self-pay (no insurance)", "insured": "Insured", "unknown": "Unknown",
+                    "medicaid": "TennCare / Medicaid"}
 
 
 def _letter_en(bill, answers, result):
@@ -648,6 +738,44 @@ def packet(body: ResultIn, format: str = Query("html", pattern="^(html|json)$"))
     return HTMLResponse(render_packet_html(pk, result, body.answers.language))
 
 
+# ---------------------------------------------------------------- /check and /dispute (Phase 2: fixed rules, no AI)
+
+def _require_confirmed(bill):
+    """Same gate as /evaluate for the six fields, plus the charge lines when the bill carries them."""
+    if any(f.confirmed is not True for f in bill.fields.values()):
+        raise HTTPException(422, "Confirm every bill field first.")
+    if bill.lines is not None and bill.lines.confirmed is not True:
+        raise HTTPException(422, "Confirm the charge lines first.")
+
+
+class CheckIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    bill: BillIn
+
+
+@app.post("/check")  # free: fixed rules, no model call, so no rate limit (still under the 64 KiB body cap)
+def check(body: CheckIn):
+    _require_confirmed(body.bill)
+    out = checks.run(body.bill.model_dump())
+    _count("checks_run")
+    return {"contract_version": CONTRACT_VERSION, **out}
+
+
+@app.post("/dispute", dependencies=[Depends(_rate_limit)])
+def dispute_letter(body: ResultIn, format: str = Query("html", pattern="^(html|json)$")):
+    _require_confirmed(body.bill)
+    found = checks.run(body.bill.model_dump())
+    if not found["flags"]:
+        raise HTTPException(422, "No letter: no items to ask about.")
+    out = dispute.build(body.bill.model_dump(), body.answers.model_dump(), found)
+    _count("disputes")
+    if (out.get("translation_check") or {}).get("fallback_used") is True:
+        _count("fallbacks")
+    if format == "json":
+        return out
+    return HTMLResponse(dispute.render_html(out, body.answers.language))
+
+
 # ---------------------------------------------------------------- /household
 
 @functools.lru_cache(maxsize=1)
@@ -683,7 +811,7 @@ def household(body: HouseholdIn):
 # ---------------------------------------------------------------- /stats
 
 _STAT_KEYS = ("photos_read", "results_free_care", "results_discount", "results_not_eligible",
-              "packets", "fallbacks", "household_views")
+              "packets", "fallbacks", "household_views", "checks_run", "disputes")
 
 
 def _shown(n):

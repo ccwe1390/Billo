@@ -103,6 +103,12 @@ function take(urlPart) { // remove and return the oldest pending request whose u
   return fetchQueue.splice(i, 1)[0];
 }
 const respond = (req, body, status) => req.resolve(fakeResponse(body, status));
+const NO_FLAGS = {contract_version: 1, flags: [], total_to_ask_cents: 0, lines_checked: false};
+function answerChecks(body, status) { // the app asks POST /check right after /evaluate succeeds: answer every pending one; returns how many
+  let n = 0;
+  while (fetchQueue.some(q => q.url.includes("/check"))) { respond(take("/check"), body || NO_FLAGS, status); n++; }
+  return n;
+}
 const flush = async () => { for (let i = 0; i < 6; i++) await new Promise(r => setImmediate(r)); };
 
 let lastBlob = null;
@@ -351,7 +357,7 @@ test("f0. submitAnswers happy path sends the right payload and lands the result"
   respond(ev, makeResult(115)); await flush();
   const ex = take("/explain");
   assert.ok(!("result" in bodyOf(ex)) && bodyOf(ex).answers.household_size === 3, "/explain must send bill + answers only (the server recomputes the result)");
-  respond(ex, makeExplain("A")); await p;
+  respond(ex, makeExplain("A")); answerChecks(); await p;
   assert.strictEqual(S.result.percent_of_fpl, 115);
   assert.strictEqual(A.curScreen, 4);
   assert.strictEqual(S.busy, false);
@@ -365,7 +371,7 @@ test("f5. Result screen, not eligible: no Deadline panel and no 'Apply by'; elig
   let ev = take("/evaluate");
   respond(ev, makeResult(400, false)); await flush();
   let ex = take("/explain");
-  respond(ex, makeExplain("N")); await p;
+  respond(ex, makeExplain("N")); answerChecks(); await p;
   assert.ok(!byId("s4").textContent.includes("Apply by"), "ineligible result shows 'Apply by'");
   assert.ok(!byId("s4").textContent.includes("Deadline"), "ineligible result shows the Deadline panel");
   resetApp(); setupQuestions();
@@ -373,7 +379,7 @@ test("f5. Result screen, not eligible: no Deadline panel and no 'Apply by'; elig
   ev = take("/evaluate");
   respond(ev, makeResult(115)); await flush();
   ex = take("/explain");
-  respond(ex, makeExplain("E")); await p;
+  respond(ex, makeExplain("E")); answerChecks(); await p;
   assert.ok(byId("s4").textContent.includes("Apply by"), "eligible result lost the 'Apply by' line");
 });
 test("f1. a stale /evaluate reply (older submit) never replaces the newer result", "fix 10", async () => {
@@ -384,7 +390,7 @@ test("f1. a stale /evaluate reply (older submit) never replaces the newer result
   const p2 = A.submitAnswers();
   const e2 = take("/evaluate");
   respond(e2, makeResult(60)); await flush();
-  respond(take("/explain"), makeExplain("B")); await p2;
+  respond(take("/explain"), makeExplain("B")); answerChecks(); await p2;
   assert.strictEqual(S.result.percent_of_fpl, 60, "second submit did not land");
   respond(e1, makeResult(115)); await p1; await flush(); // the older reply arrives last
   assert.strictEqual(S.result.percent_of_fpl, 60, "stale /evaluate reply overwrote S.result (115 instead of 60)");
@@ -401,7 +407,7 @@ test("f2. a stale /explain reply (older submit) never replaces the newer explana
   A.show(2); A.show(3);
   const p2 = A.submitAnswers();
   respond(take("/evaluate"), makeResult(60)); await flush();
-  respond(take("/explain"), makeExplain("B")); await p2;
+  respond(take("/explain"), makeExplain("B")); answerChecks(); await p2;
   respond(x1, makeExplain("A")); await p1; await flush();
   assert.strictEqual(S.explain.text_en, "EXPLAIN-B", "stale /explain reply overwrote S.explain");
   assert.strictEqual(S.result.percent_of_fpl, 60, "S.result changed");
@@ -604,11 +610,13 @@ test("i6. Home, no 'yours' bill in the list: one-approval line, reminders and ca
 
 // j. real-policies UI (plan D5, D8, D10, D11, D12, D13, D15, D16, D17)
 const CITE2 = {source: "VUMC FAP", page: 9, effective_date: "2026-07-01", url: "http://u2"};
-async function landResult(result) { // drive the real submit path and return the Result screen node
+let lastCheckCount = 0; // how many /check requests the last landResult answered
+async function landResult(result, check, checkStatus) { // drive the real submit path and return the Result screen node
   resetApp(); setupQuestions();
   const p = A.submitAnswers();
   respond(take("/evaluate"), result); await flush();
   if (result.hospital_matches_policy !== false) respond(take("/explain"), makeExplain("X")); // no policy: the app must not ask for one
+  lastCheckCount = answerChecks(check, checkStatus); // default: a check with no flags
   await p;
   assert.strictEqual(A.curScreen, 4, "did not reach the Result screen");
   return byId("s4");
@@ -760,6 +768,7 @@ test("j16. /evaluate says no policy: /explain is never requested, S.explain stay
   const r = makeResult(250); r.hospital_matches_policy = false;
   respond(take("/evaluate"), r); await flush();
   assert.ok(!fetchQueue.some(q => q.url.includes("/explain")), "/explain was requested for a no-policy result (pending: " + fetchQueue.map(q => q.url).join(", ") + ")");
+  answerChecks();
   await p;
   assert.strictEqual(S.explain, null, "S.explain should be null");
   assert.strictEqual(A.curScreen, 4);
@@ -846,6 +855,275 @@ test("j15. timeout: /extract gets 60 s and a timeout lands on the 'could not rea
   assert.ok(S.bill && S.bill.fields.hospital_name.value === null, "a blank bill should be shown after the timeout");
   assert.strictEqual(S.extracting, false);
   assert.strictEqual(byId("alert").textContent, T.read_failed.en);
+});
+
+// k. Phase 2 "find errors" UI: charge lines on the Bill screen, /check, the result card, the letter (plan D8, A3, A4, A8)
+const typeIn = (id, v) => { const n = byId(id); n.value = v; n.dispatch("input"); };
+const tick = (id, on) => { const n = byId(id); n.checked = on; n.dispatch("change"); };
+const CTL = (n) => ({date: null, description: n, quantity: 1, amount_cents: 138500});
+function readLines() {
+  return {items: [CTL("CT scan, head, without contrast"), CTL("CT scan, head, without contrast"),
+                  {date: null, description: "IV fluids, first hour", quantity: 1, amount_cents: 37500}],
+          total_charges_cents: 314500, payments_cents: 0, confirmed: false, read: true};
+}
+function openBill(lines) { // the Bill screen with all six fields confirmed, and the given charge lines (undefined = none)
+  resetApp(); S.bill = fullBill();
+  if (lines !== undefined) S.bill.lines = lines;
+  A.show(2);
+}
+const DUP_TEXT = "This charge appears 2 times with the same description and amount: CT scan, head, without contrast ($1,385.00 each). Ask whether it was billed more than once.";
+const INS_TEXT = "The bill lists insurance but shows no insurance payment. Ask whether the bill was sent to your insurer.";
+const MCD_CITE = {source: "42 CFR 438.106 (eCFR, current to 2026-10-15)", url: "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-C/part-438/subpart-C/section-438.106"};
+function flagsCheck(total) {
+  return {contract_version: 1, lines_checked: true, total_to_ask_cents: total === undefined ? 138500 : total, flags: [
+    {id: "duplicate", text_en: DUP_TEXT, letter_en: "dup", amount_cents: 138500, line_indexes: [0, 1], citation: null},
+    {id: "insurance_unpaid", text_en: INS_TEXT, letter_en: "ins", amount_cents: null, line_indexes: [], citation: null},
+    {id: "medicaid", text_en: "TennCare text.", letter_en: "mcd", amount_cents: null, line_indexes: [], citation: MCD_CITE}]};
+}
+test("k1. Bill screen: charge lines render; Continue is blocked until 'These charges match my bill' is ticked", "plan D8", () => {
+  openBill(readLines());
+  assert.strictEqual(byId("line-0-desc").value, "CT scan, head, without contrast", "row 0 description");
+  assert.strictEqual(byId("line-0-amt").value, "1385.00", "row 0 amount in dollars");
+  assert.strictEqual(byId("line-2-amt").value, "375.00");
+  assert.strictEqual(byId("lines-total").value, "3145.00");
+  assert.strictEqual(byId("lines-paid").value, "0.00");
+  assert.strictEqual(byId("bill-next").disabled, true, "Continue enabled with unconfirmed lines");
+  assert.ok(byId("bill-why").textContent.includes(T.why_lines.en) && byId("bill-why").hidden === false, "no reason shown: " + byId("bill-why").textContent);
+  tick("lines-ok", true);
+  assert.strictEqual(S.bill.lines.confirmed, true);
+  assert.strictEqual(byId("bill-next").disabled, false, "Continue still disabled after confirming the lines");
+  assert.strictEqual(byId("bill-why").hidden, true);
+  tick("lines-ok", false);
+  assert.strictEqual(byId("bill-next").disabled, true, "unticking must block Continue again");
+  assert.ok(T.lines_ok.en === "These charges match my bill");
+});
+test("k2. Bill screen: any edit unticks the confirmation (description, amount, total, payments) and converts dollars to cents", "plan D8", () => {
+  openBill(readLines());
+  const edits = [["line-0-desc", "CT head", () => assert.strictEqual(S.bill.lines.items[0].description, "CT head")],
+                 ["line-1-amt", "1,200.50", () => assert.strictEqual(S.bill.lines.items[1].amount_cents, 120050)],
+                 ["lines-total", "$3,000", () => assert.strictEqual(S.bill.lines.total_charges_cents, 300000)],
+                 ["lines-paid", "250.5", () => assert.strictEqual(S.bill.lines.payments_cents, 25050)]];
+  for (const [id, v, check] of edits) {
+    tick("lines-ok", true);
+    assert.strictEqual(byId("bill-next").disabled, false, id + ": setup");
+    typeIn(id, v);
+    check();
+    assert.strictEqual(S.bill.lines.confirmed, false, id + ": edit did not untick");
+    assert.strictEqual(byId("lines-ok").checked, false, id + ": checkbox still shows ticked");
+    assert.strictEqual(byId("bill-next").disabled, true, id + ": Continue stayed enabled after an edit");
+  }
+  typeIn("lines-paid", "");
+  assert.strictEqual(S.bill.lines.payments_cents, null, "empty payments should be null");
+  typeIn("line-0-amt", "abc");
+  assert.strictEqual(S.bill.lines.items[0].amount_cents, null, "a bad amount must not become a number");
+  assert.strictEqual(byId("line-0-amt-hint").hidden, false, "no hint for a bad amount");
+  assert.strictEqual(byId("line-0-amt").getAttribute("aria-invalid"), "true");
+  typeIn("line-0-amt", "10");
+  assert.strictEqual(byId("line-0-amt-hint").hidden, true);
+  typeIn("line-0-amt", "99999999999"); // over the server's 10^9 cents cap
+  assert.strictEqual(S.bill.lines.items[0].amount_cents, null, "over-cap amount must not be sent");
+  assert.strictEqual(byId("line-0-amt-hint").hidden, false);
+});
+test("k3. Bill screen: remove a line and add a line; both untick and reindex the rows", "plan D8", () => {
+  openBill(readLines());
+  tick("lines-ok", true);
+  byId("line-1-rm").click();
+  assert.strictEqual(S.bill.lines.items.length, 2, "remove did not drop the row");
+  assert.deepStrictEqual(S.bill.lines.items.map(i => i.description), ["CT scan, head, without contrast", "IV fluids, first hour"]);
+  assert.strictEqual(byId("line-2-desc"), null, "rows were not re-rendered");
+  assert.strictEqual(byId("line-1-desc").value, "IV fluids, first hour");
+  assert.strictEqual(S.bill.lines.confirmed, false, "remove did not untick");
+  assert.strictEqual(byId("lines-ok").checked, false);
+  assert.strictEqual(byId("bill-next").disabled, true);
+  tick("lines-ok", true);
+  byId("line-add").click();
+  assert.strictEqual(S.bill.lines.items.length, 3, "add did not add a row");
+  assert.deepStrictEqual(S.bill.lines.items[2], {date: null, description: "", quantity: null, amount_cents: null});
+  assert.ok(byId("line-2-desc") && byId("line-2-amt") && byId("line-2-rm"), "new row not rendered");
+  assert.strictEqual(S.bill.lines.confirmed, false, "add did not untick");
+  assert.strictEqual(byId("bill-next").disabled, true);
+});
+test("k4. Bill screen: with no lines only 'Add a line' shows; adding one creates hand-typed lines that must be confirmed; 40 lines is the cap", "plan D8", () => {
+  for (const none of [undefined, null]) {
+    openBill(none);
+    assert.ok(byId("line-add") && byId("line-add").textContent === "Add a line", "Add a line missing");
+    for (const gone of ["lines-ok", "lines-total", "lines-paid", "line-0-desc"]) assert.strictEqual(byId(gone), null, gone + " shown with no lines");
+    assert.strictEqual(byId("bill-next").disabled, false, "Continue blocked with no lines");
+  }
+  byId("line-add").click();
+  assert.deepStrictEqual(S.bill.lines, {items: [{date: null, description: "", quantity: null, amount_cents: null}],
+                                        total_charges_cents: null, payments_cents: null, confirmed: false, read: false});
+  assert.ok(byId("lines-ok") && byId("lines-total") && byId("lines-paid") && byId("line-0-desc"), "table not shown after Add a line");
+  assert.strictEqual(byId("bill-next").disabled, true, "hand-typed lines must be confirmed before Continue");
+  for (let i = 1; i < 40; i++) byId("line-add").click();
+  assert.strictEqual(S.bill.lines.items.length, 40);
+  assert.strictEqual(byId("line-add").disabled, true, "Add a line stays enabled at 40 lines");
+});
+test("k5. /check is requested after /evaluate succeeds, with {bill} only and a 20 s timeout; the answer is stored", "plan A4", async () => {
+  resetApp(); setupQuestions();
+  S.bill.lines = Object.assign(readLines(), {confirmed: true});
+  const p = A.submitAnswers();
+  assert.ok(!fetchQueue.some(q => q.url.includes("/check")), "/check was requested before /evaluate answered");
+  const mark = timers.length;
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  const ck = take("/check");
+  assert.deepStrictEqual(Object.keys(bodyOf(ck)), ["bill"], "/check body must be {bill}");
+  assert.deepStrictEqual(bodyOf(ck).bill, JSON.parse(JSON.stringify(S.bill)));
+  assert.strictEqual(bodyOf(ck).bill.lines.items.length, 3, "lines missing from the /check body");
+  assert.strictEqual(timers[mark].ms, 20000, "/check timeout");
+  respond(take("/explain"), makeExplain("C"));
+  respond(ck, flagsCheck()); await p;
+  assert.strictEqual(S.check.total_to_ask_cents, 138500);
+  assert.strictEqual(S.check.flags.length, 3);
+  assert.strictEqual(A.curScreen, 4);
+});
+test("k6. Result: the card sits right after the hero and lists each flag (text, amount via money(), citation), the total line, the safety line", "plan D8, A3", async () => {
+  const s4 = await landResult(makeResult(115), flagsCheck());
+  const txt = s4.textContent;
+  assert.ok(txt.includes(T.chk_title.en), "card title missing");
+  const ul = s4.all().find(n => n.tag === "ul" && n.classList.contains("flags"));
+  assert.ok(ul, "no flags list");
+  const lis = ul.children;
+  assert.strictEqual(lis.length, 3, "one line per flag");
+  assert.ok(lis[0].textContent.includes(DUP_TEXT) && lis[0].textContent.includes("$1,385.00"), "duplicate flag line: " + lis[0].textContent);
+  assert.ok(lis[0].all().some(n => n.getAttribute("lang") === "en" && n.textContent === DUP_TEXT), "flag text is not English-only");
+  assert.ok(lis[1].textContent === INS_TEXT && !lis[1].textContent.includes("$"), "a null amount must show no amount: " + lis[1].textContent);
+  assert.ok(lis[2].all().some(n => n.classList.contains("fn-mark")), "medicaid flag has no footnote mark");
+  assert.ok(s4.all().some(n => n.tag === "ol" && n.classList.contains("notes") && n.textContent.includes("42 CFR 438.106")), "citation not in the footnotes");
+  assert.ok(hrefs(s4).includes(MCD_CITE.url), "citation link missing");
+  assert.ok(txt.includes("Up to $1,385.00 to ask the hospital about"), "total line missing");
+  assert.ok(txt.includes("Found by fixed rules on the charges you confirmed, not by AI. Only the hospital can confirm an error."), "safety line missing");
+  const iHero = txt.indexOf("poverty guideline"), iCard = txt.indexOf(T.chk_title.en), iTier = txt.indexOf(T.r_policy_en.en);
+  assert.ok(iHero >= 0 && iHero < iCard && iCard < iTier, "card must come right after the hero (" + [iHero, iCard, iTier] + ")");
+  const zero = (await landResult(makeResult(115), flagsCheck(0))).textContent;
+  assert.ok(zero.includes(T.chk_title.en) && !/Up to \$/.test(zero), "a zero total must not show the total line");
+});
+test("k7. the word 'savings' is nowhere in app.js, its strings, or a rendered flags card", "plan D5", async () => {
+  assert.ok(T.chk_total && T.chk_safety && T.chk_none, "new chk_* strings missing");
+  assert.ok(!/savings/i.test(src), "app.js contains 'savings'");
+  for (const [k, row] of Object.entries(T)) for (const [l, s] of Object.entries(row)) assert.ok(!/savings/i.test(s), k + "." + l + " says savings");
+  const s4 = await landResult(makeResult(115), flagsCheck());
+  assert.ok(s4.textContent.includes(T.chk_title.en) && !/savings/i.test(s4.textContent), "rendered card says savings");
+});
+test("k8. Result: lines_checked true and no flags shows the no-repeats sentence; lines_checked false, or no check, shows nothing", "plan D8", async () => {
+  const none = {contract_version: 1, flags: [], total_to_ask_cents: 0, lines_checked: true};
+  let s4 = await landResult(makeResult(115), none);
+  assert.ok(s4.textContent.includes("Our checks found no repeated charges, and the math adds up. Simple checks can't prove a bill is right."), "no-flags sentence missing");
+  assert.ok(!s4.textContent.includes(T.chk_title.en) && !s4.all().some(n => n.getAttribute("id") === "letter-btn"), "card or letter button shown with no flags");
+  s4 = await landResult(makeResult(115), Object.assign({}, none, {lines_checked: false}));
+  assert.ok(!s4.textContent.includes(T.chk_none.en), "no-flags sentence shown although no lines were checked");
+  s4 = await landResult(makeResult(115), {detail: "nope"}, 500); // /check fails
+  assert.ok(!s4.textContent.includes(T.chk_none.en) && !s4.textContent.includes(T.chk_title.en));
+});
+test("k9. Result: the letter button shows whenever there are flags, eligible or not; never without flags", "plan D8", async () => {
+  const btn = s4 => s4.all().find(n => n.tag === "button" && n.textContent === "Create a letter asking the hospital to check this bill");
+  let s4 = await landResult(makeResult(400, false), flagsCheck());
+  assert.ok(btn(s4), "no letter button on a not-eligible result with flags");
+  assert.ok(!s4.all().some(n => n.tag === "button" && n.classList.contains("primary")), "ineligible result must still have no packet button");
+  s4 = await landResult(makeResult(115), flagsCheck());
+  assert.ok(btn(s4), "no letter button on an eligible result with flags");
+  assert.ok(s4.all().some(n => n.tag === "button" && n.classList.contains("primary")), "packet button lost");
+  s4 = await landResult(makeResult(115), {contract_version: 1, flags: [], total_to_ask_cents: 0, lines_checked: true});
+  assert.ok(!btn(s4), "letter button shown without flags");
+});
+test("k10. No policy for the hospital: /check still runs and the card shows after the warning; /explain is never requested", "plan D7, A4", async () => {
+  const r = makeResult(250); r.hospital_matches_policy = false;
+  const s4 = await landResult(r, flagsCheck());
+  assert.strictEqual(lastCheckCount, 1, "/check was not requested on the no-policy branch");
+  const txt = s4.textContent;
+  assert.ok(txt.includes(T.chk_title.en) && txt.includes(DUP_TEXT) && txt.includes("$1,385.00"), "card missing on the no-policy screen");
+  const iWarn = txt.indexOf(T.r_mismatch_any.en), iCard = txt.indexOf(T.chk_title.en), iHelp = txt.indexOf(T.help_title.en);
+  assert.ok(iWarn >= 0 && iWarn < iCard && iCard < iHelp, "order must be warning, card, help (" + [iWarn, iCard, iHelp] + ")");
+  assert.ok(s4.all().some(n => n.tag === "button" && n.textContent === T.chk_letter.en), "letter button missing on the no-policy screen");
+  assert.ok(s4.all().some(n => n.tag === "ol" && n.classList.contains("notes") && n.textContent.includes("42 CFR 438.106")), "citation list missing on the no-policy screen");
+  assert.ok(!s4.all().some(n => n.tag === "button" && n.classList.contains("primary")), "packet button shown");
+});
+test("k11. Screen 5 in dispute mode posts /dispute (not /packet) with {bill, answers}; the packet button still posts /packet", "plan D8, A4", async () => {
+  const s4 = await landResult(makeResult(115), flagsCheck());
+  s4.all().find(n => n.tag === "button" && n.textContent === T.chk_letter.en).click();
+  assert.strictEqual(S.doc, "dispute");
+  assert.strictEqual(A.curScreen, 5);
+  assert.ok(!fetchQueue.some(q => q.url.includes("/packet")), "/packet requested in dispute mode");
+  const d = take("/dispute");
+  assert.deepStrictEqual(Object.keys(bodyOf(d)).sort(), ["answers", "bill"], "/dispute body must be {bill, answers}");
+  assert.strictEqual(bodyOf(d).answers.household_size, 3);
+  assert.strictEqual(timers[timers.length - 1].ms, 45000, "/dispute timeout");
+  assert.ok(byId("s5").textContent.includes(T.d_title.en) && !byId("s5").textContent.includes(T.p_title.en), "screen 5 title should be the letter's");
+  respond(d, "<html><body>LETTER</body></html>"); await flush();
+  const frame = byId("packet-paper").all().find(n => n.tag === "iframe");
+  assert.ok(frame && frame.srcdoc === "<html><body>LETTER</body></html>", "letter page not in the iframe");
+  assert.strictEqual(frame.getAttribute("title"), T.d_title.en);
+  assert.strictEqual(byId("print-btn").disabled, false, "print button not enabled");
+  A.show(4); // Back keeps the card
+  assert.ok(byId("s4").textContent.includes(T.chk_title.en), "Back lost the check card");
+  byId("s4").all().find(n => n.tag === "button" && n.classList.contains("primary")).click();
+  assert.strictEqual(S.doc, "packet");
+  assert.ok(!fetchQueue.some(q => q.url.includes("/dispute")), "/dispute requested in packet mode");
+  take("/packet");
+  assert.ok(byId("s5").textContent.includes(T.p_title.en) && !byId("s5").textContent.includes(T.d_title.en), "packet title lost");
+});
+test("k12. Screen 5, dispute mode: a failed /dispute shows the error and a retry that posts /dispute again", "plan D8", async () => {
+  const s4 = await landResult(makeResult(400, false), flagsCheck());
+  s4.all().find(n => n.tag === "button" && n.textContent === T.chk_letter.en).click();
+  respond(take("/dispute"), {detail: "x"}, 500); await flush();
+  assert.strictEqual(byId("alert").hidden, false, "no error shown");
+  assert.ok(byId("packet-retry"), "no retry button");
+  byId("packet-retry").click();
+  take("/dispute");
+});
+test("k13. a /check failure (500, network error, 20 s timeout) never blocks the result and shows no error", "plan A4", async () => {
+  for (const how of ["500", "reject", "timeout"]) {
+    resetApp(); setupQuestions();
+    const p = A.submitAnswers();
+    const mark = timers.length;
+    respond(take("/evaluate"), makeResult(115)); await flush();
+    const ck = take("/check");
+    if (how === "500") respond(ck, {detail: "boom"}, 500);
+    else if (how === "reject") ck.reject(new Error("network down"));
+    else timers[mark].fn();
+    respond(take("/explain"), makeExplain("F")); await p; await flush();
+    assert.strictEqual(A.curScreen, 4, how + ": result did not land");
+    assert.strictEqual(S.check, null, how + ": S.check should be null");
+    assert.strictEqual(byId("alert").hidden, true, how + ": an error was shown for a /check failure");
+    assert.ok(byId("s4").textContent.includes("EXPLAIN-F") && !byId("s4").textContent.includes(T.chk_title.en), how + ": result content wrong");
+  }
+  resetApp(); setupQuestions(); // the no-policy branch too
+  const p2 = A.submitAnswers();
+  const r = makeResult(250); r.hospital_matches_policy = false;
+  respond(take("/evaluate"), r); await flush();
+  respond(take("/check"), {detail: "boom"}, 500); await p2;
+  assert.strictEqual(A.curScreen, 4); assert.strictEqual(S.check, null);
+  assert.ok(byId("s4").textContent.includes(T.r_mismatch_title.en) && byId("alert").hidden === true);
+});
+test("k14. /extract returning insurance_status 'medicaid' shows the TennCare / Medicaid option, selected, and keeps it on re-render", "plan A8", async () => {
+  resetApp(); A.show(2);
+  const file = new File([new Uint8Array(10)], "bill.png", {type: "image/png"});
+  const done = byId("bill-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  const bill = fullBill();
+  for (const f of Object.values(bill.fields)) f.confirmed = false;
+  bill.fields.insurance_status = {value: "medicaid", confidence: 0.9, confirmed: false};
+  respond(take("/extract"), bill); await done; await flush();
+  const sel = byId("f-insurance_status");
+  assert.deepStrictEqual(sel.children.map(o => o.getAttribute("value")), ["", "self_pay", "insured", "medicaid", "unknown"]);
+  assert.strictEqual(sel.children.find(o => o.getAttribute("value") === "medicaid").textContent, "TennCare / Medicaid");
+  assert.strictEqual(sel.value, "medicaid", "the read value is not the selected option");
+  assert.strictEqual(S.bill.fields.insurance_status.value, "medicaid");
+  A.show(2);
+  assert.strictEqual(byId("f-insurance_status").value, "medicaid", "option lost on re-render");
+  assert.strictEqual(S.bill.fields.insurance_status.value, "medicaid");
+});
+test("k15. new strings: ins_medicaid and the chk_/lines_ rows exist in all five inline languages; chk_safety is a SAFETY key with an English gloss; en text is exact", "plan D9, A3", () => {
+  const keys = ["ins_medicaid", "lines_title", "lines_hint", "line_desc", "line_amt", "line_remove", "line_add", "lines_total", "lines_paid",
+                "lines_ok", "why_lines", "chk_title", "chk_total", "chk_none", "chk_safety", "chk_letter", "load_dispute", "d_title"];
+  for (const k of keys) for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(T[k] && typeof T[k][l] === "string" && T[k][l].length >= 2, k + "." + l);
+  assert.strictEqual(T.ins_medicaid.en, "TennCare / Medicaid");
+  assert.strictEqual(T.chk_safety.en, "Found by fixed rules on the charges you confirmed, not by AI. Only the hospital can confirm an error.");
+  assert.strictEqual(T.chk_total.en, "Up to {amount} to ask the hospital about");
+  assert.ok(A.SAFETY_KEYS.includes("chk_safety"), "chk_safety is not a SAFETY key");
+  resetApp(); S.view = "da"; I18N.da = {chk_safety: "DA-safety"};
+  const nodes = A.tSafe("chk_safety");
+  assert.ok(nodesText(nodes).includes("DA-safety") && nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), "no English gloss in a machine language");
 });
 
 // ---------- run

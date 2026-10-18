@@ -92,3 +92,9 @@
   the user or compute, not just name the factors; c3 strict excludes the
   payment due date. Limits: n=13, one bill, one evening, free tiers that
   change week to week, unequal ChatGPT sample, one scorer.
+- 2026-10-18 08:49 CDT - live /extract (real OCI, n=1) on the RE-RENDERED synthetic bills (bdc76df,
+  VUMC/Ascension names): bill-02-blur0 read "Vanderbilt University Medical Center (SYNTHETIC)",
+  $1,858.50 (4.3 s http / 3.7 s https); bill-06 read "Ascension Saint Thomas Midtown (SYNTHETIC)"
+  (3.6 s); bill-02-blur3 read date_of_service 2026-11-04 = the PAYMENT DUE date (WRONG; the old
+  2026-10-17 render left it null). The "left the blurry date blank" claim is not true for the new
+  render; the confirm step is the safeguard.

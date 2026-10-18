@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 07:51 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AU).
+**Last updated: 2026-10-18 08:52 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AV).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -72,18 +72,19 @@ snapshot; history lives in the record (Phase 0, Appendices A-AU).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## STATUS (2026-10-18 07:51 CDT) - read this first
-- **LIVE: 984a537 on http AND https://207.211.181.174/** (deployed by Evan
-  2026-10-18 ~07:48 CDT; the new health check passed; live checks 07:50 pass:
-  es/he/th journeys, extract, packets, served app.js equal to f10; record AU).
-  32 language options; the Result screen hides "Apply by" for ineligible
-  families; deadline lines show English under machine translations.
-  Rollback target: 5af2f1f (`deploy.ps1 -Commit 984a537 -Rollback`).
+## STATUS (2026-10-18 08:52 CDT) - read this first
+- **LIVE: bdc76df on http AND https://207.211.181.174/** (deployed by Claude 08:48 CDT at Evan's
+  request; live checks 08:49 pass; record AV). The demo now uses the REAL published policies of
+  Vanderbilt University Medical Center and Ascension Saint Thomas (app/data/policy_vumc.json,
+  policy_ascension_saint_thomas.json, page-cited, verified by a fresh agent); every bill stays
+  SYNTHETIC. Other hospitals get no estimate. Rollback: `deploy.ps1 -Commit bdc76df -Rollback`
+  (restores 984a537).
 - Deploy command (any folder): `powershell -ExecutionPolicy Bypass -File
-  C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`. One
-  "curl: (7) Connection refused" line during start-up is normal (retry loop).
-- Presenter sheet docs/2026-10-17_pitch-corrections.md was rewritten at 07:40
-  to match the live app (audit 3 fix 3) and can be handed to presenters.
+  C:ClaudeCodeTNHacks27deploydeploy.ps1 -Commit <c>`; after a dropped link re-run with
+  -Watch (exit 2 = network dropped, remote keeps running). One "curl: (7)" line is normal.
+- Presenters: docs/2026-10-17_pitch-corrections.md (08:51 banner) - real policy, synthetic bill,
+  NO endorsement; do NOT say "left the blurry date blank" (new render misread it, 08:49). Reprint
+  bill-02 (its QR now opens ?hospital=vumc).
 - Audit 3 (docs/2026-10-18_audit-3.md, record AS): 4 high / 12 med / 21 low,
   3 policy questions for Evan (A1 number lock is set-based; A2 "nothing is
   stored" vs the Apache access log; A3 sheet). Fixed so far: 1, 2, 3, 4, 8, 11,
@@ -97,8 +98,8 @@ snapshot; history lives in the record (Phase 0, Appendices A-AU).
   -Commit <c> -Rollback restores ~/backup-before-<c>.tar. Scripts in deploy/
   (.sh kept LF by .gitattributes). Re-running the same -Commit overwrites its
   backup (audit 3 finding 10, open).
-- Git: origin/f10 = 5a7fd84; local f10 is ahead (docs + audit 3 fixes, not
-  pushed); local main = 984a537 (not pushed; origin/main ff7a539).
+- Git: origin/f10 = 9fd784a, origin/main = 984a537; local f10 and main (= bdc76df) are ahead, not
+  pushed (Evan: no push until told).
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on bill-02);
   the rollback was not rehearsed live; spikes/synthetic-bill/
   phone-photo-bill-02.png is not a faithful photo (table rows offset; audit 3

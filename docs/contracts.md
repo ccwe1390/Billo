@@ -183,3 +183,18 @@ Rules that apply to all four:
   - Limits: 429 after 60 paid requests per 60 s per client IP or 600 paid
     requests per hour in total; /extract with Content-Length over 8 MiB +
     64 KiB -> 413 before parsing. Supersedes "40 requests per 60 s" above.
+
+## Addendum 2026-10-18 08:51 CDT - real policies (bdc76df; record AV)
+- The server holds three policies (app/data/policy_vumc.json, policy_ascension_saint_thomas.json,
+  policy_cumberland_synthetic.json; default vumc). /evaluate, /explain and /packet pick the policy by
+  the bill's hospital_name (whole-word prefix match on each policy's match_names; exclude_names win).
+- hospital_matches_policy false now means "no policy for this hospital": the result is the default
+  policy's shape, the UI shows no estimate, /explain makes no OCI call, /packet returns 422
+  "No application packet: this demo has no policy for this hospital."
+- EngineResult and /household gain "conditions" [{text_en, citation}] and "synthetic" (bool); a
+  not-eligible tier may carry "other_route_en"; documents may carry "url"; contacts.email may be null.
+- coverage_period may be null (then coverage.text_en = the policy's coverage_note_en and
+  one_application_covers_all is false); days_before_application / days_after_approval may be null.
+- /stats gains "policies" [{hospital_id, hospital_name, rules_review_by}]; rules_review_by is the
+  earliest across policies; "rules" still lists the default policy.
+- /packet?format=json returns the Packet shape (the default is HTML).

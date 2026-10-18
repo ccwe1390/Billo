@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 10:29 CDT** - this file is the only live
+**Last updated: 2026-10-18 10:50 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-BA).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -81,6 +81,10 @@ snapshot; history lives in the record (Phase 0, Appendices A-BA).
   Still open from audit 4: #10 global-bucket half, #12 Ascension mailing address.
 - **10:29 CDT (record BA):** 223013b committed, NOT deployed: Apply by counts from the date of service when known (feature review
   flaw 2; bill-01 now 2027-05-10). Deploy waits for the optimization + security audits (Evan).
+- **10:50 CDT: LIVE = 08265fa** (deployed ~10:38 by Claude at Evan's word; includes 223013b deadline anchor, 64 KiB body cap,
+  40 s OCI timeout; record BB) + Apache gzip/h2 (VM-only conf). Rollback: deploy.ps1 -Commit 08265fa -Rollback (restores e53d1ce).
+  NOT deployed: cbc815b (Billow rename, committed). Phase 2 build on worktree branch f12 (C:/ClaudeCode/TNHacks27-f12), cut 12:40.
+  The e53d1ce line below is superseded.
 - **LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
   word; live checks 10:21 pass; record AZ). Real published VUMC + Ascension Saint Thomas policies,
   synthetic bills; audit-4 fixes + landing-check fixes + the VUMC uninsured/underinsured condition

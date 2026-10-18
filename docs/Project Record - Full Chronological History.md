@@ -101,6 +101,7 @@ the dated entry, not the digest.
 - [BM - Second QR: downloadable synthetic test bills page, df69369 live](#appendix-bm---second-qr-downloadable-synthetic-test-bills-page-df69369-live-2026-10-18-1312-cdt) (10-18)
 - [BN - No Explanation of Benefits Available button + no-summary wording, 8cd1d09 live](#appendix-bn---no-explanation-of-benefits-available-button--no-summary-wording-8cd1d09-live-2026-10-18-1437-cdt) (10-18)
 - [BO - Real-format bills and EOBs: real samples tested, app support, new test docs (041fe7e, not deployed)](#appendix-bo---real-format-bills-and-eobs-real-samples-tested-app-support-new-test-docs-041fe7e-not-deployed-2026-10-18-1502-cdt) (10-18)
+- [BP - 4531549 live (real-format reader, QR real-format pairs)](#appendix-bp---4531549-live-real-format-reader-qr-real-format-pairs-2026-10-18-1505-cdt) (10-18)
 
 ---
 
@@ -2216,3 +2217,17 @@ Fixes landed in 3547230 + 790eb38, on top of the forked session's 58d8908 (QR ->
 3. The denial text drops a word (it is shown for the person to confirm).
 4. A statement with several visits returns no single date of service (Trinity); the person must type it.
 5. The new reader is not live until deployed.
+
+# Appendix BP - 4531549 live (real-format reader, QR real-format pairs) (2026-10-18 ~15:05 CDT)
+**What.** Evan: "Deploy 4531549 (includes 041fe7e), live check on both https hosts including the test-bills page, then push f10." Claude deployed 4531549 at about 15:05 CDT. Before the deploy, live was confirmed as 8cd1d09 (app.js 2ae6b2921fe0), so no other session had deployed in between. Deploy output: "DEPLOYED 4531549 (service active, /stats 200)".
+
+**Live check, on both https://207.211.181.174 and https://billow.duckdns.org:**
+- app.js, style.css, test-bills/index.html and test-bills/bill-24, bill-25, eob-11 and eob-12 PNGs: all 200, and all MATCH `git show 4531549` (CR stripped for text).
+- /test-bills/ has the "Real-format bill + insurance summary pairs" heading.
+- /stats 200.
+- POST /check, pair 11 (bill-24 + eob-11, with payment_parts and the 5 optional EOB fields): no insurance flags, total 0, as expected.
+- POST /check, pair 12 (bill-25 + eob-12): ["denied"], total 0, as expected.
+- No paid call was made in this check. The reader's prompt changes ran in record BO's 8 local reads; no live /extract was run after the deploy.
+- Not exercised live: the abbreviated provider name, because the payload used the same name on the bill and the EOB. It is covered by the unit tests in test_eob_checks.
+
+**Rollback:** `deploy.ps1 -Commit 4531549 -Rollback` restores 8cd1d09.

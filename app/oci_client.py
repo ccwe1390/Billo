@@ -93,7 +93,7 @@ def extract_bill(image_bytes, mime):
     if is_fake():
         # The fields printed on spikes/synthetic-bill/bill-01.
         return {
-            "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+            "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
             "statement_date": "10/01/2026",
             "account_number": "CGH-00482913",
             "amount_due": 4812.40,

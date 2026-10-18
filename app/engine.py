@@ -9,7 +9,11 @@ CONTRACT_VERSION = 1
 
 def load_policy(path):
     with open(path, encoding="utf-8") as f:
-        return json.load(f)
+        policy = json.load(f)
+    if policy.get("coverage_period") is None and not (
+            isinstance(policy.get("coverage_note_en"), str) and policy["coverage_note_en"].strip()):
+        raise ValueError("policy %s has no coverage_period, so it needs coverage_note_en" % policy.get("hospital_id"))
+    return policy
 
 
 def load_fpl(path):
@@ -62,19 +66,51 @@ def _int_cents(value, name):
     return value
 
 
-def _name_core(s):
-    """Lowercase, no parenthesized part, no 'hospital', letters and digits only."""
-    s = re.sub(r"\(.*?\)", "", s.lower()).replace("hospital", "")
-    return re.sub(r"[^a-z0-9]", "", s)
+def _words(s):
+    """Hospital name -> comparable words: lowercase, no apostrophes, no (parenthesized part), no leading 'the',
+    'st' read as 'saint', punctuation as single spaces, the word 'hospital' dropped."""
+    s = s.lower().replace("'", "").replace("\u2019", "")
+    s = re.sub(r"\(.*?\)", "", s)
+    s = re.sub(r"^\s*the\s+", "", s)
+    s = re.sub(r"[^a-z0-9]+", " ", s)
+    words = ["saint" if w == "st" else w for w in s.split()]
+    return " ".join(w for w in words if w != "hospital")
+
+
+def name_matches(bill_name, name):
+    """True when the bill's name is `name` or starts with it (whole words). A match anchors at the start."""
+    if not isinstance(bill_name, str) or not isinstance(name, str):
+        return False
+    w, m = _words(bill_name), _words(name)
+    return m != "" and (w == m or w.startswith(m + " "))
+
+
+def policy_matches(bill_name, policy):
+    """True / False, or None when the bill names no hospital (unknown, not a mismatch).
+    An exclude name wins over a match name."""
+    if not isinstance(bill_name, str) or not bill_name.strip():
+        return None
+    if any(name_matches(bill_name, n) for n in policy.get("exclude_names") or []):
+        return False
+    names = policy.get("match_names") or [policy["hospital_name"]]
+    return any(name_matches(bill_name, n) for n in names)
 
 
 def _hospital_matches(bill_name, policy_name):
-    """True / False, or None when the bill names no hospital (unknown, not a mismatch)."""
-    if not isinstance(bill_name, str) or not bill_name.strip():
-        return None
-    core = _name_core(policy_name)
-    bill_core = _name_core(re.sub(r"^\s*the\s+", "", bill_name, flags=re.I))  # "The Cumberland General ..." still matches
-    return bool(core) and bill_core.startswith(core)
+    """policy_matches for a single policy name."""
+    return policy_matches(bill_name, {"hospital_name": policy_name})
+
+
+def select_policy(hospital_name, policies, default_id):
+    """(policy, matched): the first policy that names this hospital -> (it, True); no name on the bill ->
+    (default, None); a name no policy matches -> (default, False)."""
+    default = policies[default_id]
+    if not isinstance(hospital_name, str) or not hospital_name.strip():
+        return default, None
+    for p in policies.values():
+        if policy_matches(hospital_name, p) is True:
+            return p, True
+    return default, False
 
 
 def _iso_date(value, name):
@@ -141,6 +177,7 @@ def evaluate(bill_fields, answers, policy, fpl):
             "label_en": d["label_en"],
             "required_if": d["required_if"],
             "citation": copy.deepcopy(d["citation"]),
+            **({"url": d["url"]} if d.get("url") else {}),
         }
         for d in policy["documents"]
         if d["required_if"] == "always"
@@ -153,7 +190,7 @@ def evaluate(bill_fields, answers, policy, fpl):
         "contract_version": CONTRACT_VERSION,
         "hospital_id": policy["hospital_id"],
         "policy_hospital_name": policy["hospital_name"],
-        "hospital_matches_policy": _hospital_matches(hospital_name, policy["hospital_name"]),
+        "hospital_matches_policy": policy_matches(hospital_name, policy),
         "fpl": {
             "year": fpl["year"],
             "household_size": size,
@@ -167,6 +204,7 @@ def evaluate(bill_fields, answers, policy, fpl):
             "discount_percent": tier["discount_percent"],
             "eligible": tier["eligible"],
             "citation": copy.deepcopy(tier["citation"]),
+            **({"other_route_en": tier["other_route_en"]} if tier.get("other_route_en") else {}),
         },
         "tiers": tiers,
         "deadline": {
@@ -175,6 +213,8 @@ def evaluate(bill_fields, answers, policy, fpl):
             "citation": copy.deepcopy(window["citation"]),
         },
         "documents": documents,
+        "conditions": copy.deepcopy(policy.get("conditions") or []),
+        "synthetic": bool(policy.get("synthetic")),
         "contacts": copy.deepcopy(policy["contacts"]),
         "locked_numbers": [
             str(percent),
@@ -196,13 +236,23 @@ def _field_value(fields, name):
     return f.get("value") if isinstance(f, dict) else None
 
 
+def coverage_of(policy):
+    """{text_en, citation}: the policy's coverage rule, or - when the policy has none - its coverage_note_en
+    with the application-window citation."""
+    cov = policy["coverage_period"]
+    if cov is None:
+        return {"text_en": policy["coverage_note_en"], "citation": copy.deepcopy(policy["application_window"]["citation"])}
+    return {"text_en": cov["text_en"], "citation": copy.deepcopy(cov["citation"])}
+
+
 def evaluate_many(bills, answers, policy, fpl, as_of):
     """Several confirmed bills under one set of answers: the /household response
     (docs/contracts.md) without `contract_version`. `as_of` is a date, passed in."""
     if not bills:
         raise ValueError("no bills")
-    coverage = policy["coverage_period"]
-    cutoff = as_of - timedelta(days=coverage["days_before_application"])
+    coverage = policy["coverage_period"]  # None: the policy does not say (coverage_note_en is shown instead)
+    days_before = coverage["days_before_application"] if coverage else None
+    cutoff = as_of - timedelta(days=days_before) if days_before is not None else None  # None: no lower limit
 
     results = [evaluate({"fields": b["fields"]}, answers, policy, fpl) for b in bills]
     first = results[0]
@@ -231,14 +281,17 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
             continue
         counted += 1
         estimate_cents += rows[-1]["reduction_cents"]
-        if not isinstance(service, str) or date.fromisoformat(service) < cutoff:
+        if cutoff is not None and (not isinstance(service, str) or date.fromisoformat(service) < cutoff):
             covered = False
 
     eligible = first["tier"]["eligible"]
     if eligible:
         estimate_text_en = "Up to $%s could be reduced if the hospital approves." % _fmt_amount_due(estimate_cents)
     else:
-        estimate_text_en = "Not eligible under this policy."
+        if first["tier"].get("other_route_en"):
+            estimate_text_en = "Not eligible for the income tiers. The hospital may still help another way; ask the hospital."
+        else:
+            estimate_text_en = "Not eligible under this policy."
     # another hospital's bill has no deadline under this policy: the earliest is taken over counted rows
     pool = [row for row in rows if row["hospital_matches_policy"] is not False] or rows
     earliest = min((row["deadline"] for row in pool), key=lambda d: d["date"])
@@ -247,7 +300,8 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
     locked.append(_fmt_amount_due(estimate_cents))
     locked.extend(_fmt_amount_due(row["amount_due_cents"]) for row in rows)
     locked.extend(row["deadline"]["date"] for row in rows)
-    locked.append(str(coverage["days_after_approval"]))
+    if coverage and coverage.get("days_after_approval") is not None:
+        locked.append(str(coverage["days_after_approval"]))
     locked = list(dict.fromkeys(locked))
 
     return {
@@ -258,8 +312,10 @@ def evaluate_many(bills, answers, policy, fpl, as_of):
         "bills": rows,
         "estimate_cents": estimate_cents,
         "estimate_text_en": estimate_text_en,
-        "one_application_covers_all": covered and eligible and counted > 0,
-        "coverage": {"text_en": coverage["text_en"], "citation": copy.deepcopy(coverage["citation"])},
+        "one_application_covers_all": bool(coverage) and covered and eligible and counted > 0,
+        "coverage": coverage_of(policy),
+        "conditions": copy.deepcopy(policy.get("conditions") or []),
+        "synthetic": bool(policy.get("synthetic")),
         "earliest_deadline": earliest,
         "contacts": copy.deepcopy(policy["contacts"]),
         "locked_numbers": locked,

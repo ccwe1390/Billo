@@ -282,6 +282,238 @@ def test_evaluate_many():
         raise AssertionError("empty bills should raise ValueError")
 
 
+# ---------------------------------------------------------------- real policies (plan v2 S1)
+VUMC = engine.load_policy(os.path.join(DATA, "policy_vumc.json"))
+AST = engine.load_policy(os.path.join(DATA, "policy_ascension_saint_thomas.json"))
+POLICIES = {p["hospital_id"]: p for p in (VUMC, AST, POLICY)}
+FPL1 = engine.fpl_cents(FPL, 1)
+
+
+def pct(n):
+    """Exactly n% of the household-of-1 poverty guideline, in cents."""
+    assert FPL1 * n % 100 == 0
+    return FPL1 * n // 100
+
+
+def run_p(policy, income, name=None, size=1, tax=False):
+    b = bill()
+    if name is not None:
+        b["fields"]["hospital_name"] = {"value": name, "confidence": 0.9, "confirmed": True}
+    return engine.evaluate(b, answers(income, size, tax), policy, FPL)
+
+
+def test_words():
+    w = engine._words
+    assert w("St. Thomas Midtown") == "saint thomas midtown"
+    assert w("St Thomas") == w("Saint Thomas") == "saint thomas"
+    assert w("Stones River Hospital") == "stones river"                       # only the whole word "st" becomes "saint"
+    assert w("Monroe Carell Jr. Children's Hospital at Vanderbilt") == "monroe carell jr childrens at vanderbilt"
+    assert w("Monroe Carell Jr. Children’s Hospital at Vanderbilt") == w("Monroe Carell Jr Childrens Hospital at Vanderbilt")
+    assert w("The Cumberland General Hospital (SYNTHETIC)") == "cumberland general"
+    assert w("Vanderbilt   University,  Medical-Center") == "vanderbilt university medical center"
+    assert w("  HOSPITAL ") == "" and w("") == "" and w("(SYNTHETIC)") == ""
+    assert w("Hospital for Specialty Surgery") == "for specialty surgery"      # only the word "hospital" is dropped
+
+
+def test_name_matches():
+    m = engine.name_matches
+    assert m("Vanderbilt University Medical Center", "Vanderbilt University Medical Center")
+    assert m("Vanderbilt University Medical Center (SYNTHETIC)", "Vanderbilt University Medical Center")
+    assert m("Vanderbilt University Medical Center Nashville", "Vanderbilt University Medical Center")
+    assert not m("Vanderbilt University Medical Centers", "Vanderbilt University Medical Center")   # whole words
+    assert not m("Vanderbilt University", "Vanderbilt University Medical Center")                   # shorter than the name
+    assert not m("NOT Vanderbilt University Medical Center", "Vanderbilt University Medical Center")  # anchored at the start
+    assert m("Children's Hospital at Vanderbilt", "Childrens Hospital at Vanderbilt")
+    assert m("Childrens Hospital at Vanderbilt", "Children's Hospital at Vanderbilt")
+    assert m("St. Thomas Midtown", "Saint Thomas Midtown Hospital")
+    assert not m("Anything", "") and not m("Anything", "(SYNTHETIC)") and not m("", "Anything")
+    assert not m(None, "x") and not m(123, "x") and not m("x", None)
+
+
+def test_policy_selection_by_bill_name():
+    cases = [
+        ("Vanderbilt University Medical Center (SYNTHETIC)", "vumc"),                      # bill-01, -02, -03, -05
+        ("Vanderbilt Wilson County Hospital (SYNTHETIC)", "vumc"),                         # bill-04
+        ("Monroe Carell Jr. Children's Hospital at Vanderbilt", "vumc"),
+        ("Vanderbilt University Hospital", "vumc"),
+        ("Ascension Saint Thomas Midtown (SYNTHETIC)", "ascension_saint_thomas"),          # bill-06
+        ("Ascension Saint Thomas West (SYNTHETIC)", "ascension_saint_thomas"),             # bill-07, -09
+        ("Ascension Saint Thomas Rutherford (SYNTHETIC)", "ascension_saint_thomas"),       # bill-08
+        ("Saint Thomas Midtown Hospital", "ascension_saint_thomas"),
+        ("St. Thomas West", "ascension_saint_thomas"),
+        ("Cumberland General Hospital (SYNTHETIC)", "cumberland_synthetic"),               # bill-10
+    ]
+    for name, want in cases:
+        policy, matched = engine.select_policy(name, POLICIES, "vumc")
+        assert policy["hospital_id"] == want and matched is True, (name, policy["hospital_id"], matched)
+    for p in (VUMC, AST):                                   # every name a policy lists selects that policy
+        for name in p["match_names"]:
+            policy, matched = engine.select_policy(name, POLICIES, "vumc")
+            assert policy is p and matched is True, name
+    # excluded and unknown hospitals: no policy matches -> the default policy, matched False
+    for name in ("Vanderbilt Clarksville Hospital (SYNTHETIC)", "Vanderbilt Stallworth Rehabilitation Hospital",
+                 "Ascension Saint Thomas Behavioral Health Hospital", "Ascension Saint Thomas Rehabilitation Hospital",
+                 "TriStar Centennial Medical Center", "St Cumberland General"):
+        policy, matched = engine.select_policy(name, POLICIES, "vumc")
+        assert policy["hospital_id"] == "vumc" and matched is False, (name, policy["hospital_id"], matched)
+    assert engine.policy_matches("Ascension Saint Thomas Behavioral Health Hospital", AST) is False   # exclude wins
+    assert engine.policy_matches("Vanderbilt Clarksville Hospital", VUMC) is False
+    # no name on the bill: unknown, default policy
+    for blank in (None, "", "   ", 123):
+        policy, matched = engine.select_policy(blank, POLICIES, "vumc")
+        assert policy is VUMC and matched is None, blank
+    assert engine.policy_matches(None, VUMC) is None and engine.policy_matches("  ", AST) is None
+    # the default is whichever id the caller names
+    policy, matched = engine.select_policy("TriStar Centennial Medical Center", POLICIES, "ascension_saint_thomas")
+    assert policy is AST and matched is False
+    # evaluate() reports the same answer
+    assert run_p(VUMC, pct(100), "Vanderbilt University Medical Center (SYNTHETIC)")["hospital_matches_policy"] is True
+    assert run_p(VUMC, pct(100), "Ascension Saint Thomas West (SYNTHETIC)")["hospital_matches_policy"] is False
+    assert run_p(VUMC, pct(100), "Vanderbilt Clarksville Hospital")["hospital_matches_policy"] is False
+    assert run_p(AST, pct(100), "Ascension Saint Thomas Rehabilitation Hospital")["hospital_matches_policy"] is False
+    assert run_p(VUMC, pct(100))["hospital_matches_policy"] is None
+
+
+def test_vumc_boundaries():
+    rows = [
+        (pct(300), "free_care", 100, True), (pct(300) + 1, "discount", 85, True),
+        (pct(350), "discount", 85, True), (pct(350) + 1, "not_eligible", 0, False),
+        (0, "free_care", 100, True),
+    ]
+    for income, tid, disc, eligible in rows:
+        r = run_p(VUMC, income)
+        t = r["tier"]
+        assert (t["id"], t["discount_percent"], t["eligible"]) == (tid, disc, eligible), (income, t)
+        current = [i for i, x in enumerate(r["tiers"]) if x["current"]]
+        assert len(current) == 1, (income, current)
+    assert run_p(VUMC, pct(300) + 1)["percent_of_fpl"] == 300 and run_p(VUMC, pct(350) + 1)["percent_of_fpl"] == 350
+    r = run_p(VUMC, pct(350) + 1)
+    assert "Catastrophic" in r["tier"]["other_route_en"] and r["tier"]["other_route_en"] == VUMC["tiers"][2]["other_route_en"]
+    assert "other_route_en" not in run_p(VUMC, pct(350))["tier"]                  # only the not-eligible tier carries it
+    assert "other_route_en" not in run_p(POLICY, 13_200_100)["tier"]              # Cumberland has none
+
+
+def test_ascension_boundaries():
+    rows = [
+        (pct(250), "free_care", 100, True), (pct(250) + 1, "discount", 86, True),
+        (pct(300), "discount", 86, True), (pct(300) + 1, "discount", 81, True),
+        (pct(350), "discount", 81, True), (pct(350) + 1, "discount", 79, True),
+        (pct(400), "discount", 79, True), (pct(400) + 1, "not_eligible", 0, False),
+    ]
+    for income, tid, disc, eligible in rows:
+        r = run_p(AST, income)
+        t = r["tier"]
+        assert (t["id"], t["discount_percent"], t["eligible"]) == (tid, disc, eligible), (income, t)
+        current = [i for i, x in enumerate(r["tiers"]) if x["current"]]
+        assert len(current) == 1 and r["tiers"][current[0]]["discount_percent"] == disc, (income, current)
+    assert len(run_p(AST, 0)["tiers"]) == 5
+    r = run_p(AST, pct(400) + 1)
+    assert "Means Test" in r["tier"]["other_route_en"] and r["tier"]["other_route_en"] == AST["tiers"][4]["other_route_en"]
+    assert "other_route_en" not in run_p(AST, pct(400))["tier"]
+
+
+def test_conditions_synthetic_and_documents():
+    for policy, name in ((VUMC, "vumc"), (AST, "ascension_saint_thomas")):
+        r = run_p(policy, pct(100))
+        assert r["hospital_id"] == name and r["synthetic"] is False
+        assert r["conditions"] == policy["conditions"] and len(r["conditions"]) >= 7
+        assert r["conditions"] is not policy["conditions"] and r["conditions"][0] is not policy["conditions"][0]
+        original = policy["conditions"][0]["text_en"]
+        r["conditions"][0]["text_en"] = "changed"
+        assert policy["conditions"][0]["text_en"] == original                   # a copy: the policy is never mutated
+        for c in policy["conditions"]:
+            assert c["text_en"] and c["citation"]["page"]
+    r = run_p(POLICY, pct(100))
+    assert r["synthetic"] is True and r["conditions"] == []
+    # documents: the hospital's own form carries a url; the others do not
+    def want(policy, tax):
+        return [d["id"] for d in policy["documents"] if d["required_if"] == "always" or (tax and d["required_if"] == "files_tax_return")]
+    ids = [d["id"] for d in run_p(VUMC, pct(100))["documents"]]
+    assert ids == want(VUMC, False) and ids[0] == "hospital_form" and "tax_return" not in ids, ids
+    ids = [d["id"] for d in run_p(VUMC, pct(100), tax=True)["documents"]]
+    assert ids == want(VUMC, True) and "tax_return" in ids, ids
+    docs = {d["id"]: d for d in run_p(VUMC, pct(100), tax=True)["documents"]}
+    assert docs["hospital_form"]["url"] == VUMC["documents"][0]["url"] and docs["hospital_form"]["url"].startswith("https://")
+    assert "url" not in docs["proof_income"] and "url" not in docs["tax_return"]
+    ids = [d["id"] for d in run_p(AST, pct(100))["documents"]]
+    assert ids == want(AST, False) and ids[0] == "hospital_form" and "tax_return" not in ids, ids
+    assert [d["id"] for d in run_p(AST, pct(100), tax=True)["documents"]] == want(AST, True)
+    assert run_p(AST, pct(100))["documents"][0]["url"].startswith("https://")
+    assert all("url" not in d for d in run_p(POLICY, pct(100))["documents"])
+
+
+def named_bills(name, service_override=None):
+    rows = many_bills(service_override)
+    for r in rows:
+        r["fields"]["hospital_name"]["value"] = name
+    return rows
+
+
+def test_evaluate_many_real_policies():
+    from datetime import date
+    as_of = date(2026, 10, 17)
+    ineligible_text = "Not eligible for the income tiers. The hospital may still help another way; ask the hospital."
+    # VUMC: days_before_application and days_after_approval are null
+    vname = "Vanderbilt University Medical Center (SYNTHETIC)"
+    r = engine.evaluate_many(named_bills(vname), answers(3_800_000), VUMC, FPL, as_of)
+    assert r["estimate_cents"] == 883765 and r["eligible"] is True and r["one_application_covers_all"] is True
+    assert r["synthetic"] is False and r["conditions"] == VUMC["conditions"]
+    assert r["coverage"] == {"text_en": VUMC["coverage_period"]["text_en"],
+                             "citation": VUMC["coverage_period"]["citation"]}
+    assert "None" not in r["locked_numbers"] and all(isinstance(x, str) for x in r["locked_numbers"])
+    assert len(r["locked_numbers"]) == len(set(r["locked_numbers"]))
+    for want in ("115", "8,837.65", "4,812.40", "2027-05-29", "100", "240"):
+        assert want in r["locked_numbers"], want
+    assert "182" not in r["locked_numbers"]                                  # null days_after_approval is not locked
+    # no lower limit: a very old service date is still covered
+    r = engine.evaluate_many(named_bills(vname, "2019-01-01"), answers(3_800_000), VUMC, FPL, as_of)
+    assert r["one_application_covers_all"] is True
+    # a bill with no service date is covered too when there is no lower limit
+    nodate = named_bills(vname)
+    nodate[0]["fields"]["date_of_service"]["value"] = None
+    assert engine.evaluate_many(nodate, answers(3_800_000), VUMC, FPL, as_of)["one_application_covers_all"] is True
+    # other-route text, VUMC and Ascension; Cumberland keeps the old text
+    r = engine.evaluate_many(named_bills(vname), answers(20_000_000), VUMC, FPL, as_of)
+    assert r["eligible"] is False and r["estimate_cents"] == 0 and r["estimate_text_en"] == ineligible_text
+    assert r["one_application_covers_all"] is False and r["tier"]["other_route_en"]
+    # Ascension: coverage_period is null -> the note, never "covers all"
+    aname = "Ascension Saint Thomas West (SYNTHETIC)"
+    r = engine.evaluate_many(named_bills(aname), answers(3_800_000), AST, FPL, as_of)
+    assert AST["coverage_period"] is None
+    assert r["eligible"] is True and r["estimate_cents"] == 883765 and r["one_application_covers_all"] is False
+    assert r["coverage"] == {"text_en": AST["coverage_note_en"], "citation": AST["application_window"]["citation"]}
+    assert r["coverage"]["citation"] is not AST["application_window"]["citation"]
+    assert "None" not in r["locked_numbers"] and "180" not in r["locked_numbers"]
+    r = engine.evaluate_many(named_bills(aname), answers(20_000_000), AST, FPL, as_of)
+    assert r["eligible"] is False and r["estimate_text_en"] == ineligible_text
+    assert engine.evaluate_many(named_bills("Cumberland General Hospital (SYNTHETIC)"), answers(20_000_000), POLICY, FPL,
+                                as_of)["estimate_text_en"] == "Not eligible under this policy."
+    # Cumberland keeps its fields
+    r = engine.evaluate_many(many_bills(), answers(3_800_000), POLICY, FPL, as_of)
+    assert r["synthetic"] is True and r["conditions"] == []
+
+
+def test_load_policy_needs_coverage_note():
+    import json
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        p = os.path.join(d, "p.json")
+        bad = dict(AST)
+        del bad["coverage_note_en"]
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(bad, f)
+        try:
+            engine.load_policy(p)
+        except ValueError as e:
+            assert "coverage_note_en" in str(e)
+        else:
+            raise AssertionError("a policy with null coverage_period and no note should raise ValueError")
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(AST, f)
+        assert engine.load_policy(p)["coverage_period"] is None
+    assert engine.coverage_of(VUMC)["text_en"] == VUMC["coverage_period"]["text_en"]
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

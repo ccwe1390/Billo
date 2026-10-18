@@ -51,6 +51,12 @@ def answers(**over):
     return main.AnswersIn(**a)
 
 
+def _doc_ids(hospital_id, tax):
+    """Document ids the policy file asks for (read from disk, so a policy edit does not break the test)."""
+    return [d["id"] for d in main._rules()[1][hospital_id]["documents"]
+            if d["required_if"] == "always" or (tax and d["required_if"] == "files_tax_return")]
+
+
 # ---- /extract (FAKE_OCI): fields normalized, none confirmed
 bill = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png")))
 F = bill["fields"]
@@ -125,7 +131,7 @@ oci_client.phrase = real_phrase
 # ---- /packet: json shape, html page
 pk = main.packet(body, format="json")
 assert pk["translation_check"] == {"numbers_match": True, "fallback_used": False, "translator": "oci_language"}
-assert [c["id"] for c in pk["checklist"]] == ["proof_income", "bill_copy"]      # files_tax_return false
+assert [c["id"] for c in pk["checklist"]] == _doc_ids("vumc", False)      # files_tax_return false
 assert pk["cover_letter_en"] and pk["cover_letter_translated"].startswith("[AR draft]")
 assert pk["send_to"]["email"] == res["contacts"]["email"] and pk["send_to"]["phone"] == res["contacts"]["phone"]
 assert pk["notice_en"].startswith("This is a draft")
@@ -133,17 +139,17 @@ assert {f["source"] for f in pk["application_fields"]} == {"bill", "answers", "p
 page = main.packet(body)
 html = page.body.decode("utf-8")
 assert page.status_code == 200 and "<!doctype html>" in html and 'dir="rtl"' in html
-assert "CGH-00482913" in html and res["contacts"]["email"] in html and "page 2" in html
+assert "CGH-00482913" in html and res["contacts"]["email"] in html and "page 8" in html
 tax = main.packet(main.ResultIn(bill=B, answers=answers(files_tax_return=True),
                                 result=main.evaluate(main.EvaluateIn(bill=B, answers=answers(files_tax_return=True)))),
                   format="json")
-assert [c["id"] for c in tax["checklist"]] == ["proof_income", "tax_return", "bill_copy"]
+assert [c["id"] for c in tax["checklist"]] == _doc_ids("vumc", True)
 en_pk = main.packet(main.ResultIn(bill=B, answers=answers(language="en"), result=res), format="json")
 assert en_pk["cover_letter_translated"] == "" and not en_pk["translation_check"]["fallback_used"]
 
 # HTML escaping of user-edited fields
 evil = main.BillIn(**bill)
-evil.fields["hospital_name"].value = "<script>alert(1)</script>"
+evil.fields["hospital_name"].value = "Vanderbilt University Medical Center <script>alert(1)</script>"  # still names VUMC
 evil_html = main.packet(main.ResultIn(bill=evil, answers=answers(), result=res)).body.decode("utf-8")
 assert "<script>alert(1)" not in evil_html and "&lt;script&gt;" in evil_html
 
@@ -353,14 +359,44 @@ try:
 finally:
     oci_client._env, oci_client._genai_client = real_env, real_client
 
-# ---- B5: a bill from another hospital is flagged on the packet page
-van = main.BillIn(**bill)
-van.fields["hospital_name"].value = "Vanderbilt University Medical Center"
-res_van = main.evaluate(main.EvaluateIn(bill=van, answers=answers()))
-assert res_van["hospital_matches_policy"] is False and res["hospital_matches_policy"] is True
-van_html = main.packet(main.ResultIn(bill=van, answers=answers())).body.decode("utf-8")
-assert "names a different hospital" in van_html and "Cumberland General Hospital (SYNTHETIC) policy" in van_html
-assert "names a different hospital" not in main.packet(body).body.decode("utf-8")
+# ---- B5: a hospital with no policy gets the default result, no packet and no model call; banners follow the policy
+nopol = main.BillIn(**bill)
+nopol.fields["hospital_name"].value = "TriStar Centennial Medical Center"
+res_np = main.evaluate(main.EvaluateIn(bill=nopol, answers=answers()))
+assert res_np["hospital_matches_policy"] is False and res["hospital_matches_policy"] is True
+assert res_np["hospital_id"] == "vumc"                       # the default policy's result keeps the contract shape
+try:
+    main.packet(main.ResultIn(bill=nopol, answers=answers()))
+    raise AssertionError("packet made for a hospital with no policy")
+except HTTPException as e:
+    assert e.status_code == 422 and e.detail == "No application packet: this demo has no policy for this hospital.", e.detail
+expect_http(422, main.packet, main.ResultIn(bill=nopol, answers=answers(language="en")), format="json")
+_oci_calls = []
+real_phrase, real_tr = oci_client.phrase, oci_client.translate_many
+oci_client.phrase = lambda f, lang: _oci_calls.append("phrase") or f
+oci_client.translate_many = lambda texts, lang, keep=(): _oci_calls.append("translate") or list(texts)
+try:
+    for code in ("ar", "es", "da", "en"):
+        ex_np = main.explain(main.ResultIn(bill=nopol, answers=answers(language=code)))
+        assert ex_np["ai_written"] is False and ex_np["fallback_used"] is False and ex_np["numbers_match"] is True, code
+        assert ex_np["text"] == ex_np["text_en"] and "TriStar Centennial Medical Center" in ex_np["text_en"], code
+    assert _oci_calls == [], _oci_calls                      # no OCI call on the no-match path
+    main.explain(main.ResultIn(bill=B, answers=answers(language="es")))
+    assert _oci_calls == ["phrase"], _oci_calls              # the same call for a bill that has a policy does call it
+finally:
+    oci_client.phrase, oci_client.translate_many = real_phrase, real_tr
+real_html = main.packet(body).body.decode("utf-8")
+assert "DEMO - made from a SYNTHETIC bill" in real_html and "published policy" in real_html
+assert "SYNTHETIC DEMO. Fictional hospital" not in real_html and "names a different hospital" not in real_html
+cum = main.BillIn(**bill)
+cum.fields["hospital_name"].value = "Cumberland General Hospital (SYNTHETIC)"
+cum_res = main.evaluate(main.EvaluateIn(bill=cum, answers=answers()))
+assert cum_res["synthetic"] is True and res["synthetic"] is False
+cum_html = main.packet(main.ResultIn(bill=cum, answers=answers())).body.decode("utf-8")
+assert "SYNTHETIC DEMO. Fictional hospital and policy." in cum_html and "DEMO - made from" not in cum_html
+# the different-hospital banner still renders when a result says so (the packet route no longer reaches it)
+mismatch_html = main.render_packet_html(main.build_packet(B, answers(), res), dict(res, hospital_matches_policy=False), "en")
+assert "names a different hospital" in mismatch_html and "Vanderbilt University Medical Center policy" in mismatch_html
 
 # ---- B6: an upload under the cap stays in memory (Starlette's own parser, ~3 MB body)
 boundary = "bth-test-boundary"
@@ -541,14 +577,36 @@ try:
     main._counts["packets"] = 12
     st = main.stats()
     assert st["counts"]["photos_read"] == "<10" and st["counts"]["packets"] == 12, st["counts"]
-    assert set(st) == {"contract_version", "since", "counts", "languages", "rules", "rules_review_by"}, set(st)
+    assert set(st) == {"contract_version", "since", "counts", "languages", "rules", "policies", "rules_review_by"}, set(st)
     assert set(st["counts"]) == {"photos_read", "results_free_care", "results_discount", "results_not_eligible",
                                  "packets", "fallbacks", "household_views"}
     assert st["languages"] == {"ar": "<10"}, st["languages"]
     _dump = str(st)
     assert "CGH-" not in _dump and "4,812" not in _dump
     assert st["rules"] and all(set(r) == {"rule_en", "source", "page", "effective_date"} for r in st["rules"])
-    assert st["rules_review_by"] == "2027-01-13"
+    assert st["rules_review_by"] == "2026-12-01", st["rules_review_by"]      # the earliest review date of all policies
+    assert st["policies"] == [
+        {"hospital_id": "vumc", "hospital_name": "Vanderbilt University Medical Center", "rules_review_by": "2027-01-01"},
+        {"hospital_id": "ascension_saint_thomas", "hospital_name": "Ascension Saint Thomas", "rules_review_by": "2026-12-01"},
+        {"hospital_id": "cumberland_synthetic", "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
+         "rules_review_by": "2027-01-13"}], st["policies"]
+    # the rules list is still the default (VUMC) policy's: tiers, window, coverage, documents
+    _vumc = main._rules()[1]["vumc"]
+    assert [r["rule_en"] for r in st["rules"][:3]] == [t["label_en"] for t in _vumc["tiers"]]
+    assert st["rules"][3]["rule_en"] == "Apply within 240 days of the first billing statement"
+    assert st["rules"][4]["rule_en"] == _vumc["coverage_period"]["text_en"] and st["rules"][4]["page"] == 4
+    assert len(st["rules"]) == 3 + 1 + 1 + len(_vumc["documents"]) and st["rules"][-1]["rule_en"].startswith("Document: ")
+    # a policy with no coverage_period (Ascension) gives its note and the window citation
+    _ast = main._rules()[1]["ascension_saint_thomas"]
+    _real_rules = main._rules
+    main._rules = lambda: (_real_rules()[0], {"vumc": _ast}, _real_rules()[2])
+    try:
+        _st_ast = main.stats()
+    finally:
+        main._rules = _real_rules
+    _cov_rule = _st_ast["rules"][len(_ast["tiers"]) + 1]                # tiers, then the window, then coverage
+    assert _cov_rule["rule_en"] == _ast["coverage_note_en"], [r["rule_en"] for r in _st_ast["rules"]]
+    assert _cov_rule["page"] == _ast["application_window"]["citation"]["page"]
 finally:
     main._counts.clear()
     main._counts.update(_saved_counts)
@@ -573,7 +631,11 @@ assert main.household(main.HouseholdIn(answers=_HA))["bills"][0]["source"] == "d
 _hbill["fields"]["account_number"]["value"] = "CGH-00999999"
 h2 = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_hbill)))
 assert len(h2["bills"]) == 6 and h2["bills"][-1]["source"] == "yours" and h2["bills"][-1]["id"] == "yours"
-assert h2["estimate_cents"] == 883765 + 481240, h2["estimate_cents"]
+# a Cumberland-named bill is another hospital's bill under the VUMC household: listed, not counted
+assert h2["bills"][-1]["hospital_matches_policy"] is False and h2["estimate_cents"] == 883765, h2["estimate_cents"]
+_hbill["fields"]["hospital_name"]["value"] = "Vanderbilt University Medical Center (SYNTHETIC)"
+h2b = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_hbill)))
+assert h2b["bills"][-1]["hospital_matches_policy"] is True and h2b["estimate_cents"] == 883765 + 481240, h2b["estimate_cents"]
 
 h3 = main.household(main.HouseholdIn(answers=answers(language="en", annual_income_cents=20000000)))
 assert h3["eligible"] is False and h3["estimate_cents"] == 0
@@ -699,15 +761,15 @@ main.evaluate(main.EvaluateIn(bill=main.BillIn(**nodate), answers=answers()))
 
 # ---- fix 6: a not-eligible household gets no "Apply by" anywhere on the server side
 facts_rich = main._facts_en(B, rich, res2)
-assert facts_rich.splitlines()[2] == "Not eligible under this policy - payment plan available.", facts_rich
+assert facts_rich.splitlines()[2] == "Not eligible for the income tiers - catastrophic assistance may apply.", facts_rich
 assert "Apply" not in facts_rich and "2027" not in facts_rich
 assert "2027-05-29" in main._facts_en(B, answers(), res)             # eligible families still get the deadline
 ex_rich_en = main.explain(main.ResultIn(bill=B, answers=answers(language="en", annual_income_cents=13200100)))
-assert "Apply" not in ex_rich_en["text"] and "payment plan" in ex_rich_en["text"]
+assert "Apply" not in ex_rich_en["text"] and "catastrophic assistance" in ex_rich_en["text"]
 assert h3["one_application_covers_all"] is False and h3["eligible"] is False
 
 # ---- fix 8: another hospital's bill is listed but not counted
-_van_bill = confirm_all(main.normalize_bill({"hospital_name": "Vanderbilt University Medical Center",
+_van_bill = confirm_all(main.normalize_bill({"hospital_name": "TriStar Centennial Medical Center",
                                              "statement_date": "2026-10-01", "account_number": "VUMC-1",
                                              "amount_due": "50000", "date_of_service": "2026-09-12",
                                              "insurance_status": "self-pay"}))
@@ -730,7 +792,11 @@ h9 = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_mine)))
 assert len(h9["bills"]) == 5 and h9["bills"][0]["id"] == "bill-01" and h9["bills"][0]["source"] == "yours"
 assert h9["bills"][0]["amount_due_cents"] == 111 and h9["bills"][0]["statement_date"] == "2026-10-02", h9["bills"][0]
 assert h9["bills"][0]["label_en"] == h0["bills"][0]["label_en"]
-assert h9["estimate_cents"] == 883765 - 481240 + 111
+assert h9["bills"][0]["hospital_matches_policy"] is False                        # Cumberland name: another hospital's bill
+assert h9["estimate_cents"] == 883765 - 481240, h9["estimate_cents"]            # listed, not counted
+_mine["fields"]["hospital_name"]["value"] = "Vanderbilt University Medical Center (SYNTHETIC)"
+h9b = main.household(main.HouseholdIn(answers=_HA, bill=main.BillIn(**_mine)))
+assert h9b["bills"][0]["hospital_matches_policy"] is True and h9b["estimate_cents"] == 883765 - 481240 + 111
 assert main.household(main.HouseholdIn(answers=_HA))["bills"][0]["amount_due_cents"] == 481240   # demo cache untouched
 
 # ---- fix 14: the letter says "about" because the percent is floored
@@ -744,10 +810,9 @@ assert res_nameless["hospital_matches_policy"] is None
 assert "names a different hospital" not in main.packet(
     main.ResultIn(bill=main.BillIn(**_nameless), answers=answers())).body.decode("utf-8")
 _not = copy.deepcopy(bill)
-_not["fields"]["hospital_name"]["value"] = "NOT Cumberland General Hospital"
+_not["fields"]["hospital_name"]["value"] = "NOT Vanderbilt University Medical Center"
 assert main.evaluate(main.EvaluateIn(bill=main.BillIn(**_not), answers=answers()))["hospital_matches_policy"] is False
-assert "names a different hospital" in main.packet(
-    main.ResultIn(bill=main.BillIn(**_not), answers=answers())).body.decode("utf-8")
+expect_http(422, main.packet, main.ResultIn(bill=main.BillIn(**_not), answers=answers()))   # no policy for that name: no packet
 
 # ---- fix 22: rate-limit window expiry and the global hourly cap (clock replaced by a fake)
 _clock = [1000.0]
@@ -861,6 +926,96 @@ try:
 finally:
     main._counts.clear()
     main._counts.update(_saved_counts)
+
+# ---- real policies (plan v2 S1): the bill's hospital name picks the policy
+from html import escape as html_escape  # noqa: E402
+POLS = main._rules()[1]
+assert list(POLS) == ["vumc", "ascension_saint_thomas", "cumberland_synthetic"] and main.DEFAULT_POLICY_ID == "vumc"
+assert len(main._rules()) == 3 and main._rules()[1] is POLS                      # _rules() takes no argument, is cached
+
+
+def named(name):
+    b = copy.deepcopy(bill)
+    b["fields"]["hospital_name"]["value"] = name
+    return main.BillIn(**b)
+
+
+VB = named("Vanderbilt University Medical Center (SYNTHETIC)")
+AB = named("Ascension Saint Thomas West (SYNTHETIC)")
+CB = named("Cumberland General Hospital (SYNTHETIC)")
+rv = main.evaluate(main.EvaluateIn(bill=VB, answers=answers(language="en")))
+ra = main.evaluate(main.EvaluateIn(bill=AB, answers=answers(language="en")))
+rc = main.evaluate(main.EvaluateIn(bill=CB, answers=answers(language="en")))
+assert (rv["hospital_id"], ra["hospital_id"], rc["hospital_id"]) == ("vumc", "ascension_saint_thomas", "cumberland_synthetic")
+assert rv["hospital_matches_policy"] is ra["hospital_matches_policy"] is rc["hospital_matches_policy"] is True
+assert (rv["synthetic"], ra["synthetic"], rc["synthetic"]) == (False, False, True)
+assert rv["conditions"] == POLS["vumc"]["conditions"] and ra["conditions"] == POLS["ascension_saint_thomas"]["conditions"]
+assert rc["conditions"] == [] and rv["conditions"] and ra["conditions"]
+# excluded hospitals and unknown names: the default policy's result, matched False
+for excluded in ("Vanderbilt Clarksville Hospital (SYNTHETIC)", "Ascension Saint Thomas Behavioral Health Hospital",
+                 "Ascension Saint Thomas Rehabilitation Hospital", "TriStar Centennial Medical Center"):
+    rx = main.evaluate(main.EvaluateIn(bill=named(excluded), answers=answers(language="en")))
+    assert rx["hospital_id"] == "vumc" and rx["hospital_matches_policy"] is False, excluded
+    expect_http(422, main.packet, main.ResultIn(bill=named(excluded), answers=answers(language="en")))
+# a nameless bill is unknown (None): the default policy, and its packet still works
+rn = main.evaluate(main.EvaluateIn(bill=named(None), answers=answers(language="en")))
+assert rn["hospital_id"] == "vumc" and rn["hospital_matches_policy"] is None
+
+# ineligible with another route: result carries it, facts say so, packet is still refused with the old message
+rich_v = answers(language="en", annual_income_cents=13200100)                    # 400% of the guideline: above VUMC's 350%
+rv2 = main.evaluate(main.EvaluateIn(bill=VB, answers=rich_v))
+assert rv2["tier"]["id"] == "not_eligible" and "Catastrophic" in rv2["tier"]["other_route_en"]
+try:
+    main.packet(main.ResultIn(bill=VB, answers=rich_v))
+    raise AssertionError("packet made for an ineligible family")
+except HTTPException as e:
+    assert e.status_code == 422 and e.detail == "No application packet: not eligible under this policy. Use the payment-plan contact.", e.detail
+rich_a = answers(language="en", annual_income_cents=13200100 * 2)                # above Ascension's 400% too
+ra2 = main.evaluate(main.EvaluateIn(bill=AB, answers=rich_a))
+assert ra2["tier"]["id"] == "not_eligible" and "Means Test" in ra2["tier"]["other_route_en"]
+assert "other_route_en" not in rc["tier"]
+
+# packet HTML: conditions list, the hospital's form as a link, banners, no empty email line
+vp = main.packet(main.ResultIn(bill=VB, answers=answers(language="en"))).body.decode("utf-8")
+form = POLS["vumc"]["documents"][0]
+assert form["id"] == "hospital_form" and form["url"].startswith("https://")
+assert '<a href="%s" rel="noopener">%s</a>' % (form["url"], form["url"]) in vp
+assert html_escape(form["label_en"]) + ' <a href=' in vp                            # the label first, then the link
+assert "<h2>The hospital also checks</h2>" in vp and vp.index("Documents to include") < vp.index("The hospital also checks") \
+    < vp.index("Cover letter")
+for c in POLS["vumc"]["conditions"]:
+    assert html_escape(c["text_en"]) in vp, c["text_en"]
+_vc = POLS["vumc"]["contacts"]
+assert "DEMO - made from a SYNTHETIC bill" in vp and "Email: %s<br>Phone: %s" % (_vc["email"], _vc["phone"]) in vp
+_ac = POLS["ascension_saint_thomas"]["contacts"]
+ap = main.packet(main.ResultIn(bill=AB, answers=answers(language="en"))).body.decode("utf-8")
+assert "DEMO - made from a SYNTHETIC bill" in ap and "Email" not in ap and "Phone: " + _ac["phone"] in ap and "None" not in ap
+assert "The hospital also checks" in ap
+cp = main.packet(main.ResultIn(bill=CB, answers=answers(language="en"))).body.decode("utf-8")
+assert "The hospital also checks" not in cp and "SYNTHETIC DEMO. Fictional hospital and policy." in cp
+assert main.packet(main.ResultIn(bill=AB, answers=answers(language="en")), format="json")["send_to"]["email"] is None
+# a document url that is not plain text is escaped
+_evil_doc = dict(rv, documents=[dict(rv["documents"][0], url='https://x.test/?a=1&b="2"')])
+_pk = main.build_packet(VB, answers(language="en"), _evil_doc)
+_h = main.render_packet_html(_pk, _evil_doc, "en")
+assert 'href="https://x.test/?a=1&amp;b=&quot;2&quot;"' in _h and 'b="2"' not in _h
+
+# /household: conditions and synthetic ride along; the household is always the default (VUMC) policy
+hh = main.household(main.HouseholdIn(answers=answers(language="en")))
+assert hh["conditions"] == POLS["vumc"]["conditions"] and hh["synthetic"] is False
+assert hh["coverage"]["text_en"] == POLS["vumc"]["coverage_period"]["text_en"] and hh["one_application_covers_all"] is True
+hh2 = main.household(main.HouseholdIn(answers=rich_v))
+assert hh2["eligible"] is False and hh2["tier"]["other_route_en"]
+assert hh2["estimate_text_en"] == "Not eligible for the income tiers. The hospital may still help another way; ask the hospital."
+_ab = confirm_all(main.normalize_bill({"hospital_name": "Ascension Saint Thomas West (SYNTHETIC)",
+                                       "statement_date": "2026-10-01", "account_number": "AST-1", "amount_due": "700",
+                                       "date_of_service": "2026-09-12", "insurance_status": "self-pay"}))
+hh3 = main.household(main.HouseholdIn(answers=answers(language="en"), bill=main.BillIn(**_ab)))
+assert hh3["bills"][-1]["hospital_matches_policy"] is False and hh3["estimate_cents"] == 883765   # listed, not counted
+
+# the AI explanation: a bill with a policy still goes to the model; its facts carry the matched policy's wording
+exa = main.explain(main.ResultIn(bill=AB, answers=answers(language="es")))
+assert exa["ai_written"] is True and "100% charity care" in exa["text_en"], exa["text_en"]
 
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)

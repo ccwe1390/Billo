@@ -31,7 +31,9 @@ log = logging.getLogger("bill_to_help")
 
 CONTRACT_VERSION = 1
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-POLICY_PATH = os.path.join(BASE_DIR, "data", "policy_cumberland_synthetic.json")
+POLICY_FILES = tuple(os.path.join(BASE_DIR, "data", n) for n in (
+    "policy_vumc.json", "policy_ascension_saint_thomas.json", "policy_cumberland_synthetic.json"))
+DEFAULT_POLICY_ID = "vumc"  # the household view and a bill that names no known hospital use this policy
 FPL_PATH = os.path.join(BASE_DIR, "data", "fpl_2026.json")
 LANGUAGES_PATH = os.path.join(BASE_DIR, "data", "languages.json")
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
@@ -218,7 +220,11 @@ class ResultIn(EvaluateIn):
 @functools.lru_cache(maxsize=1)
 def _rules():
     from app import engine  # imported lazily so the UI still serves if the engine is missing
-    return engine, engine.load_policy(POLICY_PATH), engine.load_fpl(FPL_PATH)
+    policies = {}
+    for path in POLICY_FILES:
+        policy = engine.load_policy(path)
+        policies[policy["hospital_id"]] = policy
+    return engine, policies, engine.load_fpl(FPL_PATH)
 
 
 # ---------------------------------------------------------------- /extract
@@ -326,7 +332,8 @@ async def extract(file: UploadFile):
 # ---------------------------------------------------------------- /evaluate
 
 def _evaluate(body):
-    engine, policy, fpl = _rules()
+    engine, policies, fpl = _rules()
+    policy, _matched = engine.select_policy(_val(body.bill, "hospital_name"), policies, DEFAULT_POLICY_ID)
     try:
         return engine.evaluate(body.bill.model_dump(), body.answers.model_dump(), policy, fpl)
     except ValueError as e:
@@ -395,7 +402,7 @@ def explain(body: ResultIn):
     facts = _facts_en(body.bill, body.answers, result)
     out = {"contract_version": CONTRACT_VERSION, "language": lang, "text_en": facts,
            "text": facts, "numbers_match": True, "fallback_used": False, "ai_written": False}
-    if lang == "en":
+    if lang == "en" or result["hospital_matches_policy"] is False:  # no policy for this hospital: English facts, no model call
         return out
     required = numlock.extract_numbers(facts)  # the translation must show these; locked numbers may also appear
     try:
@@ -447,6 +454,8 @@ def _letter_en(bill, answers, result):
 
 def build_packet(bill, answers, result):
     """EngineResult + BillFields + HouseholdAnswers -> Packet (docs/contracts.md shape 4)."""
+    if result["hospital_matches_policy"] is False:
+        raise HTTPException(422, "No application packet: this demo has no policy for this hospital.")
     if not result["tier"]["eligible"]:
         raise HTTPException(422, "No application packet: not eligible under this policy. Use the payment-plan contact.")
     lang = answers.language
@@ -547,7 +556,10 @@ def render_packet_html(packet, result, lang):
     items = []
     for doc, c in zip(r["documents"], p["checklist"]):
         tr = '<div dir="%s" lang="%s">%s</div>' % (d, lang, _E(c["label_translated"])) if c["label_translated"] else ""
-        items.append('<li><span class="box"></span>%s%s%s</li>' % (_E(c["label_en"]), tr, _cite(doc.get("citation"))))
+        link = (' <a href="%s" rel="noopener">%s</a>' % (_E(doc["url"]), _E(doc["url"]))) if doc.get("url") else ""
+        items.append('<li><span class="box"></span>%s%s%s%s</li>' % (_E(c["label_en"]), link, tr, _cite(doc.get("citation"))))
+    checks = "".join("<li>%s%s</li>" % (_E(c["text_en"]), _cite(c.get("citation"))) for c in r.get("conditions") or [])
+    checks = "<h2>The hospital also checks</h2><ul>%s</ul>" % checks if checks else ""
     tr_block = ""
     if lang != "en":
         if p["cover_letter_translated"]:
@@ -556,8 +568,12 @@ def render_packet_html(packet, result, lang):
             tr_block = "<div>Translation not available or it failed the number check. Use the English letter.</div>"
     cols = '<div class="cols"><div>%s</div>%s</div>' % (_E(p["cover_letter_en"]), tr_block)
     send = p["send_to"]
-    synth = ('<div class="banner">SYNTHETIC DEMO. Fictional hospital and policy. Not a real application.</div>'
-             if r.get("hospital_id", "").endswith("synthetic") else "")
+    email_line = "Email: %s<br>" % _E(send["email"]) if send.get("email") else ""  # no email on file: no line
+    if r.get("synthetic"):
+        synth = '<div class="banner">SYNTHETIC DEMO. Fictional hospital and policy. Not a real application.</div>'
+    else:
+        synth = ('<div class="banner">DEMO - made from a SYNTHETIC bill. Policy terms are quoted from the hospital\'s '
+                 "published policy (see citations). Do not send this packet; apply on the hospital's own form.</div>")
     if r.get("hospital_matches_policy") is False:
         synth += ('<div class="banner">This bill names a different hospital. This estimate uses the %s policy, '
                   "not that hospital's policy.</div>" % _E(r["policy_hospital_name"]))
@@ -567,11 +583,11 @@ def render_packet_html(packet, result, lang):
         "<style>%s</style></head><body>%s<main><h1>Financial assistance packet</h1>"
         "<p>%s</p><h2>Estimate</h2><p>%s. Income is about %d%% of the %d poverty guideline.</p>%s"
         "<p>%s</p>%s<h2>Application fields</h2><table>%s</table>"
-        "<h2>Documents to include</h2><ul>%s</ul><h2>Cover letter</h2>%s"
-        "<h2>Where to send it</h2><p>Email: %s<br>Phone: %s</p>%s</main></body></html>"
+        "<h2>Documents to include</h2><ul>%s</ul>%s<h2>Cover letter</h2>%s"
+        "<h2>Where to send it</h2><p>%sPhone: %s</p>%s</main></body></html>"
     ) % (_PACKET_CSS, synth, _E(p["notice_en"]), _E(r["tier"]["label_en"]), r["percent_of_fpl"], r["fpl"]["year"],
          _cite(r["tier"].get("citation")), _E(r["deadline"]["text_en"]), _cite(r["deadline"].get("citation")),
-         rows, "".join(items), cols, _E(send["email"]), _E(send["phone"]), _cite(send.get("citation")))
+         rows, "".join(items), checks, cols, email_line, _E(send["phone"]), _cite(send.get("citation")))
 
 
 @app.post("/packet", dependencies=[Depends(_rate_limit)])
@@ -598,7 +614,8 @@ def _demo_bills():
 
 @app.post("/household")
 def household(body: HouseholdIn):
-    engine, policy, fpl = _rules()
+    engine, policies, fpl = _rules()
+    policy = policies[DEFAULT_POLICY_ID]  # the household is the demo bills' (VUMC) household; other hospitals' bills are listed, not counted
     bills = [dict(b) for b in _demo_bills()]
     if body.bill is not None:
         fields = body.bill.model_dump()["fields"]
@@ -634,7 +651,8 @@ def _rule(text, citation):
 
 @app.get("/stats")
 def stats():
-    _engine, policy, _fpl = _rules()
+    engine, policies, _fpl = _rules()
+    policy = policies[DEFAULT_POLICY_ID]
     with _counts_lock:
         counts = {k: _shown(_counts[k]) for k in _STAT_KEYS}
         languages = {code: _shown(n) for code, n in sorted(_langs.items())}
@@ -642,10 +660,14 @@ def stats():
     win = policy["application_window"]
     rules.append(_rule("Apply within %d days of the first billing statement" % win["days_from_statement"],
                        win["citation"]))
-    rules.append(_rule(policy["coverage_period"]["text_en"], policy["coverage_period"]["citation"]))
+    cov = engine.coverage_of(policy)
+    rules.append(_rule(cov["text_en"], cov["citation"]))
     rules.extend(_rule("Document: " + d["label_en"], d["citation"]) for d in policy["documents"])
     return {"contract_version": CONTRACT_VERSION, "since": _since, "counts": counts, "languages": languages,
-            "rules": rules, "rules_review_by": policy["rules_review_by"]}
+            "rules": rules,
+            "policies": [{"hospital_id": p["hospital_id"], "hospital_name": p["hospital_name"],
+                          "rules_review_by": p["rules_review_by"]} for p in policies.values()],
+            "rules_review_by": min(p["rules_review_by"] for p in policies.values())}
 
 
 # ---------------------------------------------------------------- static UI (must be mounted last)

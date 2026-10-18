@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 00:13 CDT** - this file is the only live
+**Last updated: 2026-10-18 00:37 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-AQ).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -72,6 +72,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AQ).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## F10 STATUS (19:43 CDT) - read this first
+- **00:37 CDT (record AS):** audit 3 done, docs/2026-10-18_audit-3.md - 4 highs (Result screen "Apply by" for ineligible; deploy check passes broken releases; presenter sheet says 11 languages; this file's older lines below are stale: live is 5af2f1f, rollback target c30be63). Fixes await Evan (report section 7).
 - **00:13 CDT (record AR) - READ FIRST:** LIVE = 5af2f1f on http + https (deployed by Evan 00:07; backup-before-5af2f1f.tar; rollback target c30be63). Live checks pass (es/he/th journey, extract, packets, app.js matches f10). origin/f10 = 5a7fd84; local main = 5af2f1f (not pushed; origin/main ff7a539). NEW: Result screen still shows "Apply by" to ineligible families (app.js:741) - not fixed. Cold assessments done: docs/research/2026-10-18_cold-assessments.md; pitch sheet 00:13 update says do NOT say $7B/$14B; policies brief has 3 factual errors not yet corrected.
 - **23:56 CDT (record AO; corrected 00:01):** a second session was still pushing f10 at the same time (origin/f10 reached 3da0602 by 00:01), so "not pushed" in AO was true only at 23:51; live still c30be63; deploy needs no push (deploy.ps1 archives app/ locally). tfState file appears gone from Downloads (Evan to confirm). New public PDFs in docs/ (VUMC CON CN2510-038, Dollar For "Bridging the Chasm", Oregon OHA prescreening summary), untracked, unread. Research: stats brief (b7f43ae), money-2 merge and other-systems (3da0602) saved by that session; mtn-census report + compiled census brief (268d9c7); cold assessment not done.
 - **00:04 CDT (record AQ):** f10 = 3da0602 on origin (f10 and ui-max) plus later docs commits; final landing check SAFE TO PUSH, all 6 test files ALL PASS. Research complete: docs/research/2026-10-18_middle-tn-hospital-policies.md (13 hospitals = 76.7% of Middle TN licensed beds, on 7 policies; compiled from 5 raw reports, NOT cold-assessed, sources not re-fetched by the orchestrator). Deploy scripts in deploy/.

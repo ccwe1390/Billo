@@ -78,6 +78,7 @@ the dated entry, not the digest.
 - [AP - F11 decisions: push reminders dropped, nickname and F11.8 kept, not started](#appendix-ap---f11-decisions-push-reminders-dropped-nickname-and-f118-kept-not-started-2026-10-17-2359-cdt) (10-17)
 - [AQ - All research in, hospital census brief, final landing check](#appendix-aq---all-research-in-hospital-census-brief-final-landing-check-2026-10-18-0004-cdt) (10-18)
 - [AR - Deploy 5af2f1f verified live, f10 pushed, main moved, cold assessments of 4 briefs](#appendix-ar---deploy-5af2f1f-verified-live-f10-pushed-main-moved-cold-assessments-of-4-briefs-2026-10-18-0013-cdt) (10-18)
+- [AS - Audit 3 (whole project, 2 workers): 4 highs on the Result screen, deploy check, presenter sheet, HANDOFF](#appendix-as---audit-3-whole-project-2-workers-4-highs-on-the-result-screen-deploy-check-presenter-sheet-handoff-2026-10-18-0037-cdt) (10-18)
 
 ---
 
@@ -1630,3 +1631,16 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **Git:** f10 pushed (origin/f10 3da0602 -> 5a7fd84). Local main fast-forwarded c30be63 -> 5af2f1f (via a temporary tag and git fetch ., because the auto-mode classifier refused git branch -f); main NOT pushed (origin/main ff7a539).
 
 **Cold assessments (stage 10.5):** 4 fresh agents, read-only, one per brief; saved condensed as docs/research/2026-10-18_cold-assessments.md, with a pointer in each brief. Biggest: stats - $7B/$14B is built on KFF's $2.7B, so neither is independent (DO-NOT-SAY); sustainability - 0.7% is "on average", not per hospital; policies - "same county" false, 5 not 4 hospitals outside 501(r), VUMC 120 days is "encouraged" not a contradiction, HCA 4% cap emergency only; features - Messac uses Dollar For data, case against nickname/Q&A is opinion/weak. Orchestrator re-read the policies brief lines on disk and confirmed two of its errors. Pitch sheet got a dated 00:13 numbers update. Brief texts themselves not corrected yet (the one allowed collection round awaits Evan).
+
+# Appendix AS - Audit 3 (whole project, 2 workers): 4 highs on the Result screen, deploy check, presenter sheet, HANDOFF (2026-10-18, ~00:37 CDT)
+**When:** 2026-10-18 00:13-00:37 CDT. Evan ran /audit (whole project); he capped agents at 2 mid-launch, so 2 cold Sonnet workers (code; docs + cross-domain) plus session-model checks. Report: docs/2026-10-18_audit-3.md. The findings pass changed no code.
+
+**Headline:** 4 high, 12 med, 21 low, 7 edge cases, 3 policy questions (A1 number lock is set-based; A2 "nothing is stored" vs the Apache access log; A3 presenter sheet rewrite vs banners). Highs, all reproduced by the session model: (1) the Result screen shows "Apply by" to ineligible families (app.js:741/767); (2) deploy-remote.sh prints DEPLOYED for a release whose engine does not parse (lazy import, echo of systemctl status cannot trip set -e); (3) the presenter sheet says live has 11 languages and calls live features not built; (4) HANDOFF still describes pre-00:07 state (rollback target cc3c333, 32 languages "not deployed") and gives two opposite instructions about the presenter sheet.
+
+**Clean (verified two ways):** 6/6 test files pass; no secrets in 77 commits; licences match NOTICE; contract example reproduces exactly; caps exact; no XSS sink or path traversal; i18n parity clean; record structure intact (A-AR).
+
+**Session checks:** VM access log (combined format, 628 lines, keeps IP/time/URL/UA); untracked phone-photo-bill-02.png is not a faithful photo (table rows offset one row, no camera metadata).
+
+**Cost:** 2 workers, 160 tool calls, ~641K subagent tokens, ~23 min.
+
+**Open:** every fix awaits Evan's approval (fix order in the report, section 7).

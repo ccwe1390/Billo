@@ -11,7 +11,7 @@ import json
 import os
 import re
 
-from app import numlock
+from app import eob_prompt, numlock
 
 GENAI_ENDPOINT = "https://inference.generativeai.us-chicago-1.oci.oraclecloud.com"
 
@@ -121,6 +121,41 @@ def extract_bill(image_bytes, mime):
         m.CohereTextContentV2(text=EXTRACT_PROMPT),
         m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)),
     ], json_mode=True, max_tokens=1500)  # the line items need more room than the six fields did
+    data = parse_json_object(text)
+    if not isinstance(data, dict):
+        raise ValueError("model did not return a JSON object")
+    return data
+
+
+def extract_eob(image_bytes, mime, date_of_service):
+    """Insurer's explanation-of-benefits image -> the model's raw JSON as a dict (keys per eob_prompt)."""
+    if is_fake():
+        # The fields printed on spikes/synthetic-eob/eob-06.
+        return {
+            "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+            "provider_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+            "date_of_service": "09/12/2026",
+            "claim_number": "CLM-SYN-0612",
+            "claim_status": "paid",
+            "amount_billed": 4437.40,
+            "plan_discount": 2237.40,
+            "plan_paid": 2000.00,
+            "patient_owes": 200.00,
+            "denial_reason": None,
+            "appeal_deadline": None,
+            "insurer_phone": "(800) 555-0150",
+            "service_lines": [
+                {"date": "09/12/2026", "description": "ER VISIT LVL 5", "amount_billed": 2640.00, "patient_owes": 200.00},
+                {"date": "09/12/2026", "description": "CT HEAD W/O CONTRAST", "amount_billed": 1385.00, "patient_owes": 0},
+                {"date": "09/12/2026", "description": "COMPREHENSIVE METABOLIC PANEL", "amount_billed": 412.40, "patient_owes": 0},
+            ],
+        }
+    from oci.generative_ai_inference import models as m
+    uri = "data:%s;base64,%s" % (mime, base64.b64encode(image_bytes).decode("ascii"))
+    text = _chat(_env("OCI_VISION_MODEL_ID"), [
+        m.CohereTextContentV2(text=eob_prompt.build(date_of_service)),
+        m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)),
+    ], json_mode=True, max_tokens=1500)
     data = parse_json_object(text)
     if not isinstance(data, dict):
         raise ValueError("model did not return a JSON object")

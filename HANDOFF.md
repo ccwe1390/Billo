@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 23:32 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AL).
+**Last updated: 2026-10-17 23:42 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AM).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -72,6 +72,14 @@ snapshot; history lives in the record (Phase 0, Appendices A-AL).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## F10 STATUS (19:43 CDT) - read this first
+- **23:42 CDT SNAPSHOT (read first):** live = c30be63 (unchanged since 19:41).
+  f10 = the audit-2 fixes + 32 languages + docs (commit 5af2f1f is the code;
+  later commits are docs/research only), pushed, NOT deployed. Evan deploys
+  with `deploy.ps1 -Commit 5af2f1f` (or the f10 head) and the live checks run
+  after (he/th/es journey, /household ineligible, journal). Research in
+  docs/research/ (record AM): sustainability brief saved (partial + merge 1);
+  stats, features and Middle-TN hospital-policy research were still running
+  in the 23:3x session - re-run if their files are missing.
 - **LIVE: c30be63 (main) on http AND https://207.211.181.174/** (record AH).
   F10 (Home, coverage rule, reminders + .ics, QR chip + Start QR,
   dashboard /dashboard.html), R1-R3 (R1 parallel Hindi, R2 20-household answer key, R3 photo downscaling) and the UI port (record AF: Dipayan's
@@ -146,39 +154,47 @@ snapshot; history lives in the record (Phase 0, Appendices A-AL).
 ## Handoff prompt
 
 ```
-Project: TNHacks26 (folder C:\ClaudeCode\TNHacks27). Read in order:
-HANDOFF.md, .claude/project-memory/important.md, PRD_ROADMAP.md (CURRENT
-DIRECTION fork + F9 amendments), then the record's last 3 appendices and
-.claude/project-memory/operations.md (VM details).
+Project: TNHacks26 "BillScan" (folder C:\ClaudeCode\TNHacks27, branch f10,
+remote github.com/Evan-Daruwalla/TNHacks26). Read in order: HANDOFF.md (the
+23:42 snapshot under F10 STATUS first), .claude/project-memory/important.md,
+the record's last 4 appendices (AJ-AM in docs/Project Record - Full
+Chronological History.md), docs/2026-10-17_audit-2.md ("Status after
+fixes"), PRD_ROADMAP.md F10 + F11 (DRAFT).
 
-State (2026-10-17 19:31 CDT): "BillScan" (formerly Bill to Help) - bill photo -> hospital
-financial-assistance packet. Live: 11 languages (tier 1 en/es/ar/
-zh-CN/zh-TW). On f10, not deployed: 32 languages with a dropdown (record AI). Python FastAPI + plain HTML/JS. LIVE with real OCI at
-http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
-instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
-gate passed (rendered blur-3 PNG -> cited result -> Spanish packet, 9.7 s gate run; 11.8 s re-run).
-6 test files ALL PASS (5 py + node tests/test_app_js.js). SSH: ssh -i C:\Users\daruw\.ssh\HackTN26.pem
-opc@207.211.181.174. UI on main/live and f10:
-Dipayan's design system ported (record AF; light/dark, Atkinson
-Hyperlegible, no Web Awesome); policy table with your row highlighted and
-footnoted citations kept. Record is
-current through Appendix AL. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
-(T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
-open). Translated letters keep the hospital name verbatim (protected like
-numbers, Hindi included since the audit fixes) and fall back to English if
-it is lost. Live since 19:41: c30be63 (F10 + UI port), http and https (record AH).
+State (2026-10-17 23:42 CDT): bill photo -> OCI vision read -> rules engine
+(synthetic Cumberland General policy) -> explanation + application packet.
+LIVE http+https://207.211.181.174/ = c30be63 (11 languages, F10, UI port).
+On f10, pushed, NOT deployed: 32 languages (31 Oracle Translate codes + hi,
+dropdown, 27 machine-translated files with 72 meaning-flipped strings left in
+English and an English line under safety text) and the audit-2 fixes (global
+cap 600 paid calls/hour + 60/min per IP, list/dict field values refused,
+ineligible families not told to apply, other-hospital bills excluded with a
+warning, submit/language races fixed, 413 before spooling, .ics folding,
+tests incl. node tests/test_app_js.js). 6 test files ALL PASS.
 
-Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT (schedule file is
-ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
-OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
-told; no Co-Authored-By lines.
+Hard constraints: hacking ends Sun 2026-10-18 1:00 PM CDT. Synthetic data
+only; no diagnosis; OCI only; $500 credits, $0 beyond. Commit only when
+asked; push only when told; no Co-Authored-By lines. Claude cannot restart
+the live server (auto-mode refuses): Evan runs deploy.ps1 in PowerShell 5.1
+(scripts in %TEMP%\claude\C--ClaudeCode-TNHacks2768dbcb1-...\scratchpad\deploy- copy them into the repo or a safe folder first; they may be cleaned up).
+Never re-apply the starter-kit Terraform stack. Never put real patient data
+anywhere.
 
-Next, in order: (0) deploy the 32-language f10 head (Evan: deploy.ps1
--Commit <f10 head>; Claude: live journey incl. a he and a th check), then
-Evan's phone checks (photo upload, https padlock, QR on bill-02, dropdown);
-feature freeze ~23:00;
-(1) presenters adopt docs/2026-10-17_pitch-corrections.md;
-(2) pre-mortem T1/T3/T8 (Evan: organizers, phone test, budget alert); V1
-done (record AC); (3) fluent review of es/ar/zh strings
-(TODO-REVIEW in app.js); feature freeze ~23:00 Sat.
+Next, in order:
+(0) Evan: delete the Downloads tfState file (holds the VM key); deploy
+    5af2f1f (or the f10 head) with deploy.ps1; then Claude runs the live
+    checks (es/he/th journey on http+https, /household ineligible -> no
+    "Apply by", journal clean) and moves main to the deployed commit.
+(1) Phone checks: photo upload, https padlock, QR on bill-02, language
+    dropdown, light/dark.
+(2) Research: if docs/research/ lacks the stats, features and Middle-TN
+    hospital-policy briefs, re-run them (record AM lists the scope); finish
+    the sustainability brief's regulation section (CFPB rule status, CMS
+    price transparency, state screening laws, TN statutes) and its cold
+    assessment.
+(3) Presenters: use docs/2026-10-17_pitch-corrections.md only with its
+    20:52 banner; live features: Home with 5 bills, reminders, QR,
+    dashboard. Budget alert (Evan) still unconfirmed.
+(4) Later: audit-2 leftovers #3, #4, #12 (number-lock design), #16
+    (threadpool), #32, #33; native-speaker review of translations; F11.
 ```

@@ -802,13 +802,16 @@ assert main.household(main.HouseholdIn(answers=_HA))["bills"][0]["amount_due_cen
 # ---- fix 14: the letter says "about" because the percent is floored
 assert "this is about 115% of the 2026 federal poverty guideline" in main._letter_en(B, answers(), res)
 
-# ---- fix 24: no hospital name is unknown (no warning); the name must start with the policy name
+# ---- fix 24: no hospital name is a no-policy case (audit-4 #2, B2); the name must start with the policy name
 _nameless = copy.deepcopy(bill)
 _nameless["fields"]["hospital_name"]["value"] = None
 res_nameless = main.evaluate(main.EvaluateIn(bill=main.BillIn(**_nameless), answers=answers()))
-assert res_nameless["hospital_matches_policy"] is None
-assert "names a different hospital" not in main.packet(
-    main.ResultIn(bill=main.BillIn(**_nameless), answers=answers())).body.decode("utf-8")
+assert res_nameless["hospital_matches_policy"] is False and res_nameless["hospital_name_missing"] is True
+try:
+    main.packet(main.ResultIn(bill=main.BillIn(**_nameless), answers=answers()))
+    raise AssertionError("packet made for a bill with no hospital name")
+except HTTPException as e:
+    assert e.status_code == 422 and e.detail == "No application packet: the bill shows no hospital name.", e.detail
 _not = copy.deepcopy(bill)
 _not["fields"]["hospital_name"]["value"] = "NOT Vanderbilt University Medical Center"
 assert main.evaluate(main.EvaluateIn(bill=main.BillIn(**_not), answers=answers()))["hospital_matches_policy"] is False
@@ -957,9 +960,49 @@ for excluded in ("Vanderbilt Clarksville Hospital (SYNTHETIC)", "Ascension Saint
     rx = main.evaluate(main.EvaluateIn(bill=named(excluded), answers=answers(language="en")))
     assert rx["hospital_id"] == "vumc" and rx["hospital_matches_policy"] is False, excluded
     expect_http(422, main.packet, main.ResultIn(bill=named(excluded), answers=answers(language="en")))
-# a nameless bill is unknown (None): the default policy, and its packet still works
+# a nameless bill is treated as no policy (audit-4 #2): default policy's numbers, matched False, flagged, no packet
 rn = main.evaluate(main.EvaluateIn(bill=named(None), answers=answers(language="en")))
-assert rn["hospital_id"] == "vumc" and rn["hospital_matches_policy"] is None
+assert rn["hospital_id"] == "vumc" and rn["hospital_matches_policy"] is False and rn["hospital_name_missing"] is True
+
+# audit-4 #2 / #17: blank, whitespace-only and missing names -> warning path; named no-policy and VUMC bills unchanged
+_missing_bill = copy.deepcopy(bill)
+del _missing_bill["fields"]["hospital_name"]
+_oci_calls2 = []
+_real_phrase2, _real_tr2 = oci_client.phrase, oci_client.translate_many
+oci_client.phrase = lambda f, lang: _oci_calls2.append("phrase") or f
+oci_client.translate_many = lambda texts, lang, keep=(): _oci_calls2.append("translate") or list(texts)
+try:
+    for label, mb in (("blank", named("")), ("whitespace", named("   ")), ("missing", main.BillIn(**_missing_bill))):
+        rm = main.evaluate(main.EvaluateIn(bill=mb, answers=answers(language="es")))
+        assert rm["hospital_matches_policy"] is False and rm["hospital_name_missing"] is True, label
+        exm = main.explain(main.ResultIn(bill=mb, answers=answers(language="es")))
+        assert _oci_calls2 == [], (label, _oci_calls2)                       # no OCI call
+        assert exm["ai_written"] is False and exm["text"] == exm["text_en"], label
+        assert len(exm["text_en"].splitlines()) == 1 and "Apply by" not in exm["text_en"], (label, exm["text_en"])
+        assert exm["text_en"].startswith("This bill is from the hospital."), (label, exm["text_en"])
+        try:
+            main.packet(main.ResultIn(bill=mb, answers=answers(language="es")))
+            raise AssertionError("packet made for a bill with no hospital name: " + label)
+        except HTTPException as e:
+            assert e.status_code == 422 and e.detail == "No application packet: the bill shows no hospital name.", (label, e.detail)
+    # a named hospital with no policy: not flagged missing, facts are the bill line only
+    rt = main.evaluate(main.EvaluateIn(bill=named("TriStar Centennial Medical Center"), answers=answers(language="es")))
+    assert rt["hospital_matches_policy"] is False and rt["hospital_name_missing"] is False
+    ext = main.explain(main.ResultIn(bill=named("TriStar Centennial Medical Center"), answers=answers(language="es")))
+    assert _oci_calls2 == [] and "Apply by" not in ext["text_en"] and "Free care" not in ext["text_en"], ext["text_en"]
+    assert len(ext["text_en"].splitlines()) == 1 and "TriStar Centennial Medical Center" in ext["text_en"], ext["text_en"]
+    try:
+        main.packet(main.ResultIn(bill=named("TriStar Centennial Medical Center"), answers=answers(language="es")))
+        raise AssertionError("packet made for a hospital with no policy")
+    except HTTPException as e:
+        assert e.detail == "No application packet: this demo has no policy for this hospital.", e.detail
+    # a VUMC-named bill is unchanged: flag False, three fact lines with the deadline, the model is called
+    assert rv["hospital_name_missing"] is False and rv["hospital_matches_policy"] is True
+    exv = main.explain(main.ResultIn(bill=VB, answers=answers(language="es")))
+    assert _oci_calls2 == ["phrase"], _oci_calls2
+    assert len(exv["text_en"].splitlines()) == 3 and "Apply by" in exv["text_en"], exv["text_en"]
+finally:
+    oci_client.phrase, oci_client.translate_many = _real_phrase2, _real_tr2
 
 # ineligible with another route: result carries it, facts say so, packet is still refused with the old message
 rich_v = answers(language="en", annual_income_cents=13200100)                    # 400% of the guideline: above VUMC's 350%

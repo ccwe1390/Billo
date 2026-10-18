@@ -333,11 +333,15 @@ async def extract(file: UploadFile):
 
 def _evaluate(body):
     engine, policies, fpl = _rules()
-    policy, _matched = engine.select_policy(_val(body.bill, "hospital_name"), policies, DEFAULT_POLICY_ID)
+    policy, matched = engine.select_policy(_val(body.bill, "hospital_name"), policies, DEFAULT_POLICY_ID)
     try:
-        return engine.evaluate(body.bill.model_dump(), body.answers.model_dump(), policy, fpl)
+        result = engine.evaluate(body.bill.model_dump(), body.answers.model_dump(), policy, fpl)
     except ValueError as e:
         raise HTTPException(422, str(e))
+    result["hospital_name_missing"] = matched is None  # no name on the bill: treated like a hospital with no policy
+    if matched is None:
+        result["hospital_matches_policy"] = False
+    return result
 
 
 @app.post("/evaluate")
@@ -373,14 +377,19 @@ def _people(n):
 def _facts_en(bill, answers, result):
     """The three fixed English lines. Every number in them comes from the engine or a confirmed field."""
     n = answers.household_size
+    name = _val(bill, "hospital_name")
+    name = name.strip() if isinstance(name, str) else ""  # blank, whitespace or a non-text value reads as no name
+    first = ("This bill is from %s. The statement date is %s and the amount due is $%s."
+             % (name or "the hospital", _val(bill, "statement_date"),
+                _amount_due(_val(bill, "amount_due_cents"))))
+    if result["hospital_matches_policy"] is False:  # no policy for this hospital: no tier, percent or deadline
+        return first
     if result["tier"]["eligible"]:
         last = "%s. %s" % (result["tier"]["label_en"], result["deadline"]["text_en"])
     else:  # no "Apply by": an ineligible family is pointed to the payment-plan contact instead
         last = "%s." % result["tier"]["label_en"]
     return "\n".join([
-        "This bill is from %s. The statement date is %s and the amount due is $%s."
-        % (_val(bill, "hospital_name") or "the hospital", _val(bill, "statement_date"),
-           _amount_due(_val(bill, "amount_due_cents"))),
+        first,
         "Your household has %s and a yearly income of $%s. The %d poverty guideline for %s is $%s, "
         "so your income is %d%% of it."
         % (_people(n), _dollars(answers.annual_income_cents), result["fpl"]["year"], _people(n),
@@ -454,6 +463,8 @@ def _letter_en(bill, answers, result):
 
 def build_packet(bill, answers, result):
     """EngineResult + BillFields + HouseholdAnswers -> Packet (docs/contracts.md shape 4)."""
+    if result["hospital_name_missing"]:
+        raise HTTPException(422, "No application packet: the bill shows no hospital name.")
     if result["hospital_matches_policy"] is False:
         raise HTTPException(422, "No application packet: this demo has no policy for this hospital.")
     if not result["tier"]["eligible"]:

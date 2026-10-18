@@ -19,7 +19,9 @@ else
   mv ~/backup-before-$C.tar.part ~/backup-before-$C.tar
   echo "backup: $(ls -la ~/backup-before-$C.tar | awk '{print $5, $9}')"
 fi
-rm -rf ~/stage-$C && mkdir ~/stage-$C && tar -xf ~/deploy-$C.tar -C ~/stage-$C
+rm -rf ~/stage-$C
+mkdir ~/stage-$C
+tar -xf ~/deploy-$C.tar -C ~/stage-$C
 cd ~/stage-$C && FAKE_OCI=1 /opt/bill-to-help/.venv/bin/python -c "import app.main as m; m._rules(); print('import check: ok')"
 test -d /opt/bill-to-help/app
 test -d ~/stage-$C/app

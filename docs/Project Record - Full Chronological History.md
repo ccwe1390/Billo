@@ -95,6 +95,7 @@ the dated entry, not the digest.
 - [BG - Review fixes live (af1d5f6); swarm results; kit remade](#appendix-bg---review-fixes-live-af1d5f6-swarm-results-kit-remade-2026-10-18-1207-cdt) (10-18)
 - [BH - One confirm box per screen; pending wording; dashboard counters (189163e)](#appendix-bh---one-confirm-box-per-screen-pending-wording-dashboard-counters-189163e-2026-10-18-1214-cdt) (10-18)
 - [BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open)](#appendix-bi---swarm-ui-fixes-2e74b20-live-8-of-10-translations-and-hebrew-billing-office-open-2026-10-18-1228-cdt) (10-18)
+- [BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80)](#appendix-bj---https-only-http-308-redirects-to-https-acme-path-kept-on-80-2026-10-18-1233-cdt) (10-18)
 
 ---
 
@@ -1963,3 +1964,35 @@ Tests n3 + an API test; m4 updated; 77 JS tests. All 9 suites ALL PASS. Served a
 - No live paid call was made for the server text changes. The denied wording and letter wording are proven by the unit tests and by the deployed archive, which is the same commit.
 
 **Rollback:** `deploy.ps1 -Commit 2e74b20 -Rollback` restores 02e3d18.
+
+# Appendix BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80) (2026-10-18 ~12:33 CDT)
+**What.** Evan, about 12:30 CDT: "drop the http support only support https". At 12:31 Claude ran deploy/https-only-remote.sh on the VM. It writes /etc/httpd/conf.d/bill-to-help-https-only.conf: every http request gets a 308 to the same https URL, query string included. The one exception is /.well-known/acme-challenge/.
+
+**Why this shape, not closing port 80.**
+- The Let's Encrypt IP certificate (lineage billscan-ip) expires 2026-10-24 15:39 GMT and has no auto-renewal. An IP certificate cannot use DNS validation, so a renewal by the current webroot method needs the challenge path on :80. Closing port 80 would make the certificate impossible to renew in place.
+- A redirect also keeps old http links and a typed bare IP working.
+- 308, not 301, so a POST stays a POST.
+- No HSTS: browsers ignore HSTS for IP-address hosts (RFC 6797), so it would add nothing here.
+
+**How.**
+- mod_rewrite rules go in server context, which covers only :80. The *:443 vhost does not inherit them, and a `%{HTTPS} !=on` guard rules out a loop anyway.
+- configtest runs before the graceful reload, and any failed check removes the file and reloads again.
+
+**Verification (real output).**
+- On the VM:
+  - `http /stats?x=1 -> 308 https://207.211.181.174/stats?x=1`;
+  - `acme probe over http: probe-ok`;
+  - https `/`, `/stats` and `/app.js` all 200 (curl with certificate verification);
+  - `HTTPS-ONLY OK`.
+- From the laptop:
+  - http GET / -> 308 https://207.211.181.174/;
+  - http POST /check -> 308;
+  - http /stats with redirects followed -> 200 at https;
+  - https / -> 200 with verify=0 (the certificate checks out).
+
+**Collateral.**
+- The presenter kit's "If https fails, use http://" fallback is gone: http now only redirects. The kit now says the typed IP redirects to https.
+- Updated: HANDOFF (TLS bullet), operations.md and security.md.
+- Every claim of "live on http and https" in earlier records is history and stays as written.
+
+**Undo:** `sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful`.

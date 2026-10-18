@@ -103,8 +103,10 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
   12, 13, 14. The rest is listed in its section 7.
 - HTTPS: Let's Encrypt IP certificate (lineage billscan-ip, expires
   2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
-  Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf; no redirect
-  from http (both work).
+  Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf. HTTPS ONLY since
+  2026-10-18 12:31 CDT (record BJ): bill-to-help-https-only.conf sends every http request a 308
+  to the same https URL, except /.well-known/acme-challenge/ (renewal needs it on :80).
+  Undo: sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful.
 - Deploys: Claude ran bdc76df (08:48), f6b6f05 (09:59) and e53d1ce (10:20), each at Evan's explicit request (records AV, AX, AZ); without that say-so,
   or if the auto-mode classifier refuses (record AG), Evan runs it in PowerShell 5.1:
   `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; add -Rollback to restore
@@ -167,7 +169,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
 
 ```
 Project: TNHacks26 Billow (C:/ClaudeCode/TNHacks27, branch f10). Read HANDOFF.md first, then the last 3 record
-appendices (docs/Project Record - Full Chronological History.md, BE-BI). Live: 2e74b20 on http + https://207.211.181.174/
+appendices (docs/Project Record - Full Chronological History.md, BE-BJ). Live: 2e74b20, HTTPS only (http redirects), at https://207.211.181.174/
 (Phase 1 eligibility + packet, Phase 2 Find errors, Phase 3 EOB check, Remove photo, Sources dropdown). Hacking ended
 13:00 CDT 2026-10-18; showcase 13:05, finals 15:30 - do NOT deploy during them. Hard rules: synthetic bills only; never
 imply hospital endorsement; deploy only on Evan's word (deploy.ps1 -Commit <c>, rollback -Rollback); commit only when

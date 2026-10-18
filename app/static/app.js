@@ -224,6 +224,7 @@ const T = {
   eob_f_appeal_deadline:{en: "Appeal deadline", es: "Fecha límite para apelar", ar: "الموعد النهائي للاستئناف", "zh-CN": "申诉截止日期", "zh-TW": "申訴截止日期"}, // TODO-REVIEW es+ar+zh
   eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
   srcs:        {en: "Sources", es: "Fuentes", ar: "المصادر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
+  eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap Not yet.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque Todavía no.", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "目前无法读取照片。请换一张照片，或点“暂时没有”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
   photo_remove:{en: "Remove photo", es: "Quitar la foto", ar: "إزالة الصورة", "zh-CN": "删除照片", "zh-TW": "刪除照片"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
@@ -846,7 +847,7 @@ async function onEobFile(ev) {
   fd.append("kind", "eob");
   const dos = S.bill && S.bill.fields.date_of_service && S.bill.fields.date_of_service.value;
   if (dos) fd.append("date_of_service", dos);
-  let failMsg = t("read_failed");
+  let failMsg = t("eob_read_failed"); // the insurance step has no hand-entry path: offer another photo or Not yet
   let draft = null;
   try {
     draft = await withTimeout(60000, async signal => {
@@ -1128,7 +1129,9 @@ function checkCard(notes) {
       notes.mark(f.citation)))),
     typeof total === "number" && total > 0 ? el("p", {class: "chk-total"}, ...tNodes("chk_total", {amount: money(total)})) : null,
     el("p", {class: "muted"}, ...tSafe("chk_safety")),
-    el("div", null, el("button", {type: "button", id: "letter-btn", onclick: () => { S.doc = "dispute"; show(5); loadPacket(); }}, t("chk_letter"))));
+    flags.some(f => f.letter_en) // /dispute needs at least one letter line (a different-visit flag alone has none)
+      ? el("div", null, el("button", {type: "button", id: "letter-btn", onclick: () => { S.doc = "dispute"; show(5); loadPacket(); }}, t("chk_letter")))
+      : null);
 }
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");

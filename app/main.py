@@ -512,21 +512,27 @@ def _norm_eob_lines(raw):
     return {"items": items, "confirmed": False, "read": True}
 
 
+def _eob_text(v):
+    """A model-read EOB text, cut to FieldIn's 200-character limit so a long read never 422s /check later."""
+    v = _norm_text(v)
+    return v[:200] if isinstance(v, str) else v
+
+
 def normalize_eob(raw):
     """Model JSON -> EobIn shape. Dates ISO, money in cents, every field unconfirmed. Any other key is dropped."""
     values = {
-        "insurer_name": _norm_text(raw.get("insurer_name")),
-        "provider_name": _norm_text(raw.get("provider_name")),
+        "insurer_name": _eob_text(raw.get("insurer_name")),
+        "provider_name": _eob_text(raw.get("provider_name")),
         "date_of_service": _norm_date(raw.get("date_of_service")),
-        "claim_number": _norm_text(raw.get("claim_number")),
+        "claim_number": _eob_text(raw.get("claim_number")),
         "claim_status": _norm_status(raw.get("claim_status")),
         "amount_billed_cents": _norm_cents(raw.get("amount_billed")),
         "plan_discount_cents": _norm_cents(raw.get("plan_discount")),
         "plan_paid_cents": _norm_cents(raw.get("plan_paid")),
         "patient_owes_cents": _norm_cents(raw.get("patient_owes")),
-        "denial_reason": _norm_text(raw.get("denial_reason")),
+        "denial_reason": _eob_text(raw.get("denial_reason")),
         "appeal_deadline": _norm_date(raw.get("appeal_deadline")),
-        "insurer_phone": _norm_text(raw.get("insurer_phone")),
+        "insurer_phone": _eob_text(raw.get("insurer_phone")),
     }
     return {
         "contract_version": CONTRACT_VERSION,

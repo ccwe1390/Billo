@@ -1447,4 +1447,9 @@ assert st == 422 and json.loads(jb)["detail"] == "No letter: no items to ask abo
 st, _h, jb = post("/dispute", {"bill": pair_bill("08"), "eob": pair_eob("08", fields_confirmed=False), "answers": ANS_DICT})
 assert st == 422, st
 
+# O1 review #2: a long EOB text read is cut to 200 characters (it used to 422 /check and hide the whole card)
+_ne = main.normalize_eob({"insurer_name": "X", "claim_number": "C", "denial_reason": "a" * 210})
+assert len(_ne["fields"]["denial_reason"]["value"]) == 200, len(_ne["fields"]["denial_reason"]["value"])
+main.EobIn(**{**_ne, "fields": {k: dict(v, confirmed=True) for k, v in _ne["fields"].items()}})
+
 print("ALL PASS")

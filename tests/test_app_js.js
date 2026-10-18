@@ -1218,10 +1218,10 @@ test("m4. A 422 shows the not-an-insurance-summary message and the ask state aga
   assert.strictEqual(S.eobDraft, null);
   assert.ok(byId("eob-file") && byId("eob-file").disabled === false && byId("eob-notyet").disabled === false, "ask state not restored");
   await uploadEob("<html>gateway</html>", 502);
-  assert.strictEqual(byId("alert").textContent, T.read_failed.en);
+  assert.strictEqual(byId("alert").textContent, T.eob_read_failed.en);
   assert.ok(byId("eob-file") && S.eobExtracting === false);
   await uploadEob({contract_version: 1}, 200); // 200 with no fields is a failed read
-  assert.strictEqual(byId("alert").textContent, T.read_failed.en);
+  assert.strictEqual(byId("alert").textContent, T.eob_read_failed.en);
   assert.strictEqual(S.eobDraft, null);
 });
 test("m5. Confirm state: Continue stays disabled until every field and the lines are confirmed; any edit unticks", "eob", async () => {
@@ -1369,6 +1369,13 @@ test("n2. Remove photo: drops the photo and every field read from it; a read sti
   assert.ok(!byId("s2").all().some(n => n.tag === "button" && n.textContent === T.photo_remove.en), "button still shown with no photo");
   respond(req, {contract_version: 1, fields: {}}); await done; await flush();
   assert.strictEqual(S.bill, null, "a stale read brought the removed photo's fields back");
+});
+
+test("n3. a card whose only flag has no letter line (different visit) shows no letter button", "O1 review #1", async () => {
+  const only = {contract_version: 1, flags: [{id: "different_visit", kind: "insurance", text_en: "This insurance summary is for a different visit.", letter_en: null, amount_cents: null, line_indexes: [], citation: null}], total_to_ask_cents: 0, lines_checked: false};
+  const s4 = await landResult(makeResult(115), only);
+  assert.ok(s4.textContent.includes("different visit"), "flag not shown");
+  assert.ok(!s4.all().some(n => n.tag === "button" && n.textContent === T.chk_letter.en), "letter button shown with no letter line");
 });
 
 // ---------- run

@@ -145,6 +145,139 @@ def test_no_savings_word():
         assert "savings" not in fh.read().lower()
 
 
+IL = {"insurer_name": "Volunteer State Health Plan", "claim_number": "CLM-2026-77123",
+      "date_of_service": "2026-09-02", "provider_name": "Cumberland General Hospital",
+      "denial_reason": "Service not covered", "appeal_deadline": "2027-03-01",
+      "insurer_phone": "1-800-555-0142"}
+IL_BODY = ("I am asking you to reconsider your denial of claim CLM-2026-77123 for care on 2026-09-02 "
+           "at Cumberland General Hospital. The reason given was: \"Service not covered\". "
+           "Please review the claim again and tell me in writing what you need from me.")
+IL_TAIL = "\n\nThank you,\n\n____________________"
+INS_FLAG = {"kind": "insurance", "rule": "x", "letter_en": None, "line_indexes": []}
+
+
+def make_ins(lang="en", flags=None, **over):
+    il = dict(IL, **over)
+    bill = key_bill(11)
+    check = {"flags": flags if flags is not None else [], "total_to_ask_cents": 0,
+             "lines_checked": True, "insurer_letter": il}
+    return bill, check, dispute.build(bill, {"language": lang}, check, today=TODAY)
+
+
+def with_translator(fn):
+    orig = dispute.oci_client.translate_many
+    dispute.oci_client.translate_many = fn
+    try:
+        return make_ins("ar")
+    finally:
+        dispute.oci_client.translate_many = orig
+
+
+def test_insurer_letter_full_text():
+    _, _, r = make_ins()
+    assert set(r) == {"letter_en", "letter_translated", "translation_check", "insurer_letter_en",
+                      "insurer_letter_translated", "insurer_send_note_en"}
+    assert r["insurer_letter_en"] == "To Volunteer State Health Plan:\n\n" + IL_BODY + IL_TAIL
+    assert r["insurer_letter_translated"] is None
+    assert r["translation_check"] == {"numbers_match": True, "fallback_used": False}
+
+
+def test_insurer_letter_missing_parts():
+    _, _, r = make_ins(insurer_name=None)
+    assert r["insurer_letter_en"].startswith("To my insurance company:\n\nI am asking you to reconsider")
+    _, _, r = make_ins(claim_number=None)
+    assert "reconsider your denial of my claim for care on 2026-09-02 at" in r["insurer_letter_en"]
+    assert "CLM" not in r["insurer_letter_en"]
+    _, _, r = make_ins(date_of_service=None)
+    assert "for care at Cumberland General Hospital. The reason" in r["insurer_letter_en"]
+    _, _, r = make_ins(provider_name=None)
+    assert "for care on 2026-09-02. The reason" in r["insurer_letter_en"]
+    _, _, r = make_ins(denial_reason=None)
+    assert "Hospital. Please review the claim again" in r["insurer_letter_en"]
+    assert "The reason given" not in r["insurer_letter_en"]
+    _, _, r = make_ins(**{k: None for k in IL})
+    assert r["insurer_letter_en"] == ("To my insurance company:\n\nI am asking you to reconsider your "
+                                      "denial of my claim for care. Please review the claim again and "
+                                      "tell me in writing what you need from me." + IL_TAIL)
+    assert r["insurer_send_note_en"] == "Send this to your insurer."
+
+
+def test_insurer_send_note():
+    _, _, r = make_ins()
+    assert r["insurer_send_note_en"] == ("Send this to your insurer before the appeal deadline printed on "
+                                         "your summary: 2027-03-01. Phone printed on your summary: "
+                                         "1-800-555-0142.")
+    _, _, r = make_ins(appeal_deadline=None)
+    assert r["insurer_send_note_en"] == ("Send this to your insurer. Phone printed on your summary: "
+                                         "1-800-555-0142.")
+    _, _, r = make_ins(insurer_phone=None)
+    assert r["insurer_send_note_en"] == ("Send this to your insurer before the appeal deadline printed on "
+                                         "your summary: 2027-03-01.")
+
+
+def test_insurer_letter_arabic_passes_lock():
+    _, _, r = make_ins("ar")
+    assert r["insurer_letter_translated"].startswith("[AR draft] To Volunteer State Health Plan:")
+    assert r["translation_check"] == {"numbers_match": True, "fallback_used": False,
+                                       "translator": "oci_language"}
+
+
+def test_insurer_letter_dropped_number_falls_back():
+    _, _, r = with_translator(lambda texts, lang, keep=(): [t.replace("2026-09-02", "") for t in texts])
+    assert r["insurer_letter_translated"] == ""
+    assert r["translation_check"] == {"numbers_match": False, "fallback_used": True}
+    assert "Volunteer State Health Plan" in r["insurer_letter_en"]
+    assert dispute.NOT_AVAILABLE_EN in dispute.render_html(r, "ar")
+
+
+def test_insurer_letter_dropped_name_falls_back():
+    _, _, r = with_translator(lambda texts, lang, keep=(): [
+        t.replace("Cumberland General Hospital", "X") if "reconsider" in t else t for t in texts])
+    assert r["insurer_letter_translated"] == ""
+    assert r["translation_check"]["fallback_used"] is True
+
+
+def test_insurer_letter_translator_error_falls_back():
+    def boom(*a, **k):
+        raise RuntimeError("down")
+    _, _, r = with_translator(boom)
+    assert r["insurer_letter_translated"] == "" and r["letter_translated"] is None
+    assert r["translation_check"] == {"numbers_match": False, "fallback_used": True}
+
+
+def test_insurer_letter_in_page():
+    _, _, r = make_ins(denial_reason="Not <b>covered</b> & more")
+    page = dispute.render_html(r, "en")
+    assert "<h2>Letter to your insurer</h2>" in page
+    assert "Not &lt;b&gt;covered&lt;/b&gt; &amp; more" in page and "<b>covered</b>" not in page
+    assert "Send this to your insurer before the appeal deadline" in page
+    assert page.index("Letter to your insurer") > page.index("collections while you review it")
+    _, _, r = make_ins("ar")
+    page = dispute.render_html(r, "ar")
+    assert 'dir="rtl"' in page and "[AR draft] To Volunteer State Health Plan:" in page
+
+
+def test_flag_without_letter_not_listed():
+    bill = key_bill(11)
+    flags = checks.run(bill)["flags"]
+    check = {"flags": flags + [INS_FLAG], "total_to_ask_cents": 0, "lines_checked": True,
+             "insurer_letter": None}
+    r = dispute.build(bill, {"language": "en"}, check, today=TODAY)
+    assert "None" not in r["letter_en"]
+    assert r["letter_en"].count("\n- ") == 1
+
+
+def test_no_insurer_letter_leaves_output_unchanged():
+    bill = key_bill(11)
+    flags = checks.run(bill)["flags"]
+    check = {"flags": flags + [INS_FLAG], "total_to_ask_cents": 0, "lines_checked": True,
+             "insurer_letter": None}
+    for lang in ("en", "ar"):
+        r = dispute.build(bill, {"language": lang}, check, today=TODAY)
+        assert set(r) == {"letter_en", "letter_translated", "translation_check"}
+        assert "insurer" not in dispute.render_html(r, lang).lower()
+
+
 if __name__ == "__main__":
     tests = [(n, f) for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
     for name, fn in tests:

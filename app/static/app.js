@@ -193,6 +193,36 @@ const T = {
   chk_letter:  {en: "Create a letter asking the hospital to check this bill", es: "Crear una carta que pida al hospital revisar esta factura", ar: "أنشئ رسالة تطلب من المستشفى مراجعة هذه الفاتورة", "zh-CN": "创建一封请医院核查这份账单的信", "zh-TW": "建立一封請醫院核查這份帳單的信"}, // TODO-REVIEW es+ar+zh
   load_dispute:{en: "Writing your letter...", es: "Escribiendo su carta...", ar: "جارٍ كتابة رسالتك...", "zh-CN": "正在撰写您的信函...", "zh-TW": "正在撰寫您的信函..."}, // TODO-REVIEW es+ar+zh
   d_title:     {en: "Your letter to the hospital", es: "Su carta al hospital", ar: "رسالتك إلى المستشفى", "zh-CN": "您给医院的信", "zh-TW": "您給醫院的信"}, // TODO-REVIEW es+ar+zh
+  eob_title:   {en: "Your insurance summary", es: "Su resumen del seguro", ar: "ملخص التأمين الخاص بك", "zh-CN": "您的保险摘要", "zh-TW": "您的保險摘要"}, // TODO-REVIEW es+ar+zh
+  eob_ask:     {en: "Do you have your insurer's summary for this visit? It usually says 'This is not a bill.'", es: "¿Tiene el resumen de su aseguradora para esta visita? Suele decir 'Esto no es una factura'.", ar: "هل لديك ملخص شركة التأمين لهذه الزيارة؟ يكتب عادةً «هذه ليست فاتورة».", "zh-CN": "您有保险公司针对这次就诊发出的说明吗？上面通常写着“这不是账单”。", "zh-TW": "您有保險公司針對這次就診發出的說明嗎？上面通常寫著「這不是帳單」。"}, // TODO-REVIEW es+ar+zh
+  eob_add:     {en: "Add a photo", es: "Agregar una foto", ar: "أضف صورة", "zh-CN": "添加照片", "zh-TW": "新增照片"}, // TODO-REVIEW es+ar+zh
+  eob_not_yet: {en: "Not yet", es: "Todavía no", ar: "ليس بعد", "zh-CN": "暂时没有", "zh-TW": "暫時沒有"}, // TODO-REVIEW es+ar+zh
+  eob_reading: {en: "Reading the insurance summary...", es: "Leyendo el resumen del seguro...", ar: "جارٍ قراءة ملخص التأمين...", "zh-CN": "正在读取保险摘要...", "zh-TW": "正在讀取保險摘要..."}, // TODO-REVIEW es+ar+zh
+  eob_not_eob: {en: "This doesn't look like an insurance summary. Try another photo, or tap Not yet.", es: "Esto no parece un resumen del seguro. Pruebe con otra foto o toque Todavía no.", ar: "لا يبدو هذا ملخص تأمين. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "这看起来不是保险摘要。请换一张照片，或点“暂时没有”。", "zh-TW": "這看起來不是保險摘要。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
+  eob_hint:    {en: "Check each field against your insurance summary, fix mistakes, then confirm each one.", es: "Compare cada campo con su resumen del seguro, corrija los errores y confirme cada uno.", ar: "قارن كل حقل بملخص التأمين وصحح الأخطاء ثم أكّد كل حقل.", "zh-CN": "请对照保险摘要检查每个字段，更正错误，然后逐项确认。", "zh-TW": "請對照保險摘要檢查每個欄位，更正錯誤，然後逐項確認。"}, // TODO-REVIEW es+ar+zh
+  eob_blank:   {en: "Not on the summary, or we could not read it. Leave it blank if it is not there.", es: "No aparece en el resumen o no pudimos leerlo. Déjelo en blanco si no está.", ar: "غير موجود في الملخص أو تعذّرت قراءته. اتركه فارغًا إن لم يكن موجودًا.", "zh-CN": "摘要上没有，或我们无法读取。如果摘要上没有，请留空。", "zh-TW": "摘要上沒有，或我們無法讀取。如果摘要上沒有，請留空。"}, // TODO-REVIEW es+ar+zh
+  eob_retake:  {en: "Use a different photo", es: "Usar otra foto", ar: "استخدم صورة أخرى", "zh-CN": "换一张照片", "zh-TW": "換一張照片"}, // TODO-REVIEW es+ar+zh
+  eob_lines_title:{en: "Services on your insurance summary", es: "Servicios en su resumen del seguro", ar: "الخدمات في ملخص التأمين", "zh-CN": "保险摘要上的服务项目", "zh-TW": "保險摘要上的服務項目"}, // TODO-REVIEW es+ar+zh
+  eob_l_date:  {en: "Date", es: "Fecha", ar: "التاريخ", "zh-CN": "日期", "zh-TW": "日期"}, // TODO-REVIEW es+ar+zh
+  eob_billed:  {en: "Amount billed (US dollars)", es: "Monto facturado (dólares)", ar: "المبلغ المفوتر (بالدولار)", "zh-CN": "账单金额（美元）", "zh-TW": "帳單金額（美元）"}, // TODO-REVIEW es+ar+zh
+  eob_owes:    {en: "You owe (US dollars)", es: "Usted debe (dólares)", ar: "المبلغ المستحق عليك (بالدولار)", "zh-CN": "您应付（美元）", "zh-TW": "您應付（美元）"}, // TODO-REVIEW es+ar+zh
+  eob_lines_ok:{en: "These match my insurance summary.", es: "Esto coincide con mi resumen del seguro.", ar: "هذه تطابق ملخص التأمين الخاص بي.", "zh-CN": "这些与我的保险摘要一致。", "zh-TW": "這些與我的保險摘要一致。"}, // TODO-REVIEW es+ar+zh
+  eob_st_paid: {en: "Paid", es: "Pagado", ar: "مدفوع", "zh-CN": "已支付", "zh-TW": "已支付"}, // TODO-REVIEW es+ar+zh
+  eob_st_partially_paid:{en: "Partly paid", es: "Pagado en parte", ar: "مدفوع جزئيًا", "zh-CN": "部分支付", "zh-TW": "部分支付"}, // TODO-REVIEW es+ar+zh
+  eob_st_denied:{en: "Denied", es: "Denegado", ar: "مرفوض", "zh-CN": "已拒付", "zh-TW": "已拒付"}, // TODO-REVIEW es+ar+zh
+  eob_st_pending:{en: "Pending", es: "Pendiente", ar: "قيد الانتظار", "zh-CN": "待处理", "zh-TW": "待處理"}, // TODO-REVIEW es+ar+zh
+  eob_f_insurer_name:{en: "Insurance company", es: "Aseguradora", ar: "شركة التأمين", "zh-CN": "保险公司", "zh-TW": "保險公司"}, // TODO-REVIEW es+ar+zh
+  eob_f_provider_name:{en: "Provider", es: "Proveedor", ar: "مقدّم الخدمة", "zh-CN": "医疗服务提供方", "zh-TW": "醫療服務提供者"}, // TODO-REVIEW es+ar+zh
+  eob_f_date_of_service:{en: "Date of service", es: "Fecha del servicio", ar: "تاريخ الخدمة", "zh-CN": "服务日期", "zh-TW": "服務日期"}, // TODO-REVIEW es+ar+zh
+  eob_f_claim_number:{en: "Claim number", es: "Número de reclamo", ar: "رقم المطالبة", "zh-CN": "理赔编号", "zh-TW": "理賠編號"}, // TODO-REVIEW es+ar+zh
+  eob_f_claim_status:{en: "Claim status", es: "Estado del reclamo", ar: "حالة المطالبة", "zh-CN": "理赔状态", "zh-TW": "理賠狀態"}, // TODO-REVIEW es+ar+zh
+  eob_f_amount_billed_cents:{en: "Amount billed (US dollars)", es: "Monto facturado (dólares)", ar: "المبلغ المفوتر (بالدولار)", "zh-CN": "账单金额（美元）", "zh-TW": "帳單金額（美元）"}, // TODO-REVIEW es+ar+zh
+  eob_f_plan_discount_cents:{en: "Plan discount (US dollars)", es: "Descuento del plan (dólares)", ar: "خصم الخطة (بالدولار)", "zh-CN": "保险计划折扣（美元）", "zh-TW": "保險計劃折扣（美元）"}, // TODO-REVIEW es+ar+zh
+  eob_f_plan_paid_cents:{en: "Plan paid (US dollars)", es: "Pagado por el plan (dólares)", ar: "المبلغ الذي دفعته الخطة (بالدولار)", "zh-CN": "保险计划支付（美元）", "zh-TW": "保險計劃支付（美元）"}, // TODO-REVIEW es+ar+zh
+  eob_f_patient_owes_cents:{en: "You owe (US dollars)", es: "Usted debe (dólares)", ar: "المبلغ المستحق عليك (بالدولار)", "zh-CN": "您应付（美元）", "zh-TW": "您應付（美元）"}, // TODO-REVIEW es+ar+zh
+  eob_f_denial_reason:{en: "Denial reason", es: "Motivo de la denegación", ar: "سبب الرفض", "zh-CN": "拒付原因", "zh-TW": "拒付原因"}, // TODO-REVIEW es+ar+zh
+  eob_f_appeal_deadline:{en: "Appeal deadline", es: "Fecha límite para apelar", ar: "الموعد النهائي للاستئناف", "zh-CN": "申诉截止日期", "zh-TW": "申訴截止日期"}, // TODO-REVIEW es+ar+zh
+  eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
 const I18N = {}; // other languages' interface strings, fetched on demand from i18n/<code>.json
@@ -205,7 +235,8 @@ const REQUIRED = new Set(["statement_date", "amount_due_cents"]); // the engine 
 const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, answers: null,
           result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0,
           home: null, homeSeq: 0, fromQr: null,
-          extracting: false, packetSeq: 0, check: null, doc: "packet", theme: "auto"}; // theme is in page memory only and survives restart()
+          extracting: false, packetSeq: 0, check: null, doc: "packet", theme: "auto",
+          eob: null, eobDraft: null, eobNotYet: false, eobExtracting: false, eobSeq: 0}; // theme is in page memory only and survives restart()
 let firstShow = true, curScreen = 0;
 
 // ---------- helpers
@@ -331,15 +362,15 @@ function show(n) {
   curScreen = n;
   if (changed) showMsg(""); // a message belongs to the screen that raised it; the new screen shows what it needs
   document.getElementById("main").className = (n === 1 || n === 3) ? "w-narrow" : "w-wide";
-  for (let i = 1; i <= 6; i++) document.getElementById("s" + i).hidden = i !== n;
+  for (let i = 1; i <= 7; i++) document.getElementById("s" + i).hidden = i !== n;
   applyDir();
   const chrome = n !== 6; // the Home screen is not one of the five steps
   document.getElementById("stepper").hidden = !chrome;
   document.getElementById("steps").hidden = !chrome;
   document.getElementById("step-cap").hidden = !chrome;
-  if (chrome) renderSteps(n);
+  if (chrome) renderSteps(n === 7 ? 2 : n); // the insurance summary is part of the Bill step
   document.getElementById("foot").textContent = t("not_affiliated");
-  [null, renderStart, renderBill, renderQuestions, renderResult, renderPacketShell, renderHome][n]();
+  [null, renderStart, renderBill, renderQuestions, renderResult, renderPacketShell, renderHome, renderEob][n]();
   if (!firstShow && changed) { // move focus to the new screen's heading so keyboard and screen-reader users land on it
     const h = document.querySelector("#s" + n + " h2");
     if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
@@ -544,7 +575,7 @@ function renderBill() {
     el("div", {class: "bill-grid"}, left, right),
     el("div", {class: "stack-3"},
       actions([el("button", {type: "button", onclick: () => show(1)}, t("back"))],
-        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, onclick: () => show(3)}, t("continue_"))),
+        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, onclick: () => show(billInsured() ? 7 : 3)}, t("continue_"))),
       el("p", {class: "why", id: "bill-why", hidden: true}))));
   if (S.extracting) showBusy(t("reading")); // a re-render while the photo is still being read keeps the spinner
   if (S.bill) renderFields();
@@ -589,6 +620,7 @@ async function onFile(ev) {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
   S.imageUrl = URL.createObjectURL(f);
   S.bill = null; S.home = null; // a new photo makes the all-bills totals stale
+  clearEob(); // and the insurance summary belonged to the old bill
   S.extracting = true; // the file input and Continue stay disabled until the latest read finishes
   renderBill(); // shows the "Reading the bill..." status while S.extracting
   const upload = await shrinkImage(f);
@@ -659,7 +691,11 @@ function renderFields() {
       wrap.className = "field panel" + (f.confirmed ? " confirmed" : blank ? " blank" : "");
       updateBillNext();
     };
-    const onEdit = () => { f.value = readInput(name, input); f.confirmed = false; f.confidence = null; sync(); };
+    const onEdit = () => {
+      f.value = readInput(name, input); f.confirmed = false; f.confidence = null;
+      if (name === "insurance_status" && f.value !== "insured") clearEob(); // no insurance summary without insurance
+      sync();
+    };
     input.addEventListener(name === "insurance_status" ? "change" : "input", onEdit);
     cb.addEventListener("change", () => { f.confirmed = cb.checked; sync(); });
     wrap.sync = sync;
@@ -692,7 +728,7 @@ function linesEdited() { // any edit to the charges unticks "These charges match
   paintLines();
   updateBillNext();
 }
-function moneyField(id, labelKey, cents, onValue) { // a US-dollars text input; onValue gets integer cents or null
+function moneyField(id, labelKey, cents, onValue, after) { // a US-dollars text input; onValue gets integer cents or null; after runs on every edit (default: linesEdited)
   const hint = el("p", {class: "hint", id: id + "-hint", hidden: true}, t("income_hint"));
   const input = el("input", {type: "text", id, dir: "ltr", inputmode: "decimal", autocomplete: "off", "aria-describedby": id + "-hint", value: centsText(cents)});
   input.addEventListener("input", () => {
@@ -700,7 +736,7 @@ function moneyField(id, labelKey, cents, onValue) { // a US-dollars text input; 
     hint.hidden = m.ok;
     if (m.ok) input.removeAttribute("aria-invalid"); else input.setAttribute("aria-invalid", "true");
     onValue(m.cents);
-    linesEdited();
+    (after || linesEdited)();
   });
   return el("div", {class: "line-money"}, el("label", {for: id}, t(labelKey)), input, hint);
 }
@@ -752,6 +788,204 @@ function renderLines() {
   }
   fill(box, ...parts);
   paintLines();
+}
+
+// ---------- screen 7: insurance summary (EOB), between Bill and Questions when the bill says "insured"
+const EOB_FIELDS = ["insurer_name", "provider_name", "date_of_service", "claim_number", "claim_status", "amount_billed_cents",
+  "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "denial_reason", "appeal_deadline", "insurer_phone"];
+const EOB_MONEY = new Set(["amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents"]);
+const EOB_DATES = new Set(["date_of_service", "appeal_deadline"]);
+const EOB_STATUS = ["paid", "partially_paid", "denied", "pending"];
+// S.eobDraft is the summary being checked; S.eob is that same object only while everything is confirmed (else null).
+function clearEob() { // a new bill photo, a restart, "Not yet", or a bill that is no longer "insured" drops the insurance summary
+  Object.assign(S, {eob: null, eobDraft: null, eobNotYet: false, eobExtracting: false, eobSeq: S.eobSeq + 1});
+}
+function eobBody() { // the extra /check and /dispute keys: the confirmed summary, or the person's "Not yet"
+  const b = {};
+  if (S.eob) b.eob = S.eob;
+  if (S.eobNotYet) b.eob_not_yet = true;
+  return b;
+}
+function billInsured() {
+  const f = S.bill && S.bill.fields.insurance_status;
+  return !!f && f.value === "insured";
+}
+function eobBack() {
+  Object.assign(S, {eobExtracting: false, eobSeq: S.eobSeq + 1}); // an unfinished read is dropped; a read summary is kept
+  show(2);
+}
+function eobNotYet() {
+  clearEob();
+  S.eobNotYet = true;
+  show(3);
+}
+async function onEobFile(ev) {
+  const f = ev.target.files[0];
+  if (!f) return;
+  const seq = (S.eobSeq += 1); // Back, Not yet, a restart or a newer upload makes this one stale
+  Object.assign(S, {eob: null, eobDraft: null, eobNotYet: false, eobExtracting: true});
+  renderEob(); // shows the "Reading the insurance summary..." status while S.eobExtracting
+  const upload = await shrinkImage(f);
+  if (seq !== S.eobSeq) return;
+  const fd = new FormData();
+  fd.append("file", upload);
+  fd.append("kind", "eob");
+  const dos = S.bill && S.bill.fields.date_of_service && S.bill.fields.date_of_service.value;
+  if (dos) fd.append("date_of_service", dos);
+  let failMsg = t("read_failed");
+  let draft = null;
+  try {
+    draft = await withTimeout(60000, async signal => {
+      const r = await fetch("/extract", {method: "POST", body: fd, signal});
+      if (seq !== S.eobSeq) return null;
+      if (!r.ok) {
+        if (r.status === 422) failMsg = t("eob_not_eob");
+        else if (r.status === 413) failMsg = t("err_too_big");
+        else if (r.status === 415) failMsg = t("err_type");
+        else if (r.status === 429) failMsg = t("err_busy");
+        throw new Error("extract");
+      }
+      const j = await r.json();
+      if (!j || typeof j.fields !== "object" || !j.fields) throw new Error("extract");
+      return j;
+    });
+  } catch (e) {
+    draft = null;
+  }
+  if (seq !== S.eobSeq) return;
+  if (draft && draft.lines && (!Array.isArray(draft.lines.items) || !draft.lines.items.length)) draft.lines = null; // no rows to check
+  if (draft && draft.lines) draft.lines.confirmed = false;
+  S.eobDraft = draft;
+  S.eobExtracting = false;
+  if (curScreen === 7) showMsg(draft ? "" : failMsg);
+  renderEob();
+}
+function renderEob() {
+  const root = document.getElementById("s7");
+  if (S.eobDraft) { renderEobConfirm(root); return; }
+  const file = el("input", {type: "file", accept: "image/png,image/jpeg", id: "eob-file", class: "sr-only", disabled: S.eobExtracting});
+  file.addEventListener("change", onEobFile);
+  const drop = el("label", {class: "drop", "aria-disabled": S.eobExtracting ? "true" : false},
+    icon("camera"), el("span", null, t("eob_add")), el("small", {lang: "en", dir: "ltr"}, "PNG / JPEG"), file);
+  fill(root, el("div", {class: "stack-8"},
+    screenTitle(t("eob_title"), t("eob_ask")),
+    drop,
+    actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back"))],
+      el("button", {type: "button", id: "eob-notyet", disabled: S.eobExtracting, onclick: eobNotYet}, t("eob_not_yet")))));
+  if (S.eobExtracting) showBusy(t("eob_reading")); // a re-render while the photo is still being read keeps the spinner
+}
+// Continue is enabled only when every field is confirmed and any service lines are confirmed; p.why says what is missing.
+function eobSync() {
+  const E = S.eobDraft, next = document.getElementById("eob-next"), why = document.getElementById("eob-why");
+  if (!E || !next || !why) return;
+  const left = EOB_FIELDS.filter(n => !E.fields[n].confirmed).length;
+  const linesOpen = !!(E.lines && !E.lines.confirmed);
+  next.disabled = left > 0 || linesOpen;
+  S.eob = next.disabled ? null : E;
+  if (S.eob) S.eobNotYet = false;
+  why.hidden = !next.disabled;
+  if (why.hidden) fill(why);
+  else fill(why, ...(left > 0 ? tNodes("why_bill", {n: left}) : [t("why_lines")]));
+}
+function eobPaintLines() {
+  const p = document.getElementById("eob-lines-panel"), L = S.eobDraft && S.eobDraft.lines;
+  if (p) p.className = "panel lines" + (L && L.confirmed ? " confirmed" : "");
+}
+function eobLinesEdited() { // any edit to the service lines unticks "These match my insurance summary."
+  const L = S.eobDraft.lines;
+  if (L) L.confirmed = false;
+  const cb = document.getElementById("eob-lines-ok");
+  if (cb) cb.checked = false;
+  eobPaintLines();
+  eobSync();
+}
+function eobLineRow(item, i) {
+  const base = "eline-" + i;
+  const date = el("input", {type: "date", id: base + "-date", dir: "auto", value: item.date || ""});
+  date.addEventListener("input", () => { item.date = date.value.trim() || null; eobLinesEdited(); });
+  const desc = el("input", {type: "text", id: base + "-desc", dir: "auto", maxlength: "120", autocomplete: "off", value: item.description || ""});
+  desc.addEventListener("input", () => { item.description = desc.value; eobLinesEdited(); });
+  return el("div", {class: "line-row eob-row"},
+    el("div", {class: "line-money"}, el("label", {for: base + "-date"}, t("eob_l_date")), date),
+    el("div", {class: "line-desc"}, el("label", {for: base + "-desc"}, t("line_desc")), desc),
+    moneyField(base + "-billed", "eob_billed", item.amount_billed_cents, c => { item.amount_billed_cents = c; }, eobLinesEdited),
+    moneyField(base + "-owes", "eob_owes", item.patient_owes_cents, c => { item.patient_owes_cents = c; }, eobLinesEdited),
+    el("button", {type: "button", class: "line-rm", id: base + "-rm", "aria-label": t("line_remove") + ": " + (i + 1), onclick: () => eobRemoveLine(i)}, t("line_remove")));
+}
+function eobRemoveLine(i) {
+  const E = S.eobDraft;
+  E.lines.items.splice(i, 1);
+  if (!E.lines.items.length) E.lines = null; // no rows left: nothing to confirm
+  eobLinesEdited();
+  renderEobLines();
+}
+function renderEobLines() {
+  const box = document.getElementById("eob-lines-panel"), L = S.eobDraft && S.eobDraft.lines;
+  if (!box) return;
+  if (!L) { fill(box); box.hidden = true; eobSync(); return; }
+  box.hidden = false;
+  const cb = el("input", {type: "checkbox", id: "eob-lines-ok"});
+  cb.checked = !!L.confirmed;
+  cb.addEventListener("change", () => { L.confirmed = cb.checked; eobPaintLines(); eobSync(); });
+  fill(box, el("h3", null, t("eob_lines_title")),
+    el("div", {class: "stack-3", id: "eob-lines-rows"}, ...L.items.map(eobLineRow)),
+    el("label", {class: "check", for: "eob-lines-ok"}, cb, el("span", null, t("eob_lines_ok"))));
+  eobPaintLines();
+  eobSync();
+}
+function renderEobConfirm(root) {
+  const E = S.eobDraft;
+  const rows = EOB_FIELDS.map(name => {
+    const f = E.fields[name] || (E.fields[name] = {value: null, confidence: 0.0, confirmed: false});
+    const id = "e-" + name;
+    let input;
+    if (name === "claim_status") {
+      input = el("select", {id}, ...[["", t("ins_blank")]].concat(EOB_STATUS.map(v => [v, t("eob_st_" + v)]))
+        .map(([v, label]) => el("option", {value: v, selected: (f.value || "") === v}, label)));
+    } else if (EOB_DATES.has(name)) {
+      input = el("input", {type: "date", id, dir: "auto", value: f.value || ""});
+    } else if (EOB_MONEY.has(name)) {
+      input = el("input", {type: "text", id, dir: "auto", inputmode: "decimal", value: typeof f.value === "number" ? centsToDollars(f.value) : ""});
+    } else {
+      input = el("input", {type: "text", id, dir: "auto", value: f.value || "", autocomplete: "off"});
+    }
+    const cb = el("input", {type: "checkbox", id: id + "-ok"});
+    const hint = el("p", {class: "hint", id: id + "-hint"});
+    const ok = el("span", {class: "state-ok", "aria-hidden": "true"});
+    input.setAttribute("aria-describedby", id + "-hint");
+    const wrap = el("div", {class: "field panel"},
+      el("label", {for: id}, t("eob_f_" + name)), input, hint,
+      el("label", {class: "check", for: id + "-ok"}, cb, el("span", null, t("confirm"))), ok);
+    const sync = () => {
+      const blank = f.value === null || f.value === undefined || f.value === "";
+      hint.textContent = blank ? t("eob_blank") : "";
+      hint.hidden = !hint.textContent;
+      ok.textContent = f.confirmed ? t("confirmed_word") : "";
+      ok.hidden = !f.confirmed;
+      cb.checked = !!f.confirmed;
+      wrap.className = "field panel" + (f.confirmed ? " confirmed" : blank ? " blank" : "");
+      eobSync();
+    };
+    const onEdit = () => {
+      const v = input.value.trim();
+      f.value = v === "" ? null : EOB_MONEY.has(name) ? dollarsToCents(v) : v;
+      f.confirmed = false; f.confidence = null; sync();
+    };
+    input.addEventListener(name === "claim_status" ? "change" : "input", onEdit);
+    cb.addEventListener("change", () => { f.confirmed = cb.checked; sync(); });
+    wrap.sync = sync;
+    return wrap;
+  });
+  const next = el("button", {type: "button", class: "primary", id: "eob-next", disabled: true, onclick: () => { if (S.eob) { S.eobNotYet = false; show(3); } }}, t("continue_"));
+  fill(root, el("div", {class: "stack-8"},
+    screenTitle(t("eob_title"), t("eob_hint")),
+    el("div", {id: "eob-fields", class: "stack-3"}, ...rows, el("section", {class: "panel lines", id: "eob-lines-panel"})),
+    el("div", {class: "stack-3"},
+      actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back")),
+               el("button", {type: "button", class: "ghost", id: "eob-retake", onclick: () => { clearEob(); renderEob(); }}, t("eob_retake"))], next),
+      el("p", {class: "why", id: "eob-why", hidden: true}))));
+  renderEobLines();
+  rows.forEach(r => r.sync());
 }
 
 // ---------- screen 3: three questions
@@ -808,7 +1042,7 @@ async function submitAnswers() {
   try {
     const result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     if (seq !== S.submitSeq) return;
-    const checkP = post("/check", {bill: S.bill}, 20000).catch(() => null); // free fixed-rule check, runs beside /explain; a failure only hides the card
+    const checkP = post("/check", Object.assign({bill: S.bill}, eobBody()), 20000).catch(() => null); // free fixed-rule check, runs beside /explain; a failure only hides the card
     let explain = null; // no policy for the hospital: no estimate to explain, so no /explain call
     if (result.hospital_matches_policy !== false) {
       showBusy(t("load_explain"));
@@ -1108,7 +1342,9 @@ async function loadPacket() {
   showBusy(t(dispute ? "load_dispute" : "load_packet"));
   setBusy(print, true);
   try {
-    const page = await post(dispute ? "/dispute" : "/packet", {bill: S.bill, answers: S.answers}, 45000, true); // the server recomputes the result
+    const body = {bill: S.bill, answers: S.answers};
+    if (dispute) Object.assign(body, eobBody()); // the letter may cite the confirmed insurance summary
+    const page = await post(dispute ? "/dispute" : "/packet", body, 45000, true); // the server recomputes the result
     if (seq !== S.packetSeq || curScreen !== 5) return;
     const frame = el("iframe", {id: "packet-frame", title: t(dispute ? "d_title" : "p_title"), sandbox: "allow-modals allow-same-origin"});
     fill(paper, frame);
@@ -1131,6 +1367,7 @@ function restart() {
   // in-flight reply is dropped and cannot match the next request's number
   Object.assign(S, {view: viewFor(S.lang), bill: null, imageUrl: null, answers: null, result: null, explain: null, check: null, doc: "packet", size: "", income: "", tax: null, busy: false,
                     extractSeq: S.extractSeq + 1, submitSeq: S.submitSeq + 1, home: null, homeSeq: S.homeSeq + 1, extracting: false, packetSeq: S.packetSeq + 1});
+  clearEob();
   showMsg(""); show(1);
 }
 

@@ -16,16 +16,16 @@ import threading
 import time
 from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from typing import Any, Dict, List, Literal, Optional
+from typing import Annotated, Any, Dict, List, Literal, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, UploadFile
+from fastapi import Depends, FastAPI, Form, HTTPException, Query, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.formparsers import MultiPartParser
 
-from app import checks, dispute, numlock, oci_client
+from app import checks, dispute, eob_checks, numlock, oci_client
 
 log = logging.getLogger("bill_to_help")
 
@@ -249,6 +249,58 @@ class BillIn(BaseModel):
         return v
 
 
+_EOB_FIELDS = ("insurer_name", "provider_name", "date_of_service", "claim_number", "claim_status",
+               "amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents",
+               "denial_reason", "appeal_deadline", "insurer_phone")
+
+
+class EobLineIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    date: Optional[str] = None
+    description: str
+    amount_billed_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    patient_owes_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+
+    @field_validator("date")
+    @classmethod
+    def _date_is_iso(cls, v):
+        if v is not None:
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+                raise ValueError("date must be YYYY-MM-DD")
+            datetime.strptime(v, "%Y-%m-%d")  # a ValueError here is a validation error
+        return v
+
+    @field_validator("description")
+    @classmethod
+    def _description_is_one_line(cls, v):
+        v = re.sub(" {2,}", " ", _CONTROL.sub(" ", v))  # same cleaning as a bill line: it ends up in a letter
+        if len(v) > 120:
+            raise ValueError("description is too long")
+        return v
+
+
+class EobLinesIn(BaseModel):
+    """The service lines printed on the insurer's summary (Phase 3). eob_checks.run reads them."""
+    model_config = ConfigDict(extra="forbid")
+    items: List[EobLineIn] = Field(max_length=40)
+    confirmed: bool = False
+    read: bool = False
+
+
+class EobIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    contract_version: Literal[1] = CONTRACT_VERSION
+    fields: Dict[str, FieldIn]
+    lines: Optional[EobLinesIn] = None
+
+    @field_validator("fields")
+    @classmethod
+    def _known_fields_only(cls, v):
+        if any(k not in _EOB_FIELDS for k in v):
+            raise ValueError("unknown insurance summary field")  # no member ID, group number or name field exists
+        return v
+
+
 class AnswersIn(BaseModel):
     # extra="forbid": no way to send immigration status, SSN, ID or a name.
     model_config = ConfigDict(extra="forbid")
@@ -433,8 +485,64 @@ def normalize_bill(raw):
     }
 
 
+_EOB_STATUSES = ("paid", "partially_paid", "denied", "pending")
+
+
+def _norm_status(v):
+    s = _norm_text(v)
+    if s is None:
+        return None
+    s = re.sub(r"[ -]+", "_", s.lower())
+    return s if s in _EOB_STATUSES else None
+
+
+def _norm_eob_lines(raw):
+    """The model's service_lines -> EobIn.lines (unconfirmed). Not a list: None."""
+    rows = raw.get("service_lines")
+    if not isinstance(rows, list):
+        return None
+    items = []
+    for row in rows[:MAX_LINES]:
+        if not isinstance(row, dict):
+            continue
+        desc = re.sub(" {2,}", " ", _CONTROL.sub(" ", str(row.get("description") or ""))).strip()[:120]
+        items.append({"date": _norm_date(row.get("date")), "description": desc,
+                      "amount_billed_cents": _line_cents(_norm_cents(row.get("amount_billed"))),
+                      "patient_owes_cents": _line_cents(_norm_cents(row.get("patient_owes")))})
+    return {"items": items, "confirmed": False, "read": True}
+
+
+def normalize_eob(raw):
+    """Model JSON -> EobIn shape. Dates ISO, money in cents, every field unconfirmed. Any other key is dropped."""
+    values = {
+        "insurer_name": _norm_text(raw.get("insurer_name")),
+        "provider_name": _norm_text(raw.get("provider_name")),
+        "date_of_service": _norm_date(raw.get("date_of_service")),
+        "claim_number": _norm_text(raw.get("claim_number")),
+        "claim_status": _norm_status(raw.get("claim_status")),
+        "amount_billed_cents": _norm_cents(raw.get("amount_billed")),
+        "plan_discount_cents": _norm_cents(raw.get("plan_discount")),
+        "plan_paid_cents": _norm_cents(raw.get("plan_paid")),
+        "patient_owes_cents": _norm_cents(raw.get("patient_owes")),
+        "denial_reason": _norm_text(raw.get("denial_reason")),
+        "appeal_deadline": _norm_date(raw.get("appeal_deadline")),
+        "insurer_phone": _norm_text(raw.get("insurer_phone")),
+    }
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "fields": {
+            k: {"value": v, "confidence": 0.0 if v is None else None, "confirmed": False}
+            for k, v in values.items()
+        },
+        "lines": _norm_eob_lines(raw),
+    }
+
+
 @app.post("/extract", dependencies=[Depends(_rate_limit)])
-async def extract(file: UploadFile):
+async def extract(file: UploadFile, kind: Annotated[str, Form()] = "bill",
+                  date_of_service: Annotated[Optional[str], Form()] = None):
+    if kind not in ("bill", "eob"):
+        raise HTTPException(422, "Unknown kind.")
     mime = (file.content_type or "").lower()
     if mime not in ALLOWED_MIME:
         raise HTTPException(415, "Upload a PNG or JPEG image.")
@@ -443,6 +551,22 @@ async def extract(file: UploadFile):
         raise HTTPException(413, TOO_BIG)
     if not data.startswith(b"\x89PNG\r\n\x1a\n" if mime == "image/png" else b"\xff\xd8\xff"):
         raise HTTPException(415, "Upload a PNG or JPEG image.")
+    if kind == "eob":
+        dos = date_of_service if date_of_service and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_of_service) else None
+        try:
+            raw = await asyncio.to_thread(oci_client.extract_eob, data, mime, dos)
+        except Exception as e:  # no detail echoed: it could contain request content
+            log.warning("photo reading failed: %s", type(e).__name__)
+            raise HTTPException(502, "Photo reading is unavailable. Enter the fields by hand.")
+        if raw.get("not_eob") is True:
+            raise HTTPException(422, "This doesn't look like an insurance summary.")
+        out = normalize_eob(raw)
+        # V1 gate 2026-10-18: the real model read a hospital bill with the EOB prompt, did not return not_eob, and
+        # invented claim_status "pending" with insurer_name and claim_number null. Neither is printed on a real EOB.
+        if out["fields"]["insurer_name"]["value"] is None and out["fields"]["claim_number"]["value"] is None:
+            raise HTTPException(422, "This doesn't look like an insurance summary.")
+        _count("eobs_read")
+        return out
     try:
         raw = await asyncio.to_thread(oci_client.extract_bill, data, mime)
     except Exception as e:  # no detail echoed: it could contain request content
@@ -748,24 +872,48 @@ def _require_confirmed(bill):
         raise HTTPException(422, "Confirm the charge lines first.")
 
 
+def _require_eob_confirmed(eob):
+    """Same gate as the bill: every field, and the service lines when the summary carries them."""
+    if any(f.confirmed is not True for f in eob.fields.values()):
+        raise HTTPException(422, "Confirm every insurance summary field first.")
+    if eob.lines is not None and eob.lines.confirmed is not True:
+        raise HTTPException(422, "Confirm the insurance summary lines first.")
+
+
+def _run_checks(bill, eob, eob_not_yet):
+    """Phase 2 (bill-only) rules, then the Phase 3 insurance rules merged on top."""
+    if eob is not None:
+        _require_eob_confirmed(eob)
+    bill_d = bill.model_dump()
+    return eob_checks.run(bill_d, None if eob is None else eob.model_dump(), eob_not_yet, checks.run(bill_d))
+
+
 class CheckIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
     bill: BillIn
+    eob: Optional[EobIn] = None
+    eob_not_yet: bool = False
 
 
 @app.post("/check")  # free: fixed rules, no model call, so no rate limit (still under the 64 KiB body cap)
 def check(body: CheckIn):
     _require_confirmed(body.bill)
-    out = checks.run(body.bill.model_dump())
+    out = _run_checks(body.bill, body.eob, body.eob_not_yet)
     _count("checks_run")
     return {"contract_version": CONTRACT_VERSION, **out}
 
 
+class DisputeIn(ResultIn):
+    model_config = ConfigDict(extra="forbid")
+    eob: Optional[EobIn] = None
+    eob_not_yet: bool = False
+
+
 @app.post("/dispute", dependencies=[Depends(_rate_limit)])
-def dispute_letter(body: ResultIn, format: str = Query("html", pattern="^(html|json)$")):
+def dispute_letter(body: DisputeIn, format: str = Query("html", pattern="^(html|json)$")):
     _require_confirmed(body.bill)
-    found = checks.run(body.bill.model_dump())
-    if not found["flags"]:
+    found = _run_checks(body.bill, body.eob, body.eob_not_yet)
+    if not any(f.get("letter_en") for f in found["flags"]):
         raise HTTPException(422, "No letter: no items to ask about.")
     out = dispute.build(body.bill.model_dump(), body.answers.model_dump(), found)
     _count("disputes")
@@ -811,7 +959,7 @@ def household(body: HouseholdIn):
 # ---------------------------------------------------------------- /stats
 
 _STAT_KEYS = ("photos_read", "results_free_care", "results_discount", "results_not_eligible",
-              "packets", "fallbacks", "household_views", "checks_run", "disputes")
+              "packets", "fallbacks", "household_views", "checks_run", "disputes", "eobs_read")
 
 
 def _shown(n):

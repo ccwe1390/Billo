@@ -579,7 +579,7 @@ try:
     assert st["counts"]["photos_read"] == "<10" and st["counts"]["packets"] == 12, st["counts"]
     assert set(st) == {"contract_version", "since", "counts", "languages", "rules", "policies", "rules_review_by"}, set(st)
     assert set(st["counts"]) == {"photos_read", "results_free_care", "results_discount", "results_not_eligible",
-                                 "packets", "fallbacks", "household_views", "checks_run", "disputes"}
+                                 "packets", "fallbacks", "household_views", "checks_run", "disputes", "eobs_read"}
     assert st["languages"] == {"ar": "<10"}, st["languages"]
     _dump = str(st)
     assert "CGH-" not in _dump and "4,812" not in _dump
@@ -1109,7 +1109,7 @@ def check_ids(b):
     assert st == 200, (st, jb[:200])
     out = json.loads(jb)
     assert out["contract_version"] == 1 and set(out) == {"contract_version", "flags", "total_to_ask_cents",
-                                                         "lines_checked"}, set(out)
+                                                         "lines_checked", "insurer_letter"}, set(out)
     return [f["id"] for f in out["flags"]], out
 
 
@@ -1263,11 +1263,11 @@ assert st == 200 and hh["content-type"].startswith("text/html"), (st, hh)
 assert html_escape(_dup_line) in page and "To the Billing Office, Cumberland General Hospital (SYNTHETIC):" in page
 assert "DRAFT - you decide whether to send it." in page and "savings" not in page
 assert main._counts["disputes"] == _disputes_before + 1
-r = main.dispute_letter(main.ResultIn(bill=main.BillIn(**key_bill("bill-11")), answers=answers(language="en")),
+r = main.dispute_letter(main.DisputeIn(bill=main.BillIn(**key_bill("bill-11")), answers=answers(language="en")),
                         format="json")
 assert _dup_line in r["letter_en"] and r["translation_check"] == {"numbers_match": True, "fallback_used": False}, r
 # another language: the FAKE translation passes the number lock
-r = main.dispute_letter(main.ResultIn(bill=main.BillIn(**key_bill("bill-11")), answers=answers(language="es")),
+r = main.dispute_letter(main.DisputeIn(bill=main.BillIn(**key_bill("bill-11")), answers=answers(language="es")),
                         format="json")
 assert r["translation_check"]["numbers_match"] is True and r["letter_translated"].startswith("[ES draft]"), r
 # no hospital name and no policy: both still get a letter
@@ -1275,7 +1275,7 @@ for label, mutate in (("no name", lambda b: b["fields"].pop("hospital_name")),
                       ("no policy", lambda b: b["fields"]["hospital_name"].update(value="Some Other Hospital"))):
     nb = key_bill("bill-14")
     mutate(nb)
-    r = main.dispute_letter(main.ResultIn(bill=main.BillIn(**nb), answers=answers(language="en")), format="json")
+    r = main.dispute_letter(main.DisputeIn(bill=main.BillIn(**nb), answers=answers(language="en")), format="json")
     assert "TennCare" in r["letter_en"], label
     assert r["letter_en"].count("To the Billing Office:") == (1 if label == "no name" else 0), label
 
@@ -1300,5 +1300,151 @@ assert _bn["lines"]["items"][0]["amount_cents"] is None and _bn["lines"]["total_
 main.LinesIn(**_bn["lines"])   # still a valid LinesIn
 for _txt, _want in (("Medicaid pending", "unknown"), ("No Medicaid", "unknown"), ("TennCare (SYNTHETIC member)", "medicaid")):
     assert main._norm_insurance(_txt) == _want, (_txt, main._norm_insurance(_txt))
+
+# ================================================================ Phase 3: insurance check (EOB) in /extract, /check, /dispute
+with open(os.path.join(ROOT, "spikes", "synthetic-eob", "pairs_key.json"), encoding="utf-8") as _f:
+    PK = json.load(_f)["pairs"]
+
+
+def pair_bill(pid):
+    """A confirmed BillIn dict for a planted pair. Bill 13 has a full answer_key row; bills 20/22/23 are built from the pair key."""
+    k = PK[pid]
+    if k["bill"] == "bill-13.png":
+        b = key_bill("bill-13")
+    else:
+        flds = {"hospital_name": k["eob"]["provider_name"], "statement_date": "2026-10-17",  # the pair's hospital (fictional Cumberland)
+                "account_number": "PAIR-" + pid, "amount_due_cents": k["bill_amount_due_cents"],
+                "date_of_service": k["bill_date_of_service"], "insurance_status": "insured"}
+        b = {"contract_version": 1,
+             "fields": {n: {"value": v, "confidence": None, "confirmed": True} for n, v in flds.items()},
+             "lines": {"items": [dict(date=None, **it) for it in k["bill_lines"]],
+                       "total_charges_cents": k["bill_total_charges_cents"], "payments_cents": k["bill_payments_cents"],
+                       "confirmed": True, "read": True}}
+    return b
+
+
+def pair_eob(pid, fields_confirmed=True, lines_confirmed=True):
+    """A confirmed EobIn dict from the pair key's eob block (service_lines become the lines)."""
+    e = PK[pid]["eob"]
+    out = {"contract_version": 1,
+           "fields": {n: {"value": v, "confidence": None, "confirmed": fields_confirmed}
+                      for n, v in e.items() if n != "service_lines"},
+           "lines": {"items": [{"date": ln["date"], "description": ln["description"],
+                                "amount_billed_cents": ln["amount_billed_cents"],
+                                "patient_owes_cents": ln["patient_owes_cents"]} for ln in e["service_lines"]],
+                     "confirmed": lines_confirmed, "read": True}}
+    main.EobIn(**out)
+    return out
+
+
+def check_out(payload):
+    st, _h, jb = post("/check", payload)
+    assert st == 200, (st, jb[:300])
+    out = json.loads(jb)
+    assert set(out) == {"contract_version", "flags", "total_to_ask_cents", "lines_checked", "insurer_letter"}, set(out)
+    return out
+
+
+for _pid, _k in sorted(PK.items()):
+    _out = check_out({"bill": pair_bill(_pid), "eob": pair_eob(_pid)})
+    _ins = [f["id"] for f in _out["flags"] if f["kind"] == "insurance"]
+    assert _ins == _k["expected_insurance_flags"], (_pid, _ins, _k["expected_insurance_flags"])
+    _want = _k["expected_total_cents"]
+    if _want is None:   # a summary for another visit leaves the bill-only total
+        _want = check_out({"bill": pair_bill(_pid)})["total_to_ask_cents"]
+    assert _out["total_to_ask_cents"] == _want, (_pid, _out["total_to_ask_cents"], _want)
+
+# no summary yet: the one pending flag
+_out = check_out({"bill": pair_bill("06"), "eob_not_yet": True})
+assert [f["id"] for f in _out["flags"] if f["kind"] == "insurance"] == ["pending"], _out["flags"]
+
+# the gates: unconfirmed EOB field, unconfirmed EOB lines, a member_id field -> 422
+for _label, _eob in (("field", pair_eob("06", fields_confirmed=False)), ("lines", pair_eob("06", lines_confirmed=False))):
+    st, _h, jb = post("/check", {"bill": pair_bill("06"), "eob": _eob})
+    assert st == 422, (_label, st)
+    assert json.loads(jb)["detail"] == ("Confirm every insurance summary field first." if _label == "field"
+                                        else "Confirm the insurance summary lines first."), jb
+_eob = pair_eob("06")
+_eob["fields"]["member_id"] = {"value": "W123456789", "confidence": None, "confirmed": True}
+st, _h, jb = post("/check", {"bill": pair_bill("06"), "eob": _eob})
+assert st == 422, st
+try:
+    main.EobIn(**_eob)
+    raise AssertionError("member_id field accepted")
+except ValidationError:
+    pass
+
+# normalize_eob: a raw member_id is dropped; status spellings; lines absent -> None
+_ne = main.normalize_eob({"insurer_name": " Acme ", "member_id": "W123456789", "claim_status": "Partially Paid",
+                          "amount_billed": "1,000.00", "appeal_deadline": "03/18/2027"})
+assert "member_id" not in _ne["fields"] and set(_ne["fields"]) == set(main._EOB_FIELDS), set(_ne["fields"])
+assert _ne["fields"]["claim_status"]["value"] == "partially_paid" and _ne["fields"]["insurer_name"]["value"] == "Acme"
+assert _ne["fields"]["amount_billed_cents"]["value"] == 100000 and _ne["fields"]["appeal_deadline"]["value"] == "2027-03-18"
+assert _ne["fields"]["claim_number"] == {"value": None, "confidence": 0.0, "confirmed": False} and _ne["lines"] is None
+assert main.normalize_eob({"claim_status": "processing"})["fields"]["claim_status"]["value"] is None
+assert main.normalize_eob({"claim_status": "Partially-Paid"})["fields"]["claim_status"]["value"] == "partially_paid"
+_ne = main.normalize_eob({"service_lines": [{"date": "09/12/2026", "description": "A\nB", "amount_billed": "12345678.00",
+                                             "patient_owes": 5}] + ["junk"] * 3})
+assert _ne["lines"] == {"items": [{"date": "2026-09-12", "description": "A B", "amount_billed_cents": None,
+                                   "patient_owes_cents": 500}], "confirmed": False, "read": True}, _ne["lines"]
+main.EobIn(**_ne)
+assert main.normalize_eob({"service_lines": "none"})["lines"] is None
+
+# /extract kind=eob (FAKE_OCI): eob-06's fields, lines read and unconfirmed, counted
+_before = main._counts["eobs_read"]
+_fe = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png"), kind="eob", date_of_service="2026-09-12"))
+assert {n: f["value"] for n, f in _fe["fields"].items()} == {n: v for n, v in PK["06"]["eob"].items() if n != "service_lines"}
+assert all(f["confirmed"] is False for f in _fe["fields"].values())
+assert _fe["lines"]["read"] is True and _fe["lines"]["confirmed"] is False and len(_fe["lines"]["items"]) == 3
+main.EobIn(**_fe)
+assert main._counts["eobs_read"] == _before + 1 and "eobs_read" in main._STAT_KEYS
+
+# the model says it is not an EOB, or reads a hospital bill with the EOB prompt (V1 gate 2026-10-18: invented
+# claim_status "pending", insurer_name and claim_number null): both are a 422 and not counted
+_real_eob = oci_client.extract_eob
+_bill_like = {"insurer_name": None, "claim_number": None, "claim_status": "pending", "amount_billed": 4812.40,
+              "patient_owes": 4812.40, "service_lines": []}
+try:
+    for _raw, _name in (({"not_eob": True}, "not_eob"), (_bill_like, "bill-like")):
+        oci_client.extract_eob = lambda data, mime, dos, _r=_raw: _r
+        try:
+            asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob"))
+            raise AssertionError("accepted " + _name)
+        except HTTPException as e:
+            assert e.status_code == 422 and e.detail == "This doesn't look like an insurance summary.", (_name, e.detail)
+    assert main._counts["eobs_read"] == _before + 1
+    # one of insurer_name / claim_number present is enough
+    oci_client.extract_eob = lambda data, mime, dos: dict(_bill_like, insurer_name="Acme Health")
+    assert asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob"))["fields"]["insurer_name"]["value"] == "Acme Health"
+    # date_of_service is passed through only as YYYY-MM-DD; a model failure is the same 502 as for a bill
+    _seen = []
+    oci_client.extract_eob = lambda data, mime, dos: _seen.append(dos) or _real_eob(data, mime, dos)
+    for _dos in ("2026-09-12", "09/12/2026", None):
+        asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob", date_of_service=_dos))
+    assert _seen == ["2026-09-12", None, None], _seen
+
+    def _boom(data, mime, dos):
+        raise RuntimeError("secret detail")
+    oci_client.extract_eob = _boom
+    try:
+        asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob"))
+        raise AssertionError("model failure accepted")
+    except HTTPException as e:
+        assert e.status_code == 502 and "secret" not in e.detail, e.detail
+finally:
+    oci_client.extract_eob = _real_eob
+try:
+    asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="xyz"))
+    raise AssertionError("unknown kind accepted")
+except HTTPException as e:
+    assert e.status_code == 422 and e.detail == "Unknown kind.", e.detail
+
+# /dispute with an insurance summary: pair 08 (denied) gets a letter, pair 10 (nothing to ask) does not
+st, _h, jb = post("/dispute", {"bill": pair_bill("08"), "eob": pair_eob("08"), "answers": ANS_DICT})
+assert st == 200 and _h["content-type"].startswith("text/html") and b"<html" in jb, (st, jb[:300])
+st, _h, jb = post("/dispute", {"bill": pair_bill("10"), "eob": pair_eob("10"), "answers": ANS_DICT})
+assert st == 422 and json.loads(jb)["detail"] == "No letter: no items to ask about.", (st, jb)
+st, _h, jb = post("/dispute", {"bill": pair_bill("08"), "eob": pair_eob("08", fields_confirmed=False), "answers": ANS_DICT})
+assert st == 422, st
 
 print("ALL PASS")

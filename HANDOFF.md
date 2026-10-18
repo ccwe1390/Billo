@@ -84,6 +84,8 @@ snapshot; history lives in the record (Phase 0, Appendices A-BC).
 - **11:20 CDT: LIVE = 99d4851** (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
   on http + https, record BC). Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Demo error flags ONLY on
   bills 11-14 (fictional Cumberland). Open O2 items #4-#13 (record BC). Pitch: the DO NOT SAY line is lifted (Phase 2 live by 12:40).
+  KEEP until after the pitches (Evan 11:23): worktree C:/ClaudeCode/TNHacks27-f12 and ~/.claude/task-plans/tnhacks26-errorcheck.md.
+  Phase 2 files frozen at 79f1c07 for the Phase 3 fork (f13); nothing merges without Evan.
 - **LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
   word; live checks 10:21 pass; record AZ). Real published VUMC + Ascension Saint Thomas policies,
   synthetic bills; audit-4 fixes + landing-check fixes + the VUMC uninsured/underinsured condition

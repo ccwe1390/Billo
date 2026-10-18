@@ -94,6 +94,7 @@ the dated entry, not the digest.
 - [BF - Remove photo + Sources dropdown (a0684aa, not live); swarm plan held; quick usability brief](#appendix-bf---remove-photo--sources-dropdown-a0684aa-not-live-swarm-plan-held-quick-usability-brief-2026-10-18-1155-cdt) (10-18)
 - [BG - Review fixes live (af1d5f6); swarm results; kit remade](#appendix-bg---review-fixes-live-af1d5f6-swarm-results-kit-remade-2026-10-18-1207-cdt) (10-18)
 - [BH - One confirm box per screen; pending wording; dashboard counters (189163e)](#appendix-bh---one-confirm-box-per-screen-pending-wording-dashboard-counters-189163e-2026-10-18-1214-cdt) (10-18)
+- [BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open)](#appendix-bi---swarm-ui-fixes-2e74b20-live-8-of-10-translations-and-hebrew-billing-office-open-2026-10-18-1228-cdt) (10-18)
 
 ---
 
@@ -1931,3 +1932,34 @@ Tests n3 + an API test; m4 updated; 77 JS tests. All 9 suites ALL PASS. Served a
 - Live /check with eob_not_yet returns the new pending text on both schemes.
 - On the live site at 390 px: f-all-ok and lines-ok are the only confirm boxes; the reason text shows; no sideways scroll.
 - Rollback: deploy.ps1 -Commit 189163e -Rollback restores af1d5f6. Kit v10 updated.
+
+# Appendix BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open) (2026-10-18 ~12:28 CDT)
+**What.** Evan, 12:18 CDT: "do these fixes fast" (the 10 open swarm UI items from record BG/BH). 8 were done in commit 2e74b20, which was deployed by Claude at 12:27 CDT at Evan's word. 2 were skipped.
+
+**Fixed (2e74b20):**
+- EOB service rows: the 5-column grid at >= 640 px is gone, and rows now use 2 columns. A probe at 1024 px showed the 5-column row was only 621 px wide, which left the description column 35 px. So the bug was not only at 640-720 px: the content width is capped, so 5 columns never fit. Probe after the fix: 0 px overflow at 640, 720 and 1024.
+- The disabled-button reason (`bill-why`, `eob-why`) is now `role="status"`. The Continue buttons point to it with `aria-describedby`.
+- Remove photo moves focus to the upload control (`bill-file`).
+- Footnote marks: min-width 1.5rem. The measured link is 25.5 px wide, above the 24 px target.
+- Checkmark: physical `border-right`/`border-bottom`, and the `[dir="rtl"]` scaleX(-1) rule is deleted. A screenshot in dir=rtl shows the normal check shape.
+- Denied card: a reason that ends in `.`, `!` or `?` is quoted verbatim, with no second period (the old output was `service.".`).
+  - First try: strip the period inside the quote. Test pair08 caught that this alters the printed reason, so it was replaced.
+- Letters say "explanation of benefits (insurance summary)", matching the screens' word.
+- TennCare card: the 55-word sentence now opens with the question "Did you have TennCare on the date of service?". The conditions and the citation are unchanged.
+
+**Skipped (open):**
+- U02, 54 untranslated keys x 26 languages: build_i18n.py could machine-translate them, but every earlier language needed the back-translation review (its DROP list). There was no time for that review, and unreviewed safety text is worse than English.
+- Hebrew letter keeps "Billing Office" in English: this comes from OCI Language output, not the keep list. A fix cannot be verified without paid calls.
+
+**Verification.**
+- Tests: test_eob_checks 25, test_checks 21, test_dispute 21, test_api and test_engine ALL PASS; test_app_js 78 ALL PASS; `node --check` ok.
+- Deploy: backup ~/backup-before-2e74b20.tar, import check ok, "DEPLOYED 2e74b20 (service active, /stats 200)".
+  - One "Connection refused" line came from the startup poll before the service was up.
+- Live: served app.js and style.css match `git show 2e74b20` byte for byte after CR is stripped (app.js 271e1dfad059, style.css 54c419a506af), on both http and https. /stats is 200 on both.
+  - First hash check: `/static/<f>` gave the same hash for both files, so that path does not serve them. The real paths are `/app.js` and `/style.css`.
+
+**Slips.**
+- The first deploy attempt (12:23) was blocked by the auto-mode classifier. Claude stopped and asked, and Evan approved at about 12:26.
+- No live paid call was made for the server text changes. The denied wording and letter wording are proven by the unit tests and by the deployed archive, which is the same commit.
+
+**Rollback:** `deploy.ps1 -Commit 2e74b20 -Rollback` restores 02e3d18.

@@ -13,7 +13,7 @@ Knowledge:
 - disclosure.md - what may leave the project (updated 2026-10-17)
 
 Running systems:
-- operations.md - one OCI VM (FastAPI behind Apache), deploy log; no jobs/backups by design (updated 2026-10-17)
+- operations.md - one OCI VM (FastAPI behind Apache), deploy log; no jobs/backups by design (updated 2026-10-18)
 - services.md - OCI services in use (Generative AI, Language, one VM) + starter-kit facts (updated 2026-10-17)
 
 Output:
@@ -27,11 +27,11 @@ Code:
 - architecture.md - pointer to HANDOFF + contracts.md (updated 2026-10-17)
 - conventions.md - cents, ISO dates, el()/fill(), string markers (updated 2026-10-17)
 - dependencies.md - pinned Python requirements; JDK 17 + Synthea jar with hashes (updated 2026-10-17)
-- testing.md - framework, layout, coverage/frozen rules (updated 2026-10-17)
+- testing.md - framework, layout, coverage/frozen rules (updated 2026-10-18)
 - tooling.md - build/lint/format/CI + required commands (updated 2026-10-17)
 - data.md - Synthea snapshot command, row counts, determinism, adjustment gap (updated 2026-10-17)
 - security.md - pointer: limits, headers, auth model (updated 2026-10-17)
-- features.md - built vs not built (updated 2026-10-17)
+- features.md - built vs not built (updated 2026-10-18)
 - performance.md - journey timing (updated 2026-10-17)
 - ui.md - accessibility, RTL, design/asset/a11y evidence rules (updated 2026-10-17)
 

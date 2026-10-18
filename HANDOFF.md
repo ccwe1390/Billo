@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 10:02 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AX).
+**Last updated: 2026-10-18 10:22 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AZ).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -41,7 +41,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AX).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each - OLD render only (2026-10-17); the re-rendered blur-3 bill misread the date (2026-10-18 08:49, experiments.md); blur 5 not re-run | experiments.md |
 | VUMC + Ascension policy | **REAL, VERIFIED** 2026-10-18: read from their PDFs, page-cited, re-checked by a second AI pass and against freshly downloaded PDFs (audit 4: 0 defects); live since 08:48 | record AV, audit 4 |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs bdc76df (deployed 2026-10-18 08:48 CDT, record AV; real policies) | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs e53d1ce (deployed 2026-10-18 10:20 CDT, record AZ; real policies) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -73,12 +73,17 @@ snapshot; history lives in the record (Phase 0, Appendices A-AX).
 - `.claude/project-memory/` - bins; `important.md` first, then `INDEX.md`.
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
-## STATUS (2026-10-18 08:52 CDT) - read this first
+## STATUS (2026-10-18 10:22 CDT) - read this first
 - **10:02 CDT (record AX):** audit 4 (docs/2026-10-18_audit-4.md) - crit 1 and highs 2-8 fixed (fc21a7d, 8f1a449, a4d2fc1, f6b6f05); open: 9, 11, 13, 15, 16, 24-36, B3.
-- **LIVE: f6b6f05 on http AND https://207.211.181.174/** (deployed by Claude 09:59 CDT at Evan's
-  request; live checks 10:00 pass; record AX). Real published VUMC + Ascension Saint Thomas policies,
-  synthetic bills; audit-4 code fixes 2, 3, 10, 12, 14, 17 live. Rollback:
-  `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit f6b6f05 -Rollback` (restores bdc76df).
+- **10:22 CDT (records AY, AZ):** landing check FIX FIRST -> fixed (f2c2135, e53d1ce): a bill with no hospital name is listed
+  but not counted on Home; Home hides this policy's contact unless the user's bill matches; JS harness fails a run that stops early
+  (50 tests). VUMC condition 1 = help is for uninsured/underinsured (FAP p.4, p.6): do NOT tell insured VUMC families "free care".
+  Still open from audit 4: #10 global-bucket half, #12 Ascension mailing address.
+- **LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
+  word; live checks 10:21 pass; record AZ). Real published VUMC + Ascension Saint Thomas policies,
+  synthetic bills; audit-4 fixes + landing-check fixes + the VUMC uninsured/underinsured condition
+  (record AY) live. Rollback:
+  `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit e53d1ce -Rollback` (restores f6b6f05).
 - Deploy command (any folder): `powershell -ExecutionPolicy Bypass -File
   C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; after a dropped link re-run with
   -Watch (exit 2 = network dropped, remote keeps running). One "curl: (7)" line is normal.
@@ -93,7 +98,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AX).
   2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
   Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf; no redirect
   from http (both work).
-- Deploys: Claude ran bdc76df at 08:48 at Evan's explicit request (record AV); without that say-so,
+- Deploys: Claude ran bdc76df (08:48), f6b6f05 (09:59) and e53d1ce (10:20), each at Evan's explicit request (records AV, AX, AZ); without that say-so,
   or if the auto-mode classifier refuses (record AG), Evan runs it in PowerShell 5.1:
   `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; add -Rollback to restore
   ~/backup-before-<c>.tar. Re-running a commit keeps its first backup (e5d5b80); use a new commit

@@ -129,3 +129,6 @@
 - 2026-10-18 09:59 CDT - Claude deployed f6b6f05 (audit-4 fixes; first run of the split rm/mkdir/tar
   lines). Backup ~/backup-before-f6b6f05.tar = the bdc76df app. Rollback: `deploy.ps1 -Commit f6b6f05
   -Rollback` (restores bdc76df). Live checks 10:00 pass (record AX). main = f6b6f05.
+- 2026-10-18 10:20 CDT - Claude deployed e53d1ce (landing-check fixes + VUMC underinsured condition).
+  Backup ~/backup-before-e53d1ce.tar = the f6b6f05 app. Rollback: `deploy.ps1 -Commit e53d1ce -Rollback`
+  (restores f6b6f05). Live checks 10:21 pass (record AZ). main = e53d1ce, not pushed.

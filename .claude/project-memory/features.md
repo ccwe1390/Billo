@@ -8,3 +8,8 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
   work first: residency lists, minimum balance, catastrophic rules, an
   uninsured-only flag and a "from service" window anchor
   (docs/research/2026-10-18_middle-tn-hospital-policies.md).
+- 2026-10-18 10:23 CDT - built and live (e53d1ce, records AY, AZ): a bill with no hospital name gets
+  the no-policy path everywhere (Result: warning, no estimate, /packet 422; Home: listed, not counted,
+  no-name note); Home hides one-approval, reminders, calendar and the policy contact unless the user's
+  bill matches. VUMC conditions start with "help is for uninsured/underinsured" (FAP p.4, p.6). NOT
+  built: using insurance_status in the estimate (the engine ignores it), pending-insurance detection.

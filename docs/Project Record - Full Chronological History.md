@@ -85,6 +85,7 @@ the dated entry, not the digest.
 - [AW - Audit 4 (6 workers) after the real-policy change: 1 crit (pitch language claim), 7 high](#appendix-aw---audit-4-6-workers-after-the-real-policy-change-1-crit-pitch-language-claim-7-high-2026-10-18-0941-cdt) (10-18)
 - [AX - Audit 4 fixes: presenter sheet, HANDOFF, Home gating, no-name bills, deploy f6b6f05](#appendix-ax---audit-4-fixes-presenter-sheet-handoff-home-gating-no-name-bills-deploy-f6b6f05-2026-10-18-1002-cdt) (10-18)
 - [AY - VUMC insured-patient condition (uninsured/underinsured, FAP p.4 + p.6) and pitch line](#appendix-ay---vumc-insured-patient-condition-uninsuredunderinsured-fap-p4--p6-and-pitch-line-2026-10-18-1010-cdt) (10-18)
+- [AZ - Landing check of the audit-4 fixes; B2 reaches Home; deploy e53d1ce](#appendix-az---landing-check-of-the-audit-4-fixes-b2-reaches-home-deploy-e53d1ce-2026-10-18-1022-cdt) (10-18)
 
 ---
 
@@ -1726,3 +1727,24 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **What (ef1f3d9, data + docs only, no engine change):** app/data/policy_vumc.json gets a new first condition (13 now) citing p.4; both phrases (p.4 definition Y, p.6 "uninsured or underinsured patient is eligible for Financial Assistance") checked by script on the audit-4 page text of the freshly downloaded PDF. Pitch sheet Judge Q&A: "What if the family has insurance?" with the Ascension p.2 / VUMC p.4 + p.6 note and "Do NOT say an insured VUMC patient gets free care". The engine still ignores insurance_status (options 2 and 3, using it in the UI and detecting pending insurance, are not in scope; Evan did not ask for them).
 
 **Verification:** 6/6 test files ALL PASS (numlock, engine, api, policy_page, answer_key, node app_js). Not live yet: ships with the deploy after the landing-check fixes (Evan, 10:08: "you run the deploy after the landing-check fixes, then live check").
+
+# Appendix AZ - Landing check of the audit-4 fixes; B2 reaches Home; deploy e53d1ce (2026-10-18 10:22 CDT)
+**When:** 2026-10-18 ~09:55-10:22 CDT. Plan step 8 (landing check) and step 9 (docs sync) of the approved audit-4 plan; deploy at Evan's 10:08 word ("Yes, you run the deploy after the landing-check fixes, then live check").
+
+**Landing check (fresh agent, artifacts only, bdc76df..0151d27): FIX FIRST.** Confirmed: the VM app/ is 88/88 f6b6f05 (and the same compare on bdc76df gives DIFF 2, so the method can tell commits apart); the backup tar is 88/88 bdc76df; every control fired on a planted positive (4 server mutants, 4 of 5 UI mutants, the deploy-remote.sh sandbox with mkdir forced to fail: old one-line form exit 0, new split lines exit 1); 8 live POSTs as expected; push state as stated. Findings, each re-checked by hand against the code before fixing:
+- B2 never reached Home: engine.policy_matches returns None for a blank name and evaluate_many counted every row that was not False, and app.js userOk passed null. So a no-name user bill was counted in the Home estimate. (The agent's local probe: blank name gave covers_all true and $8,837.65.)
+- Home's payment-plan/contact panel was not gated: an ineligible family whose own bill has no policy here (e.g. Ascension) saw VUMC's phone.
+- The JS harness exited 0 with no ALL PASS when a test's promise never settled: with the /explain guard mutated to `if (true)`, 16 tests were silently skipped.
+- Docs: HANDOFF Code row still said bdc76df was live and the STATUS header said 08:52; the contracts addendum lacked hospital_name_missing and the second /packet 422; the audit-4 status line marked #3, #10, #12 fixed when they were only partly fixed.
+- NOT SWEPT by the agent: the record AX browser checks, "all journeys pass as at 08:49", VUMC p.23 24%, the 13-hospitals count, a real phone, a live rollback.
+
+**Fixes:** f2c2135. In app/engine.py evaluate_many, only rows with hospital_matches_policy True count (the estimate, covers_all and earliest_deadline); a no-name row stays null and is listed. In app.js, userOk needs `=== true`; n counts `=== true`; a null row shows the r_no_hospital note (not "Different hospital"); payPlan is hidden when !userOk. In tests/test_app_js.js, an exit hook fails the run if it stops before the end; the makeHome fixture now carries hospital_matches_policy true (the real contract always sends it); there are new tests i7 and i8 (50 tests). test_engine's pin changed from "None still counted" to "None listed, not counted"; there is a new test_api /household blank-name check. Each new check failed on the old code: i7 and i8 against HEAD's app.js (2 of 50 FAILED, exit 1); the /explain never-settles mutant now prints "FAIL: the run stopped before every test finished" with exit 1; the test_api assert fails with the old engine.py. e53d1ce adds the contracts addendum and the audit-4 "Landing check" status. Still OPEN: #10 global-bucket half, and #12 Ascension mailing address.
+
+**Deploy e53d1ce** (10:20 CDT, Claude): backup-before-e53d1ce.tar, "DEPLOYED e53d1ce (service active, /stats 200)". It ships ef1f3d9 (record AY, the VUMC underinsured condition) too. Live 10:21, http + https:
+- VUMC condition 1 is underinsured, p.4 (13 conditions);
+- a no-name /household row is null with reduction > 0, and the estimate is unchanged at 883765;
+- blank-name /evaluate, /explain and /packet pass as in AX;
+- the live_check2 journeys pass except "app.js == local bdc76df", a stale raw-byte compare (CRLF). The served app.js CRLF-normalised sha 07c224475d50f34b equals e53d1ce on both schemes.
+Local main fast-forwarded to e53d1ce; nothing pushed after a959f2b (f10) / bdc76df (main).
+
+**Slips:** record AY's heading says 10:10 CDT; the `date` call right after it read 10:09 (the stamp was written ahead of the clock by about a minute). An edit script assumed CRLF for tests/test_app_js.js (it is LF in the working tree) and stopped on its own uniqueness guard, with nothing written to that file. live_check2.py was run twice (the second run only to count its FAILs): about 6 extra paid /explain + /packet calls.

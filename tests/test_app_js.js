@@ -536,6 +536,7 @@ test("i2. Home, not eligible: no 'one approval', no reminders, no calendar; paym
   assert.ok(!txt.includes("Reminders"), "ineligible Home still shows Reminders");
   assert.ok(!txt.includes("Add to my calendar"), "ineligible Home still offers the calendar file");
   assert.ok(txt.includes("(555) 999-0000"), "payment-plan phone missing on ineligible Home");
+  assert.ok(txt.includes("Financial assistance office") && !txt.includes("Payment plan contact"), "ineligible Home contact label must be r_fa_office (audit-4 #12)");
 });
 test("i3. Home, every bill from another hospital: no 'Up to $0.00', the different-hospital note instead", "audit 2 landing-check", () => {
   resetApp(); S.answers = {}; S.bill = {};
@@ -547,13 +548,50 @@ test("i3. Home, every bill from another hospital: no 'Up to $0.00', the differen
   assert.ok(txt.includes("Different hospital"), "different-hospital note missing");
 });
 
+function homeBill(label, source, matches) {
+  const b = {label_en: label, source, statement_date: "2026-10-01", amount_due_cents: 100000, reduction_cents: 100, deadline: {date: "2099-01-01"}};
+  if (matches !== undefined) b.hospital_matches_policy = matches;
+  return b;
+}
+test("i4. Home, the user's own bill is from a no-policy hospital: no one-approval line, no reminders, no calendar button", "audit-4 #3", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(true);
+  h.bills = [homeBill("Bill A", "yours", false), homeBill("Bill B", "demo", true)];
+  S.home = h; A.show(6);
+  const s6 = byId("s6"), txt = s6.textContent;
+  assert.ok(!txt.includes("One approval"), "one-approval line shown for a user bill with no policy");
+  assert.ok(!txt.includes("Reminders"), "reminders shown for a user bill with no policy");
+  assert.ok(!txt.includes("Add to my calendar") && !s6.all().some(n => n.tag === "button" && n.textContent === T.rem_ics.en), "calendar button shown for a user bill with no policy");
+  assert.ok(txt.includes("Different hospital"), "the no-policy bill should still be flagged");
+});
+test("i5. Home, the user's own bill matches: one-approval line, reminders and calendar shown; n = rows that match", "audit-4 #3", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(true);
+  h.bills = [homeBill("Bill A", "yours", true), homeBill("Bill B", "demo", true), homeBill("Bill C", "demo", false)];
+  S.home = h; A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(txt.includes("One approval may cover all 2 bills"), "n must be the matching-row count (2 of 3), got: " + txt.slice(0, 400));
+  assert.ok(!txt.includes("all 3 bills"), "n counted a non-matching row");
+  assert.ok(txt.includes("Reminders") && txt.includes("Add to my calendar"), "reminders and calendar button missing");
+});
+test("i6. Home, no 'yours' bill in the list: one-approval line, reminders and calendar shown", "audit-4 #3", () => {
+  resetApp(); S.answers = {}; S.bill = {};
+  const h = makeHome(true);
+  h.bills = [homeBill("Bill A", "demo", true), homeBill("Bill B", "demo", false)];
+  S.home = h; A.show(6);
+  const txt = byId("s6").textContent;
+  assert.ok(txt.includes("One approval may cover all 1 bills"), "one-approval line missing or wrong n");
+  assert.ok(txt.includes("Reminders") && txt.includes("Add to my calendar"), "reminders and calendar button missing");
+});
+
 // j. real-policies UI (plan D5, D8, D10, D11, D12, D13, D15, D16, D17)
 const CITE2 = {source: "VUMC FAP", page: 9, effective_date: "2026-07-01", url: "http://u2"};
 async function landResult(result) { // drive the real submit path and return the Result screen node
   resetApp(); setupQuestions();
   const p = A.submitAnswers();
   respond(take("/evaluate"), result); await flush();
-  respond(take("/explain"), makeExplain("X")); await p;
+  if (result.hospital_matches_policy !== false) respond(take("/explain"), makeExplain("X")); // no policy: the app must not ask for one
+  await p;
   assert.strictEqual(A.curScreen, 4, "did not reach the Result screen");
   return byId("s4");
 }
@@ -687,8 +725,8 @@ test("j9. Start chip names the hospital from S.fromQr (string key or null); the 
   assert.ok(/location\.origin \+ "\/\?hospital=vumc"/.test(src), "Start-screen QR must encode origin + /?hospital=vumc");
 });
 test("j10. SAFETY_KEYS has r_mismatch_any and r_other_route; the new T rows are in the five inline languages", "plan D12", () => {
-  assert.ok(A.SAFETY_KEYS.includes("r_mismatch_any") && A.SAFETY_KEYS.includes("r_other_route"));
-  for (const k of ["r_conditions", "r_mismatch_any", "r_other_route", "help_title", "help_note"])
+  assert.ok(A.SAFETY_KEYS.includes("r_mismatch_any") && A.SAFETY_KEYS.includes("r_other_route") && A.SAFETY_KEYS.includes("r_no_hospital"));
+  for (const k of ["r_conditions", "r_mismatch_any", "r_other_route", "r_no_hospital", "r_fa_office", "r_payplan", "help_title", "help_note"])
     for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(typeof T[k][l] === "string" && T[k][l].length > 5, k + "." + l);
   resetApp();
   S.view = "da";
@@ -697,6 +735,34 @@ test("j10. SAFETY_KEYS has r_mismatch_any and r_other_route; the new T rows are 
     const nodes = A.tSafe(key);
     assert.ok(nodesText(nodes).includes("DA-" + key) && nodes.some(n => typeof n !== "string" && n.classList.contains("en-gloss")), key + ": no English gloss");
   }
+});
+test("j16. /evaluate says no policy: /explain is never requested, S.explain stays null, the no-policy screen renders", "audit-4 #10", async () => {
+  resetApp(); setupQuestions();
+  const p = A.submitAnswers();
+  const r = makeResult(250); r.hospital_matches_policy = false;
+  respond(take("/evaluate"), r); await flush();
+  assert.ok(!fetchQueue.some(q => q.url.includes("/explain")), "/explain was requested for a no-policy result (pending: " + fetchQueue.map(q => q.url).join(", ") + ")");
+  await p;
+  assert.strictEqual(S.explain, null, "S.explain should be null");
+  assert.strictEqual(A.curScreen, 4);
+  assert.strictEqual(S.busy, false);
+  assert.ok(byId("s4").textContent.includes(T.r_mismatch_title.en), "no-policy screen not rendered");
+});
+test("j17. hospital_name_missing: r_no_hospital replaces r_mismatch_any under the same title", "audit-4 #2", async () => {
+  const r = makeResult(250); r.hospital_matches_policy = false; r.hospital_name_missing = true;
+  let txt = (await landResult(r)).textContent;
+  assert.ok(txt.includes(T.r_no_hospital.en), "r_no_hospital missing");
+  assert.ok(!txt.includes(T.r_mismatch_any.en), "r_mismatch_any shown with a missing hospital name");
+  assert.ok(txt.includes(T.r_mismatch_title.en), "title lost");
+  const r2 = makeResult(250); r2.hospital_matches_policy = false; // flag absent: the old text
+  txt = (await landResult(r2)).textContent;
+  assert.ok(txt.includes(T.r_mismatch_any.en) && !txt.includes(T.r_no_hospital.en), "flag absent: must keep r_mismatch_any");
+});
+test("j18. Result, not eligible: the contact panel is labelled 'Financial assistance office', not 'Payment plan contact'", "audit-4 #12", async () => {
+  const txt = (await landResult(makeResult(400, false))).textContent;
+  assert.ok(txt.includes("Financial assistance office"), "r_fa_office label missing");
+  assert.ok(!txt.includes("Payment plan contact"), "old r_payplan label still shown");
+  assert.ok(txt.includes("(555) 999-0000"), "payment-plan phone changed or missing");
 });
 test("j11. timeout: a timed-out /evaluate shows the generic error and stays on Questions (20 s)", "plan D17", async () => {
   resetApp(); setupQuestions();

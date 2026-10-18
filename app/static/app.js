@@ -109,6 +109,8 @@ const T = {
   r_docs:      {en: "Documents the hospital asks for", es: "Documentos que pide el hospital", ar: "المستندات التي يطلبها المستشفى", "zh-CN": "医院要求的文件", "zh-TW": "醫院要求的文件"}, // TODO-REVIEW es+ar+zh
   r_contact:   {en: "Where to send the application", es: "Dónde enviar la solicitud", ar: "أين ترسل الطلب", "zh-CN": "申请材料寄送处", "zh-TW": "申請資料寄送處"}, // TODO-REVIEW es+ar+zh
   r_payplan:   {en: "Payment plan contact", es: "Contacto para plan de pagos", ar: "جهة الاتصال لخطة السداد", "zh-CN": "付款计划联系方式", "zh-TW": "付款計畫聯絡方式"}, // TODO-REVIEW es+ar+zh
+  r_no_hospital: {en: "We could not read a hospital name on this bill, so we cannot tell which policy applies. Go back and type the hospital's name from the bill.", es: "No pudimos leer el nombre del hospital en esta factura, así que no sabemos qué política se aplica. Regrese y escriba el nombre del hospital que aparece en la factura.", ar: "لم نتمكن من قراءة اسم المستشفى في هذه الفاتورة، لذا لا نعرف أي سياسة تنطبق. ارجع واكتب اسم المستشفى كما يظهر في الفاتورة.", "zh-CN": "我们无法读取这张账单上的医院名称，因此无法判断适用哪项政策。请返回并输入账单上的医院名称。", "zh-TW": "我們無法讀取這張帳單上的醫院名稱，因此無法判斷適用哪項政策。請返回並輸入帳單上的醫院名稱。"}, // TODO-REVIEW es+ar+zh
+  r_fa_office: {en: "Financial assistance office", es: "Oficina de asistencia financiera", ar: "مكتب المساعدة المالية", "zh-CN": "财务援助办公室", "zh-TW": "財務援助辦公室"}, // TODO-REVIEW es+ar+zh
   r_phone:     {en: "Phone", es: "Teléfono", ar: "الهاتف", "zh-CN": "电话", "zh-TW": "電話"}, // TODO-REVIEW es+ar+zh
   r_email:     {en: "Email", es: "Correo electrónico", ar: "البريد الإلكتروني", "zh-CN": "电子邮件", "zh-TW": "電子郵件"}, // TODO-REVIEW es+ar+zh
   r_fallback:  {en: "Shown in English: the translated text did not pass the number check.", es: "Se muestra en inglés: el texto traducido no pasó la verificación de números.", ar: "معروض بالإنجليزية: النص المترجم لم يجتز فحص الأرقام.", "zh-CN": "以英文显示：翻译后的文字未通过数字检查。", "zh-TW": "以英文顯示：翻譯後的文字未通過數字檢查。"}, // TODO-REVIEW es+ar+zh
@@ -385,7 +387,7 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
                      "home_estimate_note", "home_one_approval", "home_bill_reduction",
                      "r_packet", "r_no_packet", "home_not_eligible", "rem_follow",
-                     "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_other_route"];
+                     "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_no_hospital", "r_other_route"];
 function machineTranslated(key) {
   return S.view !== "en" && !(T[key] && T[key][S.view]) && !!(I18N[S.view] && I18N[S.view][key]);
 }
@@ -702,8 +704,11 @@ async function submitAnswers() {
   try {
     const result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     if (seq !== S.submitSeq) return;
-    showBusy(t("load_explain"));
-    const explain = await post("/explain", {bill: S.bill, answers: S.answers, result}, 45000);
+    let explain = null; // no policy for the hospital: no estimate to explain, so no /explain call
+    if (result.hospital_matches_policy !== false) {
+      showBusy(t("load_explain"));
+      explain = await post("/explain", {bill: S.bill, answers: S.answers, result}, 45000);
+    }
     if (seq !== S.submitSeq) return; // checked BEFORE the assignments: a cancelled submit must not overwrite a newer result
     S.result = result; S.explain = explain;
   } catch (e) {
@@ -757,7 +762,7 @@ function resultActions(primary) {
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
   if (r.hospital_matches_policy === false) { // no policy for this hospital: no estimate at all, only the warning and where to get help
-    const none = panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch_any")));
+    const none = panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe(r.hospital_name_missing === true ? "r_no_hospital" : "r_mismatch_any")));
     none.setAttribute("role", "note");
     fill(root, el("div", {class: "stack-8"}, screenTitle(t("r_title")), none, helpCard(null), resultActions()));
     return;
@@ -806,7 +811,7 @@ function renderResult() {
           c.email ? el("dt", null, t("r_email")) : null,
           c.email ? el("dd", null, el("bdi", {lang: "en", dir: "ltr"}, el("a", {href: "mailto:" + c.email}, c.email))) : null,
           el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.phone))))
-    : panel("", el("h3", null, t("r_payplan"), notes.mark(c.citation)),
+    : panel("", el("h3", null, t("r_fa_office"), notes.mark(c.citation)),
         el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
   const toggle = S.lang === "en" ? null
     : el("button", {type: "button", id: "r-toggle", onclick: () => { S.view = english ? S.lang : "en"; show(4); }}, english ? t("r_see_native") : t("r_see_en"));
@@ -916,9 +921,12 @@ function renderHome() {
     : h.tier && h.tier.other_route_en
       ? panel("hero", el("p", {class: "lead"}, ...tSafe("r_other_route")), englishOnly("p", {class: "muted"}, h.tier.other_route_en))
       : panel("hero", el("p", {class: "lead"}, ...tSafe("home_not_eligible")));
-  const covers = eligible && h.one_application_covers_all
+  // The user's own bill is from a hospital with no policy here: the one-approval line, reminders and calendar would not apply to it.
+  const mine = h.bills.find(b => b.source === "yours");
+  const userOk = !mine || mine.hospital_matches_policy !== false;
+  const covers = eligible && userOk && h.one_application_covers_all
     ? panel("ok",
-        el("p", null, ...tSafe("home_one_approval", {n: h.bills.length}), notes.mark(h.coverage.citation)),
+        el("p", null, ...tSafe("home_one_approval", {n: h.bills.filter(b => b.hospital_matches_policy !== false).length}), notes.mark(h.coverage.citation)),
         englishOnly("p", {class: "muted"}, h.coverage.text_en))
     : null;
   const bills = el("ul", {class: "plain bills"}, ...h.bills.map(b => {
@@ -936,9 +944,9 @@ function renderHome() {
   }));
   const c = h.contacts;
   const payPlan = eligible ? null : panel("",
-    el("h3", null, t("r_payplan"), notes.mark(c.citation)),
+    el("h3", null, t("r_fa_office"), notes.mark(c.citation)),
     el("dl", {class: "kv"}, el("dt", null, t("r_phone")), el("dd", null, phoneLink(c.payment_plan_phone || c.phone))));
-  const reminders = !eligible ? null : panel("",
+  const reminders = !eligible || !userOk ? null : panel("",
     el("h3", null, t("rem_title")),
     el("p", null, ...tSafe("rem_apply", {date: h.earliest_deadline.date})),
     el("p", null, ...tSafe("rem_follow", {phone: h.contacts.phone})),

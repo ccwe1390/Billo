@@ -96,6 +96,7 @@ the dated entry, not the digest.
 - [BH - One confirm box per screen; pending wording; dashboard counters (189163e)](#appendix-bh---one-confirm-box-per-screen-pending-wording-dashboard-counters-189163e-2026-10-18-1214-cdt) (10-18)
 - [BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open)](#appendix-bi---swarm-ui-fixes-2e74b20-live-8-of-10-translations-and-hebrew-billing-office-open-2026-10-18-1228-cdt) (10-18)
 - [BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80)](#appendix-bj---https-only-http-308-redirects-to-https-acme-path-kept-on-80-2026-10-18-1233-cdt) (10-18)
+- [BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live](#appendix-bk---audit-5-10-agent-fast-sweep-11-fixes-790eb38-live-2026-10-18-1249-cdt) (10-18)
 
 ---
 
@@ -1996,3 +1997,64 @@ Tests n3 + an API test; m4 updated; 77 JS tests. All 9 suites ALL PASS. Served a
 - Every claim of "live on http and https" in earlier records is history and stays as written.
 
 **Undo:** `sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful`.
+
+# Appendix BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live (2026-10-18 ~12:49 CDT)
+**What.** At 12:38 CDT Evan asked for a sweeping /audit-docs plus /audit-code: "BE FAST you have 15 minutes including doing the fixes". At 12:43 he added "2 subagents on the details on the website itself".
+
+10 Sonnet auditors ran, read-only, each with a 5-minute budget:
+- 5 code: main.py; engine/checks/eob_checks; dispute/numlock/oci_client/eob_prompt; app.js; UI shell + deploy scripts.
+- 3 docs: HANDOFF/README/PRD/NOTICE; the project-memory bins; docs/*.md except the record.
+- 2 site text: the bill flow; EOB, letters and dashboard.
+
+Fixes landed in 3547230 + 790eb38, on top of the forked session's 58d8908 (QR -> billow.duckdns.org). Claude deployed 790eb38 at 12:49 CDT at Evan's word.
+
+**Shortcuts (stated, not hidden).**
+- The audit skills' reference files (fanout, methods, reporting) were not read.
+- There was no pre-registered rubric and no coverage manifest beyond the file split above.
+- Not swept: tests/, app/data except the policies, app/static/i18n, spikes/, the record.
+- Crit/high findings were reproduced by reading the code at the cited line, not by fresh repro scripts. The exception is the long hospital name (normalize_bill on 250 chars -> 200 after the fix).
+
+**Fixed (790eb38).**
+- Home r_mismatch said the estimate's policy "is synthetic". Home uses VUMC's real published policy (main.py DEFAULT_POLICY_ID). A new key, r_mismatch_real, holds the true text in English, with es/ar/zh drafts marked TODO-REVIEW. The 27 machine languages fall back to English, so the old false translations are no longer shown.
+- credit_mismatch said "a plan discount of $0.00" when the summary had no discount. The discount clause is now left out when it is missing. Found by 2 auditors.
+- A blank charge description printed "None" in the flag and the letter; it now prints "this charge".
+- A negative patient_owes_cents is clamped to 0, so total_to_ask cannot exceed the amount due.
+- The OCI Language client gets timeout=(10, 40), the same as GenAI.
+- Footnote citation links render only for http(s) URLs.
+- normalize_bill cuts hospital_name and account_number to 200 chars. Before, a long model read made every later call 422.
+- Docs:
+  - HANDOFF: https only, live 2e74b20 then 790eb38, 9 test files, the stale "LIVE e53d1ce" marked superseded;
+  - README: all 9 test commands, Billow title;
+  - pitch sheet: a correction banner (one "This is correct" box per screen; 14 test bills, not 10; the DO NOT SAY was lifted);
+  - bins: testing, INDEX and security.
+
+**Slip.** 3547230 was committed while test_api failed. The `&&` chain did not gate the commit on the test loop. The new key lacked the inline zh/es/ar strings that test_api line 219 requires. 790eb38 adds them.
+
+**Verification.**
+- Tests on 790eb38: test_eob_checks 25, test_checks 21, test_dispute 21; test_api, test_engine, test_numlock, test_policy_page and test_answer_key ALL PASS; test_app_js 78 ALL PASS.
+- Deploy: backup ~/backup-before-790eb38.tar, import check ok, "DEPLOYED 790eb38 (service active, /stats 200)".
+- Live, on both https://207.211.181.174 and https://billow.duckdns.org:
+  - served app.js 7fbf2eca8fa8 and style.css 54c419a506af match `git show 790eb38` (CR stripped);
+  - /stats 200 with certificate verification ok;
+  - http -> 308 https.
+
+**Open (not fixed; ranked).**
+1. HIGH, ops: the IP certificate expires 2026-10-24 15:39 GMT and has no renewal timer. With https only, the site is effectively down after that. The duckdns certificate needs the same.
+2. The "Not yet" path gets the pending flag, which states the claim is "still being processed". A provider-name abbreviation reads as "different visit". not_on_eob fires when an EOB line has no amount.
+3. Deploy scripts:
+   - a redeploy keeps an older backup, so a rollback can restore the wrong state;
+   - a failed health check leaves the broken app live;
+   - $Commit is not validated.
+4. A household just over a tier line shows the floored "300%" while getting the lower tier.
+5. More main.py gaps:
+   - /check returns 200 with no flags on empty or garbage fields;
+   - _norm_cents accepts "1e5";
+   - the per-IP limit trusts the last X-Forwarded-For;
+   - /household's message hides "not confirmed".
+6. Wording:
+   - "Nothing you enter is saved" omits that photos go to an Oracle Cloud AI service;
+   - the 30-day follow-up reads like a hospital rule;
+   - chk_none says "the math adds up" even when the payments check did not run;
+   - the denial_reason prompt has no copy-verbatim rule.
+7. Already known: the number lock compares sets, not counts (audit 3 A1).
+8. Docs: PRD has no Phase 2/3 or Billow entry; contracts.md section headers still say f12/f13 are not merged; testing.md gives a Python count for only 4 files.

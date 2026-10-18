@@ -748,7 +748,8 @@ test("j9. Start chip names the hospital from S.fromQr (string key or null); the 
   S.fromQr = "cumberland_synthetic"; A.show(1);
   assert.ok(byId("s1").textContent.includes("Cumberland General Hospital (SYNTHETIC) selected"), "Cumberland chip");
   S.fromQr = null;
-  assert.ok(/location\.origin \+ "\/\?hospital=vumc"/.test(src), "Start-screen QR must encode origin + /?hospital=vumc");
+  assert.ok(/q\.addData\(origin \+ "\/\?hospital=vumc"\)/.test(src), "Start-screen QR must encode origin + /?hospital=vumc");
+  assert.ok(src.includes('location.hostname === "207.211.181.174" ? "https://billow.duckdns.org" : location.origin'), "QR opened by IP must point at billow.duckdns.org");
 });
 test("j10. SAFETY_KEYS has r_mismatch_any and r_other_route; the new T rows are in the five inline languages", "plan D12", () => {
   assert.ok(A.SAFETY_KEYS.includes("r_mismatch_any") && A.SAFETY_KEYS.includes("r_other_route") && A.SAFETY_KEYS.includes("r_no_hospital"));

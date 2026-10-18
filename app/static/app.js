@@ -537,7 +537,8 @@ function qrFigure() {
   try {
     if (typeof qrcode !== "function" || !window.matchMedia("(min-width: 900px)").matches) return null;
     const q = qrcode(0, "M");
-    q.addData(location.origin + "/?hospital=vumc");
+    const origin = location.hostname === "207.211.181.174" ? "https://billow.duckdns.org" : location.origin; // the live site by name (Evan 2026-10-18)
+    q.addData(origin + "/?hospital=vumc");
     q.make();
     return el("figure", {class: "qr"},
       el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),

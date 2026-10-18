@@ -583,8 +583,8 @@ function renderBill() {
     el("div", {class: "bill-grid"}, left, right),
     el("div", {class: "stack-3"},
       actions([el("button", {type: "button", onclick: () => show(1)}, t("back"))],
-        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, onclick: () => show(billInsured() ? 7 : 3)}, t("continue_"))),
-      el("p", {class: "why", id: "bill-why", hidden: true}))));
+        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, "aria-describedby": "bill-why", onclick: () => show(billInsured() ? 7 : 3)}, t("continue_"))),
+      el("p", {class: "why", id: "bill-why", role: "status", hidden: true}))));
   if (S.extracting) showBusy(t("reading")); // a re-render while the photo is still being read keeps the spinner
   if (S.bill) renderFields();
   updateBillNext();
@@ -628,6 +628,7 @@ function removePhoto() { // the person takes the photo back: it, and every field
   clearEob();
   showMsg("");
   renderBill();
+  const up = document.getElementById("bill-file"); if (up) up.focus(); // focus was on the removed button
 }
 async function onFile(ev) {
   const f = ev.target.files[0];
@@ -1006,14 +1007,14 @@ function renderEobConfirm(root) {
     eobSync();
   };
   eobAllCb.addEventListener("change", () => { EOB_FIELDS.forEach(n => { E.fields[n].confirmed = eobAllCb.checked; }); eobSyncAll(); });
-  const next = el("button", {type: "button", class: "primary", id: "eob-next", disabled: true, onclick: () => { if (S.eob) { S.eobNotYet = false; show(3); } }}, t("continue_"));
+  const next = el("button", {type: "button", class: "primary", id: "eob-next", disabled: true, "aria-describedby": "eob-why", onclick: () => { if (S.eob) { S.eobNotYet = false; show(3); } }}, t("continue_"));
   fill(root, el("div", {class: "stack-8"},
     screenTitle(t("eob_title"), t("eob_hint")),
     el("div", {id: "eob-fields", class: "stack-3"}, ...rows, eobAllBox, el("section", {class: "panel lines", id: "eob-lines-panel"})),
     el("div", {class: "stack-3"},
       actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back")),
                el("button", {type: "button", class: "ghost", id: "eob-retake", onclick: () => { clearEob(); renderEob(); }}, t("eob_retake"))], next),
-      el("p", {class: "why", id: "eob-why", hidden: true}))));
+      el("p", {class: "why", id: "eob-why", role: "status", hidden: true}))));
   renderEobLines();
   eobSyncAll();
 }

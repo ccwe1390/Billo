@@ -13,9 +13,9 @@ MEDICAID_CITATION = {
 }
 
 MEDICAID_TEXT_EN = (
-    "If you had TennCare on the date of service and this was a TennCare-covered service, "
-    "a hospital that takes TennCare generally must accept what your TennCare health plan pays, "
-    "plus any copay TennCare requires, as payment in full. "
+    "Did you have TennCare on the date of service? "
+    "If this was a TennCare-covered service, a hospital that takes TennCare generally must accept "
+    "what your TennCare health plan pays, plus any copay TennCare requires, as payment in full. "
     "Ask the hospital and your TennCare health plan why you were billed."
 )
 MEDICAID_LETTER_EN = (

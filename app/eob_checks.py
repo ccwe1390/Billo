@@ -101,7 +101,7 @@ def _line_flags(bill, eob, bill_dos, eob_dos):
                 f'"{desc(idxs[0])}" for {_money(amt)} on {d} is on this bill {n} times, '
                 f"but your insurer's summary lists it {_times(m)}.",
                 f'"{desc(idxs[0])}" for {_money(amt)} on {d} is listed {n} times on this bill, '
-                f"but my insurer's explanation of benefits lists it {_times(m)}. "
+                f"but my insurer's explanation of benefits (insurance summary) lists it {_times(m)}. "
                 "Please remove the extra charge.",
                 amt * (n - m),
                 idxs,
@@ -114,7 +114,7 @@ def _line_flags(bill, eob, bill_dos, eob_dos):
                 "not_on_eob",
                 f'"{desc(i)}" for {_money(amt)} on {d} is on this bill but not on your insurer\'s summary.',
                 f'"{desc(i)}" for {_money(amt)} on {d} is on this bill but not on my insurer\'s '
-                "explanation of benefits. Please explain this charge or remove it.",
+                "explanation of benefits (insurance summary). Please explain this charge or remove it.",
                 amt,
                 [i],
             ))
@@ -138,7 +138,7 @@ def _money_flags(bill, eob):
             "totals_mismatch",
             f"This bill's total charges are {_money(bill_total)}, but your insurer's summary shows "
             f"{_money(eob_billed)} billed for this visit.",
-            f"This bill's total charges are {_money(bill_total)}, but my insurer's explanation of benefits "
+            f"This bill's total charges are {_money(bill_total)}, but my insurer's explanation of benefits (insurance summary) "
             f"shows {_money(eob_billed)} billed for this visit. "
             "Please tell me which charges were sent to my insurance.",
         ))
@@ -161,7 +161,7 @@ def _money_flags(bill, eob):
             "billed_more",
             f"Your insurer's summary says you owe {_money(owes)} for this visit, but this bill asks for "
             f"{_money(due)}. That is {_money(due - owes)} to ask the hospital about.",
-            f"My insurer's explanation of benefits for this visit{claim_part} says I owe {_money(owes)}, "
+            f"My insurer's explanation of benefits (insurance summary) for this visit{claim_part} says I owe {_money(owes)}, "
             f"but this bill says {_money(due)}. Please correct the bill to match.",
             due - owes,
         ))
@@ -179,7 +179,7 @@ def _denied(bill, eob):
     phone = _s(_field(eob, "insurer_phone"))
     text = "Your insurer denied this claim."
     if reason:
-        text += f' Reason printed on your summary: "{reason}".'
+        text += f' Reason printed on your summary: "{reason}"' + ("" if reason[-1] in ".!?" else ".")  # the printed reason stays verbatim; no second "."
     if deadline:
         text += f" Appeal by {deadline}."
     if phone:

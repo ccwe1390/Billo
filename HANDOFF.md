@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 23:59 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AN).
+**Last updated: 2026-10-18 00:04 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AQ).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -73,7 +73,8 @@ snapshot; history lives in the record (Phase 0, Appendices A-AN).
 
 ## F10 STATUS (19:43 CDT) - read this first
 - **23:56 CDT (record AO; corrected 00:01):** a second session was still pushing f10 at the same time (origin/f10 reached 3da0602 by 00:01), so "not pushed" in AO was true only at 23:51; live still c30be63; deploy needs no push (deploy.ps1 archives app/ locally). tfState file appears gone from Downloads (Evan to confirm). New public PDFs in docs/ (VUMC CON CN2510-038, Dollar For "Bridging the Chasm", Oregon OHA prescreening summary), untracked, unread. Research: stats brief (b7f43ae), money-2 merge and other-systems (3da0602) saved by that session; mtn-census report + compiled census brief (268d9c7); cold assessment not done.
-- **23:42 CDT SNAPSHOT (read first):** live = c30be63 (unchanged since 19:41).
+- **00:04 CDT (record AQ):** f10 = 3da0602 on origin (f10 and ui-max) plus later docs commits; final landing check SAFE TO PUSH, all 6 test files ALL PASS. Research complete: docs/research/2026-10-18_middle-tn-hospital-policies.md (13 hospitals = 76.7% of Middle TN licensed beds, on 7 policies; compiled from 5 raw reports, NOT cold-assessed, sources not re-fetched by the orchestrator). Deploy scripts in deploy/.
+- **23:42 CDT SNAPSHOT (SUPERSEDED by the 23:56 and 00:04 lines - "pushed" and "research still running" were false/stale):** live = c30be63 (unchanged since 19:41).
   f10 = the audit-2 fixes + 32 languages + docs (commit 5af2f1f is the code;
   later commits are docs/research only), pushed, NOT deployed. Evan deploys
   with `deploy.ps1 -Commit 5af2f1f` (or the f10 head) and the live checks run

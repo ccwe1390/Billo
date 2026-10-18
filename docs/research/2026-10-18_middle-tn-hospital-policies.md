@@ -29,7 +29,8 @@ Sources (full text, citations, verification tables):
 - **The 13 run on only 7 distinct policies.** VUMC (one FAP, 3 hospitals),
   Ascension Saint Thomas (one FAP, 2 licenses), HCA TriStar (one system
   page, 4 hospitals), plus Williamson, Cookeville, Maury and Highpoint
-  Sumner, one each. 4 systems cover 10 of the 13.
+  Sumner, one each. 3 systems cover 9 of the 13, plus 4 single-hospital
+  policies.
 - **Free-care ceilings range from 100% FPL (Williamson, Cookeville, Maury)
   to 350% FPG (Vanderbilt Clarksville).** Same county, different answer: a
   household at 220% FPL gets 100% free at VUMC, 100% free at Ascension, 25%

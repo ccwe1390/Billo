@@ -76,6 +76,7 @@ the dated entry, not the digest.
 - [AN - Handoff prompt to chat, deploy scripts into repo, landing-check fixes, research saved](#appendix-an---handoff-prompt-to-chat-deploy-scripts-into-repo-landing-check-fixes-research-saved-2026-10-17-2350-cdt) (10-17)
 - [AO - Fresh-session orientation: f10 not pushed, deploy pending, new PDFs, F11 vs features brief](#appendix-ao---fresh-session-orientation-f10-not-pushed-deploy-pending-new-pdfs-f11-vs-features-brief-2026-10-17-2356-cdt) (10-17)
 - [AP - F11 decisions: push reminders dropped, nickname and F11.8 kept, not started](#appendix-ap---f11-decisions-push-reminders-dropped-nickname-and-f118-kept-not-started-2026-10-17-2359-cdt) (10-17)
+- [AQ - All research in, hospital census brief, final landing check](#appendix-aq---all-research-in-hospital-census-brief-final-landing-check-2026-10-18-0004-cdt) (10-18)
 
 ---
 
@@ -1578,3 +1579,41 @@ waits on Evan.
 **Changed (PRD_ROADMAP.md F11, docs only):** F11.7 heading and its "server keeps nothing" amendment struck with a dated DROPPED note (text kept for history); F11.7 struck in the build order; dated addendum after the open items listing the three calls. The nickname and F11.8 are kept against the brief's advice; the addendum records the brief's reasons beside each.
 
 **Not done:** no F11 code (Evan: don't start yet). Undecided: whether the brief's top 3 (real Nashville policies, over-income path, human-help handoff) join F11 or precede it.
+
+# Appendix AQ - All research in, hospital census brief, final landing check (2026-10-18 00:04 CDT)
+**When:** 2026-10-17 23:51 - 2026-10-18 00:04 CDT. **Branch:** f10.
+A second session (record AO, AP) worked in this checkout at the same time;
+this entry covers only this session's work.
+
+**What changed**
+- Research saved (all agents of record AM are now in):
+  - b7f43ae presentation-stats brief; 3da0602 research-money-2 (Merge 2
+    into the sustainability brief) and mtn-others; 268d9c7 mtn-census and
+    the compiled brief docs/research/2026-10-18_middle-tn-hospital-policies.md.
+  - Compiled result: 13 hospitals hold 6,249 of 8,149 licensed acute beds
+    (76.7%) in the 41 statutory Middle TN counties (HFC Full Bed Report,
+    July 2026); they run on 7 distinct policies. Free-care ceilings range
+    from 100% FPL (Williamson, Cookeville, Maury) to 350% FPG (Vanderbilt
+    Clarksville); windows from 60 days after service (Highpoint Sumner) to
+    240 days after the first statement (Ascension).
+  - The compiled brief is NOT cold-assessed (stage 10.5 skipped) and the
+    orchestrator did not re-fetch sources; raw reports carry the agents'
+    own verification tables.
+- 00ff949 pitch-corrections: dated note pointing slide numbers at the stats
+  brief (95,000 -> 91,000; 9.3% -> 9.7%; Dollar For numbers attributed).
+- 3da0602 pushed to origin f10 and ui-max at Evan's request ("push f10 and
+  f10:ui-max"); `git ls-remote` showed both at 3da0602.
+- Final landing check over 5af2f1f..8b16ab2: SAFE TO PUSH. Code range
+  touches only .gitattributes and deploy/; .sh files LF in index and tree;
+  6 test files ALL PASS (engine, numlock, api, policy_page, answer_key,
+  node test_app_js). Three doc findings fixed here: the brief's "4 systems
+  cover 10 of the 13" was wrong (3 systems cover 9, plus 4 single-hospital
+  policies); HANDOFF said Appendices A-AN (AO, AP exist); HANDOFF's 23:42
+  snapshot still said "pushed" and "research still running" - now marked
+  superseded.
+
+**Open (not done):** cold assessment of the hospital and stats briefs;
+deploy of 5af2f1f or later (Evan); 3 untracked public PDFs in docs/ and the
+test photo left untouched; private-path strings ("daruw") pre-exist in
+project-memory bins and HANDOFF - fine while the repo is private, check
+before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.

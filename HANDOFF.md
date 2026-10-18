@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 23:47 CDT** - this file is the only live
+**Last updated: 2026-10-17 23:59 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-AN).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -72,6 +72,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AN).
 - `.claude/pm-cadence.json`, `.claude/drift-check.stamp` - local, gitignored.
 
 ## F10 STATUS (19:43 CDT) - read this first
+- **23:56 CDT (record AO):** f10 is NOT pushed (10 ahead of origin/f10 = 5af2f1f); live still c30be63; deploy needs no push (deploy.ps1 archives app/ locally). tfState file appears gone from Downloads (Evan to confirm). New public PDFs in docs/ (VUMC CON CN2510-038, Dollar For "Bridging the Chasm", Oregon OHA prescreening summary), untracked, unread. Research still missing: stats brief, hospital census, other systems, cold assessment.
 - **23:42 CDT SNAPSHOT (read first):** live = c30be63 (unchanged since 19:41).
   f10 = the audit-2 fixes + 32 languages + docs (commit 5af2f1f is the code;
   later commits are docs/research only), pushed, NOT deployed. Evan deploys
@@ -103,7 +104,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AN).
   report's "Status after fixes"; NEXT: Evan deploys the f10 head. Do first: Evan deletes the
   tfState file in Downloads (holds the VM key); do NOT hand presenters
   docs/2026-10-17_pitch-corrections.md until it is updated (it says to cut
-  features that are live). PRD F11 (personal app) is a DRAFT, roadmap only.
+  features that are live). PRD F11 (personal app) is a DRAFT, roadmap only. 23:59 (record AP): F11.7 push reminders DROPPED; nickname and F11.8 kept; no F11 code yet.
 - ON f10, NOT DEPLOYED (record AI): 32 languages (all 31 Oracle Translate
   codes + Hindi) from app/data/languages.json; Start-screen dropdown; 27
   machine-translated interface files app/static/i18n/<code>.json (built by

@@ -621,8 +621,9 @@ built, not now):**
   immigration consequences; the field is off the main path (Settings only).
 - Hard rule 4 (keep nothing) -> amended: an opt-in "Keep on this phone"
   switch, OFF by default (F11.3).
-- "The server keeps nothing" -> amended for push reminders only (F11.7): the
-  server keeps a push address and a bill summary until the last reminder.
+- ~~"The server keeps nothing" -> amended for push reminders only (F11.7): the
+  server keeps a push address and a bill summary until the last reminder.~~
+  DROPPED 2026-10-17 23:59 CDT with F11.7 (Evan): the server keeps nothing.
 
 **Rules for every F11 feature:** F10's rules (synthetic data in every demo;
 the engine decides; every number number-locked); new strings hand-written in
@@ -687,7 +688,7 @@ no new runtime third-party requests; reduced motion respected; works at
   Save as PDF via print. BillScan uploads nothing.
 - Done-check: share sheet opens on Android and iPhone; desktop falls back.
 
-#### F11.7 Push reminders - size L (Evan chose this over .ics only)
+#### ~~F11.7 Push reminders - size L (Evan chose this over .ics only)~~ DROPPED 2026-10-17 23:59 CDT (Evan); text below kept for history
 - Opt-in per bill: "Remind me before the deadline". Uses the Web Push API
   with VAPID keys (generated once, private key in OCI Vault); the browser's
   push service delivers (Apple/Google/Mozilla endpoints are the user's own
@@ -731,7 +732,21 @@ no new runtime third-party requests; reduced motion respected; works at
   proposed bar - Evan to confirm).
 
 **Build order (after the hackathon):** F11.1 -> F11.2 -> F11.6 -> F11.5 ->
-F11.3 -> F11.4 -> F11.9 (continuous) -> F11.7 -> F11.8.
+F11.3 -> F11.4 -> F11.9 (continuous) -> ~~F11.7~~ -> F11.8.
 
 **Open items:** O-1 owner; O-2 target user; O-3 pass bar for F11.10;
 O-4 whether Dipayan's React app becomes the shell for F11.2 (team).
+
+**Addendum 2026-10-17 23:59 CDT - Evan's calls on the features brief**
+(docs/research/2026-10-17_customer-features-brief.md, "Features to cut"):
+- F11.7 push reminders + server database: DROPPED. Reminders stay the .ics
+  download; "the server keeps nothing" stands unamended.
+- Optional nickname (hard rule 3 amendment): KEPT, against the brief's cut
+  advice (brief: zero task value; any name field may deter fear-sensitive
+  users). Still phone-only, Settings only, final OK when built.
+- F11.8 "Ask about my result": KEPT, against the brief's "do not build"
+  (brief: chatbots already raise assistance, record AC 13/13; highest risk of
+  invented numbers or advice). Its guard list and red-team gate stand.
+- Not started: F11 stays roadmap only; no F11 code before judging.
+- Not yet decided: whether the brief's top 3 (real Nashville policies, an
+  over-income path, a human-help handoff) join F11 or go ahead of it.

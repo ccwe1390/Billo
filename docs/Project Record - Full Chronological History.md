@@ -74,6 +74,8 @@ the dated entry, not the digest.
 - [AL - Audit 2 fixes on f10: cost caps, ineligible flow, races, translation back-check, browser tests](#appendix-al---audit-2-fixes-on-f10-cost-caps-ineligible-flow-races-translation-back-check-browser-tests-2026-10-17-2331-cdt) (10-17)
 - [AM - Market research launched: stats, features, sustainability (partial saved), Middle TN hospital policies](#appendix-am---market-research-launched-stats-features-sustainability-partial-saved-middle-tn-hospital-policies-2026-10-17-2337-cdt) (10-17)
 - [AN - Handoff prompt to chat, deploy scripts into repo, landing-check fixes, research saved](#appendix-an---handoff-prompt-to-chat-deploy-scripts-into-repo-landing-check-fixes-research-saved-2026-10-17-2350-cdt) (10-17)
+- [AO - Fresh-session orientation: f10 not pushed, deploy pending, new PDFs, F11 vs features brief](#appendix-ao---fresh-session-orientation-f10-not-pushed-deploy-pending-new-pdfs-f11-vs-features-brief-2026-10-17-2356-cdt) (10-17)
+- [AP - F11 decisions: push reminders dropped, nickname and F11.8 kept, not started](#appendix-ap---f11-decisions-push-reminders-dropped-nickname-and-f118-kept-not-started-2026-10-17-2359-cdt) (10-17)
 
 ---
 
@@ -1556,3 +1558,23 @@ HANDOFF pointer; feccaf5 completed it.
 agents running; compiled hospital census brief and the stage-10.5 cold
 assessment not done; push of f10 + ui-max not done; deploy of 5af2f1f still
 waits on Evan.
+
+# Appendix AO - Fresh-session orientation: f10 not pushed, deploy pending, new PDFs, F11 vs features brief (2026-10-17, ~23:56 CDT)
+**When:** 2026-10-17 ~23:50-23:56 CDT. Fresh session, read-only orientation from the pasted handoff prompt; no code or doc changed except this entry.
+
+**Found (disk vs the handoff prompt):**
+- f10 is NOT pushed: 10 commits ahead of origin/f10 (origin/f10 = 5af2f1f). The prompt said pushed; record AN already said the push was not done.
+- Live is still c30be63: the VM has backup-before-c30be63.tar and backup-before-cc3c333.tar only; http and https both 200. App code at 4fc0b91 is identical to 5af2f1f (git diff on app/ empty), and deploy.ps1 archives app/ from the local repo, so deploying does not need a push.
+- No file holding a private key or Terraform state among the top-level files of Downloads (subfolders not searched): the tfState file looks deleted; Evan to confirm.
+- origin/main = ff7a539 (2 docs commits ahead of local main), an ancestor of f10. PR 1 (Dipayan, React frontend) still open.
+- Evan added 3 public PDFs to docs/ (untracked): Tennessee Health Facilities Commission staff review CN2510-038 (VUMC 12-bed pediatric rehab), Dollar For "Bridging the Chasm" (at least $14B a year of charity-eligible bills recorded as bad debt), Oregon OHA HB 3320 prescreening interview summary (2025-01; Experian and Waystar vendor tools). Not read past their first pages.
+- The record's "M" in git status is line endings only (autocrlf).
+
+**F11 (app-like UI/UX plan) check, at Evan's request:** F11 is DRAFT, roadmap only ("nothing ships before judging", Evan ~20:20); nothing of it is built (no manifest or service worker in app/static). The features brief (4fc0b91, unreviewed, no cold assessment) argues against parts of it: cut F11.7 push reminders with a server DB, cut the optional nickname, do not build F11.8, F11.2 motion/haptics deprioritized (no evidence found that app-like features raise completion); its top gaps are real Nashville policies, an over-income path and a human handoff. F11 has not been amended to reflect the brief.
+
+# Appendix AP - F11 decisions: push reminders dropped, nickname and F11.8 kept, not started (2026-10-17, ~23:59 CDT)
+**When:** 2026-10-17 ~23:58-23:59 CDT. Evan's calls on the features brief's F11 cut list (record AO), in chat: "drop F11.7 keep nickname keep 11.8, dont start yet".
+
+**Changed (PRD_ROADMAP.md F11, docs only):** F11.7 heading and its "server keeps nothing" amendment struck with a dated DROPPED note (text kept for history); F11.7 struck in the build order; dated addendum after the open items listing the three calls. The nickname and F11.8 are kept against the brief's advice; the addendum records the brief's reasons beside each.
+
+**Not done:** no F11 code (Evan: don't start yet). Undecided: whether the brief's top 3 (real Nashville policies, over-income path, human-help handoff) join F11 or precede it.

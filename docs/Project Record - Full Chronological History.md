@@ -93,6 +93,7 @@ the dated entry, not the digest.
 - [BE - Phase 3 EOB merged and deployed (ba6d1f0)](#appendix-be---phase-3-eob-merged-and-deployed-ba6d1f0-2026-10-18-1149-cdt) (10-18)
 - [BF - Remove photo + Sources dropdown (a0684aa, not live); swarm plan held; quick usability brief](#appendix-bf---remove-photo--sources-dropdown-a0684aa-not-live-swarm-plan-held-quick-usability-brief-2026-10-18-1155-cdt) (10-18)
 - [BG - Review fixes live (af1d5f6); swarm results; kit remade](#appendix-bg---review-fixes-live-af1d5f6-swarm-results-kit-remade-2026-10-18-1207-cdt) (10-18)
+- [BH - One confirm box per screen; pending wording; dashboard counters (189163e)](#appendix-bh---one-confirm-box-per-screen-pending-wording-dashboard-counters-189163e-2026-10-18-1214-cdt) (10-18)
 
 ---
 
@@ -1913,3 +1914,20 @@ Tests n3 + an API test; m4 updated; 77 JS tests. All 9 suites ALL PASS. Served a
 - Probe gaps: P27 blocked (its script omitted answers.language, so all requests 422); P15 never got a successful /check; several journeys skipped /dispute to stay in budget.
 
 **Kit:** remade as version 6 (all three demos, every pair photo, the Remove photo / Sources notes, a "never say: works on real EOBs" row). v7 corrected the Sources step wording, v8 the pair-08 phone, v9 the live version.
+
+# Appendix BH - One confirm box per screen; pending wording; dashboard counters (189163e) (2026-10-18 12:14 CDT)
+**When:** 2026-10-18 ~12:09-12:14 CDT. Evan: "have 1 'this is correct' box", then "make the 2 quick fixes and deploy".
+
+**What (189163e, deployed 12:12 CDT):**
+- One "This is correct" box per screen. On the Bill screen it covers the 6 fields: ticking confirms all of them, any edit unticks it and unconfirms every field, and it is disabled while a required field (statement date, amount due) is blank. The EOB screen gets the same, over its 12 fields. The charge-lines and service-lines boxes are unchanged. The reason line reads 'Check each detail, then tick "This is correct" to continue.'
+- Tradeoff (not hidden): one box is a weaker human check than six; people can tick without reading. The per-field "confirmed" styling remains.
+- Swarm U04: the pending flag now asks "Ask the hospital whether you can wait for your insurer's summary before paying." instead of telling the family to wait.
+- Swarm P23: the dashboard lists checks_run, disputes and eobs_read.
+
+**Checks:**
+- 9 suites ALL PASS; 78 JS tests, with n4 and m5-m8 failing on the old app.js.
+- Served app.js equals the commit (sha 91fd41493613) on http + https, and 78/78 JS tests pass on the live file.
+- The live dashboard.js has eobs_read.
+- Live /check with eob_not_yet returns the new pending text on both schemes.
+- On the live site at 390 px: f-all-ok and lines-ok are the only confirm boxes; the reason text shows; no sideways scroll.
+- Rollback: deploy.ps1 -Commit 189163e -Rollback restores af1d5f6. Kit v10 updated.

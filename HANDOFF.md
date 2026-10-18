@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 12:08 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-BG).
+**Last updated: 2026-10-18 12:14 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-BH).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -81,7 +81,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BG).
   Still open from audit 4: #10 global-bucket half, #12 Ascension mailing address.
 - **10:29 CDT (record BA):** 223013b committed, NOT deployed: Apply by counts from the date of service when known (feature review
   flaw 2; bill-01 now 2027-05-10). Deploy waits for the optimization + security audits (Evan).
-- **12:08 CDT: LIVE = af1d5f6** (Phase 3 review fixes, record BG; rollback -Commit af1d5f6 -Rollback restores deeebda). Presenter kit: https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX (v9). Swarm open items: record BG. Before: LIVE = deeebda (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
+- **12:14 CDT: LIVE = 189163e** (one confirm box per screen, pending wording, dashboard counters; record BH; rollback restores af1d5f6). Before: LIVE = af1d5f6 (Phase 3 review fixes, record BG; rollback -Commit af1d5f6 -Rollback restores deeebda). Presenter kit: https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX (v9). Swarm open items: record BG. Before: LIVE = deeebda (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
   on http + https, record BC). Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Demo error flags ONLY on
   bills 11-14 (fictional Cumberland). Open O2 items #4-#13 (record BC). Pitch: the DO NOT SAY line is lifted (Phase 2 live by 12:40).
   KEEP until after the pitches (Evan 11:23): worktree C:/ClaudeCode/TNHacks27-f12 and ~/.claude/task-plans/tnhacks26-errorcheck.md.
@@ -167,7 +167,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BG).
 
 ```
 Project: TNHacks26 Billow (C:/ClaudeCode/TNHacks27, branch f10). Read HANDOFF.md first, then the last 3 record
-appendices (docs/Project Record - Full Chronological History.md, BE-BG). Live: af1d5f6 on http + https://207.211.181.174/
+appendices (docs/Project Record - Full Chronological History.md, BE-BG). Live: 189163e on http + https://207.211.181.174/
 (Phase 1 eligibility + packet, Phase 2 Find errors, Phase 3 EOB check, Remove photo, Sources dropdown). Hacking ended
 13:00 CDT 2026-10-18; showcase 13:05, finals 15:30 - do NOT deploy during them. Hard rules: synthetic bills only; never
 imply hospital endorsement; deploy only on Evan's word (deploy.ps1 -Commit <c>, rollback -Rollback); commit only when

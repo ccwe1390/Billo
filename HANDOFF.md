@@ -39,9 +39,9 @@ snapshot; history lives in the record (Phase 0, Appendices A-AW).
 | OCI account | Exists (tenancy root compartment); Chicago home region per kit guidance | console pastes |
 | Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :80. SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
 | Budget alert | **UNCONFIRMED** | - |
-| Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
-| VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs 5af2f1f (deployed by Evan 2026-10-18 00:07 CDT, record AR; 32 languages live) | record P-W |
+| Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each - OLD render only (2026-10-17); the re-rendered blur-3 bill misread the date (2026-10-18 08:49, experiments.md); blur 5 not re-run | experiments.md |
+| VUMC + Ascension policy | **REAL, VERIFIED** 2026-10-18: read from their PDFs, page-cited, re-checked by a second AI pass and against freshly downloaded PDFs (audit 4: 0 defects); live since 08:48 | record AV, audit 4 |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs bdc76df (deployed 2026-10-18 08:48 CDT, record AV; real policies) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -50,8 +50,9 @@ snapshot; history lives in the record (Phase 0, Appendices A-AW).
 - OCI Generative AI: Cohere Command A Vision (read bill), Command A (phrase);
   OCI Language (translate). No back-translation: numbers and the hospital
   name are swapped for {n} placeholders, then the number lock checks the
-  result (Hindi: Command A with the same placeholders). Policy rules are a
-  JSON file (app/data/policy_cumberland_synthetic.json); no database
+  result (Hindi: Command A with the same placeholders). Policy rules are 3
+  JSON files in app/data/ (policy_vumc + policy_ascension_saint_thomas = real, policy_cumberland_synthetic
+  = fictional), picked by the bill's hospital name (engine.select_policy); no database
   (MySQL/HeatWave was never used and is deleted).
 - Number lock on all generated text; printable HTML packet (no server PDF).
 - Limits (on f10 since record AL): field values are text or numbers only,
@@ -94,13 +95,13 @@ snapshot; history lives in the record (Phase 0, Appendices A-AW).
   2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
   Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf; no redirect
   from http (both work).
-- Deploys are run by Evan in PowerShell 5.1 (the auto-mode classifier refuses
-  Claude's live restarts, record AG): deploy.ps1 -Commit <c>; deploy.ps1
-  -Commit <c> -Rollback restores ~/backup-before-<c>.tar. Scripts in deploy/
-  (.sh kept LF by .gitattributes). Re-running the same -Commit overwrites its
-  backup (audit 3 finding 10, open).
-- Git: origin/f10 = 9fd784a, origin/main = 984a537; local f10 and main (= bdc76df) are ahead, not
-  pushed (Evan: no push until told).
+- Deploys: Claude ran bdc76df at 08:48 at Evan's explicit request (record AV); without that say-so,
+  or if the auto-mode classifier refuses (record AG), Evan runs it in PowerShell 5.1:
+  `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; add -Rollback to restore
+  ~/backup-before-<c>.tar. Re-running a commit keeps its first backup (e5d5b80); use a new commit
+  hash for every fix (audit 4 #15: a reused name can leave a stale backup). .sh kept LF by .gitattributes.
+- Git: pushed 2026-10-18 08:54 CDT (origin/f10 = a959f2b, origin/main = bdc76df); later commits are
+  local until Evan says push.
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on bill-02);
   the rollback was not rehearsed live; spikes/synthetic-bill/
   phone-photo-bill-02.png is not a faithful photo (table rows offset; audit 3
@@ -109,7 +110,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AW).
   push reminders DROPPED; nickname and F11.8 kept; no F11 code.
 - Research: docs/research/ (stats, features, sustainability, Middle TN
   policies) + docs/research/2026-10-18_cold-assessments.md. The policies brief
-  still has 3 factual errors the assessment found (not corrected).
+  has all 5 assessment fixes applied (08:31, 6dd65a1).
 - Older status lines (19:43 to 00:37) are in the record, Appendices AH-AS.
 
 ## BLOCKED-ON-EVAN
@@ -132,8 +133,9 @@ snapshot; history lives in the record (Phase 0, Appendices A-AW).
 1. DONE: gate 1 (14:22) and the 5:00 PM gate (14:53) - a blurred bill photo
    -> cited result -> Spanish explanation + packet on the OCI server, 9.7 s (gate run; 11.8 s re-run, record Z).
 2. DONE 15:40: "Paper Trail" design live (record W, commit c689291).
-3. 3:00 PM VUMC gate passed with nobody opening VUMC's PDF: synthetic
-   hospital stands unless Evan says otherwise.
+3. ~~3:00 PM VUMC gate passed with nobody opening VUMC's PDF: synthetic
+   hospital stands unless Evan says otherwise.~~ SUPERSEDED 2026-10-18 08:00 (Evan): real VUMC +
+   Ascension policies (important.md 7).
 4. Submission = teammates' presentation with a LIVE demo of the site (Evan,
    ~15:49). Keep the live URL stable; record a backup video before it.
 5. DONE 18:03: T2 V1 chatbot test (record AC). Open:

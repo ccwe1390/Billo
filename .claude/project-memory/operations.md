@@ -121,3 +121,8 @@
   check ran for the first time and passed after one refused curl during
   start-up. Backup ~/backup-before-984a537.tar (= 5af2f1f app); rollback target
   5af2f1f. Live checks 07:50 pass (record AU). Local main = 984a537.
+- 2026-10-18 08:48 CDT - Claude ran deploy.ps1 at Evan's request: rehearsal (984a537 again with
+  the new scripts: "backup: keeping existing", DEPLOYED, -Watch OK), then bdc76df (real VUMC +
+  Ascension policies). Backup ~/backup-before-bdc76df.tar = the 984a537 app. ROLLBACK from bdc76df:
+  `deploy.ps1 -Commit bdc76df -Rollback` (restores 984a537). Do NOT roll back with -Commit 984a537:
+  that restores the 5af2f1f app (Cumberland only). Live checks 08:49 pass (record AV). main = bdc76df.

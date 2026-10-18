@@ -90,6 +90,7 @@ the dated entry, not the digest.
 - [BB - Audits applied and deployed (08265fa + Apache gzip/h2); rename on hold; Phase 2 build decision](#appendix-bb---audits-applied-and-deployed-08265fa--apache-gziph2-rename-on-hold-phase-2-build-decision-2026-10-18-1043-cdt) (10-18)
 - [BC - Phase 2 Find errors built, merged and deployed (99d4851)](#appendix-bc---phase-2-find-errors-built-merged-and-deployed-99d4851-2026-10-18-1119-cdt) (10-18)
 - [BD - Presenter demo kit (artifact) incl. EOB drafts](#appendix-bd---presenter-demo-kit-artifact-incl-eob-drafts-2026-10-18-1134-cdt) (10-18)
+- [BE - Phase 3 EOB merged and deployed (ba6d1f0)](#appendix-be---phase-3-eob-merged-and-deployed-ba6d1f0-2026-10-18-1149-cdt) (10-18)
 
 ---
 
@@ -1861,3 +1862,21 @@ Earlier checks (blank name, VUMC condition, deadline anchor, no result field) pa
 **Found while drafting:**
 - The Phase 3 drafts (bill-20/22/23, eob-06/08/09/10) print "Vanderbilt University Medical Center (SYNTHETIC)" with planted billing problems. That is the same issue Phase 2 fixed with Cumberland (plan A2). It was flagged to the f13 session (the decision is its own or Evan's), and the kit says not to show the VUMC-named versions.
 - Slip: the first published version said Spanish shows right-to-left. It was fixed in version 2.
+
+# Appendix BE - Phase 3 EOB merged and deployed (ba6d1f0) (2026-10-18 11:49 CDT)
+**When:** 2026-10-18 11:40-11:49 CDT. Evan: "merge and deploy the EOB addition".
+
+**What:** f13 at c5d1b9f (Phase 3 insurance check, built by the fork session local_9de6aac5: ead5edc prep + letters, a87fcaf server, c5d1b9f UI + Cumberland re-render) was merged into f10 as ba6d1f0 (--no-ff, clean). The fork's own Opus cold review had NOT reported at merge time; it ships without that review (Evan's call). 9 suites ALL PASS on the merge: numlock, engine, api, policy_page, answer_key, checks 21, dispute 21, eob_checks 25, node app_js.
+
+**Deploy:** ba6d1f0 at 11:42 CDT (backup-before-ba6d1f0.tar = the 99d4851 app; rollback deploy.ps1 -Commit ba6d1f0 -Rollback restores 99d4851).
+
+**Live, http + https (real vision):**
+- pairs 06/07/08/09/10 gave insurance flags [charged_more, totals_mismatch, billed_more] (to ask $1,385.00), [pending], [denied], [different_visit] and [], each = pairs_key.json;
+- /dispute 200 for pairs 06 and 08;
+- bill-13 "Not yet" -> pending;
+- bill-01 sent as an EOB -> 422 "This doesn't look like an insurance summary.";
+- no member ID, group or member name in any EOB reply;
+- EOB reads took 4.7-9.8 s;
+- Phase 2 checks (lc6) 20/20 and earlier checks pass;
+- served app.js equals the commit (CRLF-normalised sha 9c252713e0d4).
+Slip: lc6 was run twice by a command error, about 20 extra vision calls (cents).

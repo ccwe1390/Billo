@@ -141,3 +141,5 @@
   .claude/launch.json. NOT deployed; merge + deploy only on Evan's word, 12:40 CDT hard cut (record BB).
 - 2026-10-18 11:16 CDT - Claude deployed 99d4851 (merge of f12: Phase 2 + Billow). Backup ~/backup-before-99d4851.tar = the 08265fa
   app. Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Live checks pass (record BC).
+- 2026-10-18 11:42 CDT - Claude deployed ba6d1f0 (merge of f13, Phase 3 EOB). Backup ~/backup-before-ba6d1f0.tar = the 99d4851 app.
+  Rollback: deploy.ps1 -Commit ba6d1f0 -Rollback (restores 99d4851). Live checks pass (record BE).

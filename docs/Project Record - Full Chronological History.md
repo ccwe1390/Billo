@@ -89,6 +89,7 @@ the dated entry, not the digest.
 - [BA - Deadline counts from the date of service (feature review flaw 2)](#appendix-ba---deadline-counts-from-the-date-of-service-feature-review-flaw-2-2026-10-18-1029-cdt) (10-18)
 - [BB - Audits applied and deployed (08265fa + Apache gzip/h2); rename on hold; Phase 2 build decision](#appendix-bb---audits-applied-and-deployed-08265fa--apache-gziph2-rename-on-hold-phase-2-build-decision-2026-10-18-1043-cdt) (10-18)
 - [BC - Phase 2 Find errors built, merged and deployed (99d4851)](#appendix-bc---phase-2-find-errors-built-merged-and-deployed-99d4851-2026-10-18-1119-cdt) (10-18)
+- [BD - Presenter demo kit (artifact) incl. EOB drafts](#appendix-bd---presenter-demo-kit-artifact-incl-eob-drafts-2026-10-18-1134-cdt) (10-18)
 
 ---
 
@@ -1843,3 +1844,20 @@ One audit claim was wrong: it said 08265fa was not deployed, but HANDOFF was sta
 Earlier checks (blank name, VUMC condition, deadline anchor, no result field) pass. lc5's "70 KB -> 413" FAIL is its own header-case bug; curl showed 413 + nosniff earlier.
 
 **Agents:** Sonnet = rename, S1 (resumed once), S2, S3, S4, S5, S6, V1, V2 = 9. Opus = plan audit, O1, O2 = 3. O3 (landing check) was not run: the Opus budget was used.
+
+# Appendix BD - Presenter demo kit (artifact) incl. EOB drafts (2026-10-18 11:34 CDT)
+**When:** 2026-10-18 ~11:29-11:36 CDT. Evan: "draft up demo resources for the presenters including the photos", then "make sure it includes stuff for the EOB feature set being built".
+
+**What:** presenter kit published as a private claude.ai artifact, "Billow Demo Kit" (https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX). Evan shares it. Contents:
+- live status (99d4851; EOB not live);
+- a pre-stage checklist and the standard answers (household 4, $38,000, files taxes: 115%, free care);
+- Demo 1 on bill-02 (new print with QR), with Apply by 2027-05-18 and "All bills" "Up to $8,837.65";
+- Demo 2 on bills 11-14 (Cumberland) with the exact card strings and totals ($1,385.00, $200.00);
+- Demo 3 EOB pairs 06-10, marked present-only-if-live-checked-by-12:30, using the f13 drafts;
+- say / never-say, judge answers, and a stage fallback list.
+
+**How the numbers were made:** every expected result was computed by the engine and checks.run from answer_key.json and lines_key.json. The bill-02 household was re-run to confirm 5 bills and $8,837.65. The EOB expectations come from the f13 pairs_key.json (fork's draft, not reviewed here).
+
+**Found while drafting:**
+- The Phase 3 drafts (bill-20/22/23, eob-06/08/09/10) print "Vanderbilt University Medical Center (SYNTHETIC)" with planted billing problems. That is the same issue Phase 2 fixed with Cumberland (plan A2). It was flagged to the f13 session (the decision is its own or Evan's), and the kit says not to show the VUMC-named versions.
+- Slip: the first published version said Spanish shows right-to-left. It was fixed in version 2.

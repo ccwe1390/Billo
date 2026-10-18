@@ -68,3 +68,16 @@ email that the hackathon promotional credits go to; customer type Individual.
 and may strand the $500 credits.
 **Why:** Irreversible account setting.
 **Source:** github.com/ScottStroz/oci-hackathon-starterkit README (read 2026-10-17; third-party kit, not confirmed as TNHacks26-official); detail in services.md.
+
+## 7. Real published hospital policies allowed; bills stay synthetic (2026-10-18)
+**What:** Evan (chat, 2026-10-18 ~08:00 CDT): use real hospitals and their real
+published financial assistance policies (VUMC and Ascension Saint Thomas);
+every bill stays synthetic and clearly labelled SYNTHETIC ("NOT ISSUED BY").
+**Constrains:** Every policy number is read from the hospital's own PDF and
+cited with a page; a condition the engine does not model is listed as a
+condition, never silently dropped; a hospital with no policy gets no estimate.
+No hospital sign-off exists: never imply endorsement. Bills: no real patient,
+address or phone.
+**Why:** A wrong threshold now misleads real families; the track allows public
+data (important.md 2 still holds: the policies are public, the bills synthetic).
+**Source:** Evan's messages 2026-10-18; plan ~/.claude/task-plans/tnhacks26-real-policies.md; record AV.

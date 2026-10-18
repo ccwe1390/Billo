@@ -485,7 +485,9 @@ and F9 disagree, F10 wins once Evan approves it.
 
 **Rules for every F10 feature:**
 - Synthetic only: every new bill, rule and page carries SYNTHETIC; nothing
-  imitates a real hospital.
+  imitates a real hospital. AMENDED 2026-10-18 (Evan): bills stay synthetic;
+  rules may be real published policies (VUMC, Ascension Saint Thomas), cited
+  by page; see important.md 7. Freeze and one-feature-one-deploy waived for it.
 - The engine decides. Every number on a new screen comes from engine output
   and is in `locked_numbers` if generated text can repeat it.
 - New UI strings get en/es/ar/zh-CN/zh-TW with `// TODO-REVIEW es+ar+zh`;
@@ -750,3 +752,9 @@ O-4 whether Dipayan's React app becomes the shell for F11.2 (team).
 - Not started: F11 stays roadmap only; no F11 code before judging.
 - Not yet decided: whether the brief's top 3 (real Nashville policies, an
   over-income path, a human-help handoff) join F11 or go ahead of it.
+- 2026-10-18 ~08:00 CDT (Evan): of the brief's top 3, item 1 (real Nashville
+  policies: VUMC + Ascension Saint Thomas) and item 3 (a "Want a person to
+  help?" card) are built ahead of F11, before judging, with synthetic bills.
+  Item 2 (over-income path) is partly covered: the result names each policy's
+  above-tier route (VUMC catastrophic, Ascension means test) as a condition;
+  no engine rule for it.

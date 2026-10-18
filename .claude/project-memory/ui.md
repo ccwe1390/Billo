@@ -18,7 +18,9 @@ Every screen, string and agent obeys these. A change that breaks one is a bug.
 4. Keep nothing: no localStorage/sessionStorage/cookies/IndexedDB holding
    bill or household data; state lives in memory only. (An opt-in "save to
    this phone" for the home page needs Evan's explicit OK first - PRD F9.)
-5. Synthetic data only; the SYNTHETIC DEMO badge stays visible.
+5. Synthetic data only; the SYNTHETIC DEMO badge stays visible. AMENDED
+   2026-10-18 (Evan, important.md 7): synthetic BILLS only; policies may be
+   real published public documents, cited by page.
 6. No placeholder copy ("Content pending", "TODO", lorem) on any screen;
    tests/test_api.py enforces it.
 7. Policy text, citations, phone, email, dates and money stay English and

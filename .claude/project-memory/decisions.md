@@ -186,3 +186,11 @@ Standing decisions (what is decided NOW). History lives in the record.
   build time, not at runtime). Evan chose "Bilingual" for safety lines after
   the back-translation check found meaning flips; Claude also left the
   flipped strings English-only.
+- 2026-10-18 ~08:00 CDT - Real policies (Evan): VUMC + Ascension Saint Thomas
+  published FAPs replace the single fictional policy in the demo; bills stay
+  synthetic. SUPERSEDES for real policies decision A2 ("a bill naming another
+  hospital gets the estimate with a warning"): a hospital with no policy now
+  gets NO estimate, only a warning and outside help. Fictional Cumberland
+  stays in the registry (tests). Feature freeze and one-feature-one-deploy
+  (PRD F10) waived by Evan for this change. Plan v2, audited by 2 cold Opus
+  agents before building.

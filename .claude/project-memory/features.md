@@ -25,3 +25,4 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
   per field; pending flag asks whether you can wait; dashboard counts checks_run, disputes, eobs_read (record BH).
 - 2026-10-18 13:11 CDT: Start screen shows a second QR (>= 900 px) to /test-bills/: 17 synthetic bills + 5 bill/EOB pairs to download, SYNTHETIC banner (df69369, record BM).
 - 2026-10-18 14:37 CDT: EOB screen button 'No Explanation of Benefits Available' (was 'Not yet'), never disabled; its pending card/letter say the person has no insurer summary yet; a real pending claim status keeps 'still processing' (8cd1d09, record BN).
+- 2026-10-18 15:02 CDT: reader handles real-format bills/EOBs (allowed/deductible/copay/coinsurance, payment parts, codes, ledger rows dropped, date ranges, abbreviated provider names); EOB screen has 5 optional fields; QR page has real-format pairs 11 and 12 (041fe7e, NOT deployed; record BO).

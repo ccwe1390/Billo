@@ -320,10 +320,37 @@ def test_provider_matching():
     assert verdict("Mercy", "Mercyland Hospital")                    # prefix needs a word boundary
     assert verdict("Foo Synthetic Hospital", "Mercy") and not verdict("Foo Synthetic Hospital", "Foo Hospital")
     assert not verdict("St. Mary's  Hospital", "ST MARY S HOSPITAL")  # punctuation and spacing do not matter
-    # shortcut documented in the module: an abbreviation reads as a different visit
-    assert verdict("Vanderbilt University Medical Center", "VANDERBILT UNIV MED CTR")
+    # an insurer's abbreviation is the same hospital (ABBREV table, 2026-10-18; was a documented shortcut)
+    assert not verdict("Vanderbilt University Medical Center", "VANDERBILT UNIV MED CTR")
     # one name missing: not a mismatch
     assert not verdict(None, "Mercy") and not verdict("Mercy", None)
+
+
+def test_provider_abbreviations():
+    def verdict(hospital, provider):
+        bill, eob = pair10()
+        bill["fields"]["hospital_name"] = fld(hospital)
+        set_field(eob, "provider_name", provider)
+        return "different_visit" in ins_ids(eob_checks.run(bill, eob))
+
+    assert not verdict("VANDERBILT UNIV MED CTR", "Vanderbilt University Medical Center")
+    assert not verdict("CUMBERLAND GEN HOSP", "Cumberland General Hospital (SYNTHETIC)")
+    assert verdict("TriStar Centennial Medical Center", "Vanderbilt University Medical Center")
+
+
+def test_credit_uses_payment_parts():
+    def go(parts):
+        bill = make_bill("2026-09-12", VUMC, "insured", 10000, [bline("ED visit", 230000)], 230000, 220000)
+        if parts is not None:
+            bill["lines"]["payment_parts"] = parts
+        eob = make_eob("2026-09-12", VUMC, "C1", "paid", 230000, 86000, 124000, 10000,
+                       [eline("ER VISIT", 230000, 10000)])
+        return eob_checks.run(bill, eob)
+
+    parts = {"insurance_cents": 124000, "adjustments_cents": 86000, "patient_cents": 10000}
+    assert "credit_mismatch" not in ids(go(parts)), ids(go(parts))
+    assert "credit_mismatch" in ids(go(None)), ids(go(None))      # same bill without the breakdown
+    assert "credit_mismatch" in ids(go(dict(parts, adjustments_cents=None)))   # a missing part: old behaviour
 
 
 def test_pair10_clean():

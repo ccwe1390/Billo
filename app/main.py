@@ -206,6 +206,7 @@ class LineItemIn(BaseModel):
     description: str
     quantity: Optional[int] = Field(None, ge=1, le=999, strict=True)
     amount_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    code: Optional[str] = Field(None, max_length=20)
 
     @field_validator("date")
     @classmethod
@@ -225,12 +226,21 @@ class LineItemIn(BaseModel):
         return v
 
 
+class PaymentPartsIn(BaseModel):
+    """Insurance payments, adjustments and patient payments when the bill prints them as separate lines."""
+    model_config = ConfigDict(extra="forbid")
+    insurance_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    adjustments_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    patient_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+
+
 class LinesIn(BaseModel):
     """The charge lines under the six fields (plan D3). The engine ignores them; checks.run reads them."""
     model_config = ConfigDict(extra="forbid")
     items: List[LineItemIn] = Field(max_length=40)
     total_charges_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
     payments_cents: Optional[int] = Field(None, ge=0, le=10**9, strict=True)
+    payment_parts: Optional[PaymentPartsIn] = None
     confirmed: bool = False
     read: bool = False
 
@@ -251,7 +261,8 @@ class BillIn(BaseModel):
 
 _EOB_FIELDS = ("insurer_name", "provider_name", "date_of_service", "claim_number", "claim_status",
                "amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents",
-               "denial_reason", "appeal_deadline", "insurer_phone")
+               "denial_reason", "appeal_deadline", "insurer_phone",
+               "allowed_cents", "deductible_cents", "copay_cents", "coinsurance_cents", "not_covered_cents")
 
 
 class EobLineIn(BaseModel):
@@ -366,6 +377,9 @@ def _norm_date(v):
     s = _norm_text(v)
     if s is None:
         return None
+    m = re.fullmatch(r"(\S+)\s*[-\u2013]\s*(\S+)", s)  # a "3/20/22-3/20/22" service range (CMS sample EOB): its first date
+    if m and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", s):
+        s = m.group(1)
     for fmt in _DATE_FORMATS:
         try:
             return datetime.strptime(s, fmt).date().isoformat()
@@ -439,6 +453,11 @@ def _line_cents(c):
     return c if c is not None and c <= MAX_LINE_CENTS else None
 
 
+# A running-ledger statement prints payments, adjustments and the previous balance as rows among the charges; the
+# model copies them as line_items even when told not to (Trinity sample statement, 2026-10-18). They are not charges.
+_NOT_A_CHARGE = re.compile(r"\b(PAYMENTS?|PYMTS?|PMTS?|ADJUSTMENTS?|ADJ|CREDITS?|REFUNDS?|WRITE[- ]?OFF|PREVIOUS BALANCE|BALANCE FORWARD)\b", re.I)
+
+
 def _norm_lines(raw):
     """The model's line_items, total_charges and payments_and_adjustments -> BillIn.lines (unconfirmed).
     No line_items key: None (the reply was from the old six-field prompt or the model left it out)."""
@@ -453,11 +472,24 @@ def _norm_lines(raw):
         if not isinstance(row, dict):
             continue
         desc = re.sub(" {2,}", " ", _CONTROL.sub(" ", str(row.get("description") or ""))).strip()[:120]
+        if _NOT_A_CHARGE.search(desc):
+            continue
+        code = _eob_text(row.get("code"))
         items.append({"date": _norm_date(row.get("date")), "description": desc,
                       "quantity": _norm_quantity(row.get("quantity")),
-                      "amount_cents": _line_cents(_norm_cents(row.get("amount")))})
+                      "amount_cents": _line_cents(_norm_cents(row.get("amount"))),
+                      "code": code[:20] if isinstance(code, str) else None})
+    # _norm_payments (not _norm_cents): a part read as -$860.00 is stored positive, as the combined total is
+    ins = _line_cents(_norm_payments(raw.get("insurance_payments")))
+    adj = _line_cents(_norm_payments(raw.get("adjustments")))
+    pat = _line_cents(_norm_payments(raw.get("patient_payments")))
+    parts = {"insurance_cents": ins, "adjustments_cents": adj, "patient_cents": pat}
+    given = [v for v in parts.values() if v is not None]
+    payments = _line_cents(_norm_payments(raw.get("payments_and_adjustments")))
+    if payments is None and given:
+        payments = _line_cents(sum(given))
     return {"items": items, "total_charges_cents": _line_cents(_norm_cents(raw.get("total_charges"))),
-            "payments_cents": _line_cents(_norm_payments(raw.get("payments_and_adjustments"))),
+            "payments_cents": payments, "payment_parts": parts if given else None,
             "confirmed": False, "read": True}
 
 
@@ -533,7 +565,22 @@ def normalize_eob(raw):
         "denial_reason": _eob_text(raw.get("denial_reason")),
         "appeal_deadline": _norm_date(raw.get("appeal_deadline")),
         "insurer_phone": _eob_text(raw.get("insurer_phone")),
+        "allowed_cents": _norm_cents(raw.get("allowed_amount")),
+        "deductible_cents": _norm_cents(raw.get("deductible")),
+        "copay_cents": _norm_cents(raw.get("copay")),
+        "coinsurance_cents": _norm_cents(raw.get("coinsurance")),
+        "not_covered_cents": _norm_cents(raw.get("not_covered")),
     }
+    # Code combines the printed columns. When billed and allowed are both read, the discount IS billed - allowed:
+    # on a real-format EOB the model put the allowed amount in plan_discount (eob-11, 2026-10-18), so the
+    # arithmetic wins there. Otherwise a value the model printed wins over a derived one.
+    billed, allowed = values["amount_billed_cents"], values["allowed_cents"]
+    if billed is not None and allowed and billed >= allowed:  # allowed 0 is a denial, not a discount (eob-12)
+        values["plan_discount_cents"] = billed - allowed
+    shares = [values[k] for k in ("deductible_cents", "copay_cents", "coinsurance_cents", "not_covered_cents")
+              if values[k] is not None]
+    if values["patient_owes_cents"] is None and shares:
+        values["patient_owes_cents"] = sum(shares)
     return {
         "contract_version": CONTRACT_VERSION,
         "fields": {

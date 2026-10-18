@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SYNTHETIC hospital statement 24</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; color: #222; margin: 0; background: #fff; }
+  .page { width: 780px; margin: 24px auto; padding: 28px 32px; border: 1px solid #ccc; position: relative; overflow: hidden; }
+  .wm { position: absolute; left: 70px; font-size: 110px; font-weight: bold; color: rgba(200, 0, 0, 0.12); transform: rotate(-28deg); pointer-events: none; }
+  .logo { border-left: 8px solid #1f4e79; padding-left: 12px; }
+  .logo .name { font-size: 20px; font-weight: bold; letter-spacing: 1px; color: #1f4e79; }
+  .small { font-size: 11px; color: #555; }
+  h2 { font-size: 16px; margin: 22px 0 6px; letter-spacing: 1px; }
+  .row { display: flex; justify-content: space-between; margin-top: 12px; font-size: 13px; line-height: 1.55; }
+  .box { border: 2px solid #222; padding: 10px 14px; font-size: 13px; line-height: 1.55; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  th, td { border-bottom: 1px solid #ddd; padding: 5px 4px; text-align: left; }
+  th { background: #eef2f6; font-size: 12px; }
+  td.n, th.n { text-align: right; }
+  .total td { font-weight: bold; border-top: 2px solid #222; }
+  .fine { font-size: 10px; color: #777; margin-top: 18px; line-height: 1.4; }
+  .cut { border-top: 2px dashed #555; margin-top: 26px; position: relative; }
+  .cut span { position: absolute; top: -9px; left: 12px; background: #fff; padding: 0 6px; font-size: 11px; color: #555; }
+  .stub { border: 2px solid #222; margin-top: 18px; padding: 12px 16px; font-size: 13px; line-height: 1.7; }
+  .stub .t { font-weight: bold; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="wm" style="top: 230px">SYNTHETIC</div>
+  <div class="wm" style="top: 600px">SYNTHETIC</div>
+  <div class="logo">
+    <div class="name">CUMBERLAND GENERAL HOSPITAL (SYNTHETIC)</div>
+    <div class="small">100 Example Ave, Nashville, TN 37000 - Patient Billing: (615) 555-0100</div>
+  </div>
+
+  <h2>PATIENT STATEMENT</h2>
+  <div class="row">
+    <div>
+      Patient/Guarantor: Jordan Example<br>
+      Account number: CGH-00610245<br>
+      Primary insurance: Example Health Insurance Co. (SYNTHETIC)<br>
+      Date of service: 10/02/2026
+    </div>
+    <div class="box">
+      Statement date: 10/20/2026<br>
+      Due by: 11/19/2026<br>
+      <b>Amount due: $300.00</b>
+    </div>
+  </div>
+
+  <h2>CHARGES</h2>
+  <table>
+    <tr><th>Date</th><th>Code</th><th>Description</th><th class="n">Qty</th><th class="n">Amount</th></tr>
+    <tr><td>10/02/2026</td><td>99284</td><td>ED VISIT LVL 4</td><td class="n">1</td><td class="n">1,850.00</td></tr>
+    <tr><td>10/02/2026</td><td>71046</td><td>XR CHEST 2 VIEWS</td><td class="n">1</td><td class="n">310.00</td></tr>
+    <tr><td>10/02/2026</td><td>85025</td><td>CBC W/AUTO DIFF</td><td class="n">1</td><td class="n">96.00</td></tr>
+    <tr><td>10/02/2026</td><td>80053</td><td>COMPREHEN METABOLIC PANEL</td><td class="n">1</td><td class="n">184.00</td></tr>
+    <tr><td>10/02/2026</td><td>J2405</td><td>ONDANSETRON HCL INJ 1MG</td><td class="n">4</td><td class="n">60.00</td></tr>
+    <tr class="total"><td colspan="4">Total charges</td><td class="n">2,500.00</td></tr>
+  </table>
+
+  <h2>ACCOUNT ACTIVITY</h2>
+  <table>
+    <tr><th>Date</th><th>Description</th><th class="n">Amount</th></tr>
+    <tr><td>10/02/2026</td><td>Patient payment - thank you</td><td class="n">-100.00</td></tr>
+    <tr><td>10/15/2026</td><td>Insurance payment - Example Health Insurance</td><td class="n">-1,240.00</td></tr>
+    <tr><td>10/15/2026</td><td>Contractual adjustment</td><td class="n">-860.00</td></tr>
+    <tr class="total"><td colspan="2">Balance due</td><td class="n">300.00</td></tr>
+  </table>
+
+  <p class="fine">Financial assistance may be available to patients who qualify. To ask about financial assistance, or to request an itemized bill, call Patient Billing at (615) 555-0100. Please contact us right away if you have questions about any charge on this statement.</p>
+
+  <div class="cut"><span>- - detach here - -</span></div>
+
+  <div class="stub">
+    <div class="t">PAYMENT STUB - Please detach and return with payment</div>
+    Account: CGH-00610245<br>
+    Amount due: $300.00<br>
+    Due: 11/19/2026<br>
+    Amount enclosed $______<br>
+    <span class="small">Remit to: Cumberland General Hospital (SYNTHETIC), PO Box 0000, Nashville TN 37000</span>
+  </div>
+
+  <p class="small" style="margin-top:22px">SYNTHETIC DEMO BILL - NOT ISSUED BY Cumberland General Hospital. Made for a hackathon demo; the patient, account and charges are fictional.</p>
+</div>
+</body>
+</html>

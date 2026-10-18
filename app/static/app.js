@@ -225,6 +225,12 @@ const T = {
   eob_f_denial_reason:{en: "Denial reason", es: "Motivo de la denegación", ar: "سبب الرفض", "zh-CN": "拒付原因", "zh-TW": "拒付原因"}, // TODO-REVIEW es+ar+zh
   eob_f_appeal_deadline:{en: "Appeal deadline", es: "Fecha límite para apelar", ar: "الموعد النهائي للاستئناف", "zh-CN": "申诉截止日期", "zh-TW": "申訴截止日期"}, // TODO-REVIEW es+ar+zh
   eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
+  eob_f_allowed_cents:{en: "Allowed amount", es: "Monto permitido", ar: "المبلغ المسموح به", "zh-CN": "允许金额", "zh-TW": "允許金額"}, // TODO-REVIEW es+ar+zh
+  eob_f_deductible_cents:{en: "Deductible", es: "Deducible", ar: "المبلغ المقتطع (الخصم السنوي)", "zh-CN": "免赔额", "zh-TW": "自付額"}, // TODO-REVIEW es+ar+zh
+  eob_f_copay_cents:{en: "Copay", es: "Copago", ar: "المبلغ الثابت المشترك", "zh-CN": "固定自付费", "zh-TW": "定額自付額"}, // TODO-REVIEW es+ar+zh
+  eob_f_coinsurance_cents:{en: "Coinsurance", es: "Coseguro", ar: "التأمين المشترك", "zh-CN": "共同保险费", "zh-TW": "共同保險費"}, // TODO-REVIEW es+ar+zh
+  eob_f_not_covered_cents:{en: "Not covered", es: "No cubierto", ar: "غير مغطى", "zh-CN": "不予承保", "zh-TW": "不予承保"}, // TODO-REVIEW es+ar+zh
+  pay_parts:   {en: "Insurance {ins} + adjustments {adj} + your payments {pat}", es: "Seguro {ins} + ajustes {adj} + sus pagos {pat}", ar: "التأمين {ins} + التسويات {adj} + مدفوعاتك {pat}", "zh-CN": "保险 {ins} + 调整 {adj} + 您的付款 {pat}", "zh-TW": "保險 {ins} + 調整 {adj} + 您的付款 {pat}"}, // TODO-REVIEW es+ar+zh
   srcs:        {en: "Sources", es: "Fuentes", ar: "المصادر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
   eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap No Explanation of Benefits Available.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque «Explicación de beneficios no disponible».", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «لا يتوفر بيان المزايا».", "zh-CN": "目前无法读取照片。请换一张照片，或点“无可用的福利说明”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「無可用的福利說明」。"}, // TODO-REVIEW es+ar+zh
   why_all:     {en: "Check each detail, then tick \"This is correct\" to continue.", es: "Revise cada dato y marque «Esto es correcto» para continuar.", ar: "راجع كل معلومة، ثم ضع علامة على «هذا صحيح» للمتابعة.", "zh-CN": "请核对每一项，然后勾选“此项正确”继续。", "zh-TW": "請核對每一項，然後勾選「此項正確」繼續。"}, // TODO-REVIEW es+ar+zh
@@ -781,7 +787,8 @@ function lineRow(item, i) {
   const desc = el("input", {type: "text", id: base + "-desc", dir: "auto", maxlength: "120", autocomplete: "off", value: item.description || ""});
   desc.addEventListener("input", () => { item.description = desc.value; linesEdited(); });
   return el("div", {class: "line-row"},
-    el("div", {class: "line-desc"}, el("label", {for: base + "-desc"}, t("line_desc")), desc),
+    el("div", {class: "line-desc"}, el("label", {for: base + "-desc"}, t("line_desc")), desc,
+      typeof item.code === "string" && item.code.trim() ? el("small", {class: "muted", lang: "en", dir: "ltr"}, " " + item.code) : null), // display only: the code stays on the item for /check
     moneyField(base + "-amt", "line_amt", item.amount_cents, c => { item.amount_cents = c; }),
     el("button", {type: "button", class: "line-rm", id: base + "-rm", "aria-label": t("line_remove") + ": " + (i + 1), onclick: () => removeLine(i)}, t("line_remove")));
 }
@@ -803,6 +810,13 @@ function addLine() {
   const d = document.getElementById("line-" + (L.items.length - 1) + "-desc");
   if (d) d.focus({preventScroll: true});
 }
+function payPartsNote(p) { // display only: how the payments total splits into insurance, adjustments and the person's own payments
+  if (!p || typeof p !== "object") return null;
+  const part = c => typeof c === "number" ? money(c) : "-";
+  if (![p.insurance_cents, p.adjustments_cents, p.patient_cents].some(c => typeof c === "number")) return null;
+  return el("p", {class: "muted", id: "lines-paid-parts"},
+    ...tNodes("pay_parts", {ins: part(p.insurance_cents), adj: part(p.adjustments_cents), pat: part(p.patient_cents)}));
+}
 function renderLines() {
   const box = document.getElementById("lines-panel"), L = S.bill.lines || null;
   if (!box) return;
@@ -820,6 +834,7 @@ function renderLines() {
     parts.push(
       moneyField("lines-total", "lines_total", L.total_charges_cents, c => { L.total_charges_cents = c; }),
       moneyField("lines-paid", "lines_paid", L.payments_cents, c => { L.payments_cents = c; }),
+      payPartsNote(L.payment_parts),
       el("label", {class: "check", for: "lines-ok"}, cb, el("span", null, t("lines_ok"))));
   }
   fill(box, ...parts);
@@ -828,8 +843,10 @@ function renderLines() {
 
 // ---------- screen 7: insurance summary (EOB), between Bill and Questions when the bill says "insured"
 const EOB_FIELDS = ["insurer_name", "provider_name", "date_of_service", "claim_number", "claim_status", "amount_billed_cents",
-  "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "denial_reason", "appeal_deadline", "insurer_phone"];
-const EOB_MONEY = new Set(["amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents"]);
+  "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "allowed_cents", "deductible_cents", "copay_cents", "coinsurance_cents",
+  "not_covered_cents", "denial_reason", "appeal_deadline", "insurer_phone"];
+const EOB_MONEY = new Set(["amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "allowed_cents",
+  "deductible_cents", "copay_cents", "coinsurance_cents", "not_covered_cents"]);
 const EOB_DATES = new Set(["date_of_service", "appeal_deadline"]);
 const EOB_STATUS = ["paid", "partially_paid", "denied", "pending"];
 // S.eobDraft is the summary being checked; S.eob is that same object only while everything is confirmed (else null).
@@ -914,7 +931,7 @@ function renderEob() {
 function eobSync() {
   const E = S.eobDraft, next = document.getElementById("eob-next"), why = document.getElementById("eob-why");
   if (!E || !next || !why) return;
-  const left = EOB_FIELDS.filter(n => !E.fields[n].confirmed).length;
+  const left = EOB_FIELDS.filter(n => !(E.fields[n] && E.fields[n].confirmed)).length;
   const linesOpen = !!(E.lines && !E.lines.confirmed);
   next.disabled = left > 0 || linesOpen;
   S.eob = next.disabled ? null : E;

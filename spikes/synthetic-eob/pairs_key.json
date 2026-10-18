@@ -40,6 +40,161 @@
       "expected_insurance_flags": [],
       "expected_total_cents": 0
     },
+    "11": {
+      "bill": "bill-24.png",
+      "bill_date_of_service": "2026-10-02",
+      "eob_file": "eob-11.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "CUMBERLAND GEN HOSP",
+        "date_of_service": "2026-10-02",
+        "claim_number": "CLM-SYN-1101",
+        "claim_status": "paid",
+        "amount_billed_cents": 250000,
+        "plan_discount_cents": 86000,
+        "plan_paid_cents": 124000,
+        "patient_owes_cents": 40000,
+        "denial_reason": null,
+        "appeal_deadline": null,
+        "insurer_phone": "(800) 555-0150",
+        "allowed_cents": 164000,
+        "deductible_cents": 0,
+        "copay_cents": 10000,
+        "coinsurance_cents": 30000,
+        "not_covered_cents": null,
+        "service_lines": [
+          {
+            "date": "2026-10-02",
+            "description": "ED VISIT LVL 4 (99284)",
+            "amount_billed_cents": 185000,
+            "patient_owes_cents": 32000
+          },
+          {
+            "date": "2026-10-02",
+            "description": "XR CHEST 2 VIEWS (71046)",
+            "amount_billed_cents": 31000,
+            "patient_owes_cents": 4000
+          },
+          {
+            "date": "2026-10-02",
+            "description": "CBC W/AUTO DIFF (85025)",
+            "amount_billed_cents": 9600,
+            "patient_owes_cents": 1200
+          },
+          {
+            "date": "2026-10-02",
+            "description": "COMPREHEN METABOLIC PANEL (80053)",
+            "amount_billed_cents": 18400,
+            "patient_owes_cents": 2800
+          },
+          {
+            "date": "2026-10-02",
+            "description": "ONDANSETRON HCL INJ 1MG (J2405)",
+            "amount_billed_cents": 6000,
+            "patient_owes_cents": 0
+          }
+        ]
+      },
+      "bill_lines": [
+        {
+          "description": "ED VISIT LVL 4",
+          "amount_cents": 185000
+        },
+        {
+          "description": "XR CHEST 2 VIEWS",
+          "amount_cents": 31000
+        },
+        {
+          "description": "CBC W/AUTO DIFF",
+          "amount_cents": 9600
+        },
+        {
+          "description": "COMPREHEN METABOLIC PANEL",
+          "amount_cents": 18400
+        },
+        {
+          "description": "ONDANSETRON HCL INJ 1MG",
+          "amount_cents": 6000
+        }
+      ],
+      "bill_line_dates": [
+        "2026-10-02",
+        "2026-10-02",
+        "2026-10-02",
+        "2026-10-02",
+        "2026-10-02"
+      ],
+      "bill_line_codes": [
+        "99284",
+        "71046",
+        "85025",
+        "80053",
+        "J2405"
+      ],
+      "bill_total_charges_cents": 250000,
+      "bill_payments_cents": 220000,
+      "bill_payment_parts": {
+        "insurance_cents": 124000,
+        "adjustments_cents": 86000,
+        "patient_cents": 10000
+      },
+      "bill_amount_due_cents": 30000,
+      "expected_insurance_flags": [],
+      "expected_total_cents": 0,
+      "real_format": true
+    },
+    "12": {
+      "bill": "bill-25.png",
+      "bill_date_of_service": "2026-10-05",
+      "eob_file": "eob-12.png",
+      "eob": {
+        "insurer_name": "Example Health Insurance Co. (SYNTHETIC)",
+        "provider_name": "CUMBERLAND GEN HOSP",
+        "date_of_service": "2026-10-05",
+        "claim_number": "CLM-SYN-1205",
+        "claim_status": "denied",
+        "amount_billed_cents": 312000,
+        "plan_discount_cents": 0,
+        "plan_paid_cents": 0,
+        "patient_owes_cents": 312000,
+        "denial_reason": "Precertification/authorization/notification absent.",
+        "appeal_deadline": "2027-04-03",
+        "insurer_phone": "(800) 555-0177",
+        "allowed_cents": 0,
+        "deductible_cents": 0,
+        "copay_cents": 0,
+        "coinsurance_cents": 0,
+        "not_covered_cents": null,
+        "service_lines": [
+          {
+            "date": "2026-10-05",
+            "description": "MRI BRAIN W/O & W/DYE (70553)",
+            "amount_billed_cents": 312000,
+            "patient_owes_cents": 312000
+          }
+        ]
+      },
+      "bill_lines": [
+        {
+          "description": "MRI BRAIN W/O & W/DYE",
+          "amount_cents": 312000
+        }
+      ],
+      "bill_line_dates": [
+        "2026-10-05"
+      ],
+      "bill_line_codes": [
+        "70553"
+      ],
+      "bill_total_charges_cents": 312000,
+      "bill_payments_cents": 0,
+      "bill_amount_due_cents": 312000,
+      "expected_insurance_flags": [
+        "denied"
+      ],
+      "expected_total_cents": 0,
+      "real_format": true
+    },
     "06": {
       "bill": "bill-20.png",
       "bill_date_of_service": "2026-09-12",

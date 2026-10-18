@@ -18,9 +18,17 @@ GENAI_ENDPOINT = "https://inference.generativeai.us-chicago-1.oci.oraclecloud.co
 EXTRACT_PROMPT = (
     "Read this hospital bill. Return only JSON with keys hospital_name, statement_date, "
     "account_number, amount_due, date_of_service, insurance_status, line_items, "
-    "total_charges, payments_and_adjustments. line_items is a list with one object per "
-    "printed charge row, in order, with keys date, description, quantity, amount. "
+    "total_charges, payments_and_adjustments, insurance_payments, adjustments, patient_payments. "
+    "line_items is a list with one object per "
+    "printed charge row, in order, with keys date, description, quantity, amount, and optionally code. "
     "Include every row exactly as printed, even when two rows are identical. "
+    "If the bill prints insurance payments, adjustments and patient payments as separate lines, return "
+    "each total in insurance_payments, adjustments and patient_payments (as positive numbers) and still "
+    "return payments_and_adjustments if a combined total is printed, else null. "
+    "code is the billing code printed on the row, or null; never put the code in description. "
+    "line_items are charge rows only: never include payment, adjustment, credit or previous-balance rows; add those "
+    "amounts to insurance_payments, adjustments or patient_payments instead. total_charges is the printed total of "
+    "charges, else null. payments_and_adjustments is never the amount due. "
     "Use null for anything you cannot read clearly. Do not guess."
 )
 

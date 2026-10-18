@@ -327,3 +327,18 @@ Everything below is on branch f13 only. contract_version stays 1 (all changes ar
   carries a fixed English letter to the insurer ("please reconsider"), translated beside it under the same
   number lock, with the deadline and phone exactly as printed on the summary.
 - stats gains eobs_read.
+
+## Addendum 2026-10-18 ~15:00 CDT - real-format bills and EOBs (not yet deployed)
+- /extract kind=bill: the reader may also return insurance_payments, adjustments, patient_payments and a per-row
+  `code`. BillIn.lines gains optional `payment_parts` {insurance_cents, adjustments_cents, patient_cents} and each
+  line item an optional `code` (max 20 chars). payments_cents = the printed combined total, else the sum of the
+  parts. Rows whose description is a payment, adjustment, credit, refund, write-off or previous balance are
+  dropped from the charge lines (running-ledger statements).
+- /extract kind=eob: the reader may also return allowed_amount, deductible, copay, coinsurance, not_covered.
+  EobIn.fields may carry the optional allowed_cents, deductible_cents, copay_cents, coinsurance_cents,
+  not_covered_cents (absent is fine; present ones are confirmed by the same box). plan_discount_cents = billed -
+  allowed whenever both are read and allowed > 0; patient_owes_cents = the sum of the share parts when it is not
+  printed. Service-line dates printed as a range use the first date.
+- eob_checks: provider names match after an abbreviation table (UNIV, MED, CTR, HOSP, GEN, ST, REG); the
+  credit check compares insurer credit with insurance payments + adjustments when the bill splits them (a
+  patient's own payment is not an insurer credit).

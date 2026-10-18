@@ -1411,6 +1411,67 @@ test("n4. Bill screen: one \"This is correct\" box confirms all six fields; an e
   assert.strictEqual(byId("f-all-ok").disabled, true, "box must be disabled while a required field is blank");
 });
 
+// p. EOB breakdown fields, bill payment parts, line codes
+test("p1. EOB confirm screen shows the five new money fields; blank, the one box still enables Continue; /check carries them as null and confirmed", "Evan 2026-10-18", async () => {
+  const NEW = ["allowed_cents", "deductible_cents", "copay_cents", "coinsurance_cents", "not_covered_cents"];
+  const EXPECT = {allowed_cents: "Allowed amount", deductible_cents: "Deductible", copay_cents: "Copay", coinsurance_cents: "Coinsurance", not_covered_cents: "Not covered"};
+  await openEobConfirm(false); // eobRead has none of the five: a reply without them must work
+  for (const n of NEW) {
+    assert.ok(byId("e-" + n), "no input for " + n);
+    assert.strictEqual(byId("e-" + n).value, "", n + " should be blank");
+    assert.strictEqual(T["eob_f_" + n].en, EXPECT[n]);
+    for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(typeof T["eob_f_" + n][l] === "string" && T["eob_f_" + n][l].length >= 2, n + "." + l);
+  }
+  tickAllEob();
+  assert.strictEqual(byId("eob-next").disabled, false, "blank new fields blocked Continue");
+  byId("e-copay_cents").value = "25"; byId("e-copay_cents").dispatch("input");
+  assert.strictEqual(S.eobDraft.fields.copay_cents.value, 2500, "money typed in dollars");
+  byId("e-copay_cents").value = ""; byId("e-copay_cents").dispatch("input");
+  tickAllEob();
+  byId("eob-next").click();
+  setAnswers();
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  const ck = take("/check");
+  const b = bodyOf(ck);
+  for (const n of NEW) {
+    assert.strictEqual(b.eob.fields[n].value, null, n + " value");
+    assert.strictEqual(b.eob.fields[n].confirmed, true, n + " confirmed");
+  }
+  respond(take("/explain"), makeExplain("P1")); respond(ck, flagsCheck()); await p;
+});
+test("p2. Bill screen: payment_parts show the breakdown under the payments box (missing part as '-'); without payment_parts there is no breakdown", "Evan 2026-10-18", () => {
+  const withParts = Object.assign(readLines(), {payment_parts: {insurance_cents: 124000, adjustments_cents: 86000, patient_cents: 10000}});
+  openBill(withParts);
+  assert.ok(byId("lines-paid-parts"), "no breakdown element");
+  assert.strictEqual(byId("lines-paid-parts").textContent, "Insurance $1,240.00 + adjustments $860.00 + your payments $100.00");
+  openBill(Object.assign(readLines(), {payment_parts: {insurance_cents: 124000, adjustments_cents: null, patient_cents: null}}));
+  assert.strictEqual(byId("lines-paid-parts").textContent, "Insurance $1,240.00 + adjustments - + your payments -");
+  openBill(Object.assign(readLines(), {payment_parts: {insurance_cents: null, adjustments_cents: null, patient_cents: null}}));
+  assert.strictEqual(byId("lines-paid-parts"), null, "all-null parts must show nothing");
+  openBill(readLines());
+  assert.strictEqual(byId("lines-paid-parts"), null, "breakdown shown without payment_parts");
+  for (const l of ["en", "es", "ar", "zh-CN", "zh-TW"]) assert.ok(typeof T.pay_parts[l] === "string", "pay_parts." + l);
+});
+test("p3. Bill screen: a line's code shows after its description (display only); the /check body keeps code '99284'", "Evan 2026-10-18", async () => {
+  const lines = readLines();
+  lines.items[0].code = "99284";
+  openBill(Object.assign(lines, {confirmed: true}));
+  const row = byId("line-0-desc").parent;
+  const small = row.all().find(n => n.tag === "small" && n.textContent.trim() === "99284");
+  assert.ok(small, "code not shown");
+  assert.strictEqual(small.getAttribute("lang"), "en"); assert.strictEqual(small.getAttribute("dir"), "ltr");
+  assert.strictEqual(byId("s2").all().filter(n => n.tag === "small" && n.textContent.trim() === "99284").length, 1, "only the coded line shows a code");
+  assert.strictEqual(S.bill.lines.items[0].code, "99284");
+  setupQuestions();
+  S.bill.lines = lines;
+  const p = A.submitAnswers();
+  respond(take("/evaluate"), makeResult(115)); await flush();
+  const ck = take("/check");
+  assert.strictEqual(bodyOf(ck).bill.lines.items[0].code, "99284", "code lost from the /check body");
+  respond(take("/explain"), makeExplain("P3")); respond(ck, flagsCheck()); await p;
+});
+
 // ---------- run
 let finished = false; // a test whose promise never settles empties the event loop: Node would exit 0 with no ALL PASS
 process.on("exit", code => { if (!finished && code === 0) { console.log("FAIL: the run stopped before every test finished"); process.exitCode = 1; } });

@@ -41,18 +41,23 @@ def _status(eob):
     return s if s in KNOWN_STATUSES else None
 
 
-def _norm_name(s):
-    s = "".join(c.lower() if c.isalnum() else " " for c in str(s))
-    return " ".join(w for w in s.split() if w != "synthetic")
+ABBREV = {"UNIV": "UNIVERSITY", "MED": "MEDICAL", "CTR": "CENTER", "CNTR": "CENTER", "HOSP": "HOSPITAL",
+          "GEN": "GENERAL", "ST": "SAINT", "REG": "REGIONAL"}
+_DROP_TOKENS = {"INC", "LLC", "THE", "OF"}
+
+
+def _name_tokens(s):
+    s = str(s).upper().replace("(SYNTHETIC)", "")
+    s = "".join(c if c.isalnum() else " " for c in s)
+    return [w for w in (ABBREV.get(w, w) for w in s.split()) if w not in _DROP_TOKENS]
 
 
 def _provider_mismatch(hospital, provider):
     if hospital is None or provider is None:
         return False
-    a, b = _norm_name(hospital), _norm_name(provider)
-    # shortcut: an insurer's abbreviation (e.g. "VANDERBILT UNIV MED CTR") reads as a different visit;
-    # upgrade = a per-hospital alias list.
-    return not (a == b or a.startswith(b + " ") or b.startswith(a + " "))
+    a, b = set(_name_tokens(hospital)), set(_name_tokens(provider))
+    short, long_ = (a, b) if len(a) <= len(b) else (b, a)
+    return not short <= long_  # names match when the shorter name's tokens (after the ABBREV table) all appear in the longer
 
 
 def _times(m):
@@ -143,6 +148,10 @@ def _money_flags(bill, eob):
             f"shows {_money(eob_billed)} billed for this visit. "
             "Please tell me which charges were sent to my insurance.",
         ))
+    parts = lines.get("payment_parts") if isinstance(lines.get("payment_parts"), dict) else {}
+    ins_paid, adjusted = _int_or_none(parts.get("insurance_cents")), _int_or_none(parts.get("adjustments_cents"))
+    if ins_paid is not None and adjusted is not None:
+        payments = ins_paid + adjusted  # the patient's own payments are not an insurer credit
     if payments is not None and plan_paid is not None:
         credit = plan_paid + (discount or 0)
         if abs(payments - credit) > TOLERANCE:

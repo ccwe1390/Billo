@@ -99,6 +99,10 @@
   then deploy-remote.sh on the VM (backup ~/backup-before-<c>.tar, stage,
   import check, swap, restart). The unit runs one uvicorn process (no
   --workers flag; counters are per process).
+- 2026-10-17 23:44 CDT - The deploy scripts live in the repo at deploy/
+  (moved from the session scratchpad, record AN); .gitattributes keeps
+  deploy/*.sh LF because core.autocrlf=true. Run from the repo root:
+  powershell -ExecutionPolicy Bypass -File deploy\deploy.ps1 -Commit <c>.
 - 2026-10-17 19:30-19:42 CDT - Deployed by Evan (deploy.ps1/https.ps1),
   checked by Claude (record AH): D1 cc3c333 (19:30) -> HTTPS (mod_ssl,
   certbot 5.8.0 in /opt/certbot, cert lineage billscan-ip for IP

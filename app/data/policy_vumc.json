@@ -1,0 +1,205 @@
+{
+  "hospital_id": "vumc",
+  "hospital_name": "Vanderbilt University Medical Center",
+  "synthetic": false,
+  "source_note": "Real published policy, read from the PDF by Claude (Opus) 2026-10-18; bills used with it are synthetic. Not affiliated with VUMC.",
+  "accessed": "2026-10-18",
+  "match_names": [
+    "Vanderbilt University Medical Center",
+    "Vanderbilt University Hospital",
+    "Monroe Carell Jr. Children's Hospital at Vanderbilt",
+    "Vanderbilt Psychiatric Hospital",
+    "Vanderbilt Wilson County Hospital",
+    "Vanderbilt Bedford Hospital",
+    "Vanderbilt Tullahoma-Harton Hospital"
+  ],
+  "exclude_names": [
+    "Vanderbilt Clarksville Hospital",
+    "Vanderbilt Stallworth Rehabilitation Hospital"
+  ],
+  "tiers": [
+    {
+      "id": "free_care",
+      "max_percent": 300,
+      "discount_percent": 100,
+      "label_en": "Free care (100% discount)",
+      "eligible": true,
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=8",
+        "page": 8,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "id": "discount",
+      "max_percent": 350,
+      "discount_percent": 85,
+      "label_en": "85% discount",
+      "eligible": true,
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=8",
+        "page": 8,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "id": "not_eligible",
+      "max_percent": null,
+      "discount_percent": 0,
+      "label_en": "Not eligible for the income tiers - catastrophic assistance may apply",
+      "eligible": false,
+      "other_route_en": "VUMC may still help through Catastrophic Financial Assistance if your unreimbursed VUMC medical bills in one year are more than your household's yearly income.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=9",
+        "page": 9,
+        "effective_date": "2026-07-01"
+      }
+    }
+  ],
+  "application_window": {
+    "days_from_statement": 240,
+    "text_template_en": "Apply by {date} if this is your first bill after leaving the hospital; if not, your deadline is earlier. VUMC's application period is 240 days after the first post-discharge billing statement.",
+    "citation": {
+      "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+      "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=3",
+      "page": 3,
+      "effective_date": "2026-07-01"
+    }
+  },
+  "documents": [
+    {
+      "id": "hospital_form",
+      "label_en": "VUMC's own Financial Assistance Application form (fill it in; this app never asks for your SSN)",
+      "required_if": "always",
+      "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-application-english.pdf",
+      "citation": {
+        "source": "VUMC Financial Assistance Application (English)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-application-english.pdf#page=1",
+        "page": 1,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "id": "tax_return",
+      "label_en": "Tax returns and supporting schedules for the previous 2 years",
+      "required_if": "files_tax_return",
+      "citation": {
+        "source": "VUMC Financial Assistance Application (English)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-application-english.pdf#page=1",
+        "page": 1,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "id": "proof_income",
+      "label_en": "Proof of income: three months of pay stubs, or W-9, 1099, food stamp or disability award letters, other official government income documents, an employer letter, or one year of bank statements",
+      "required_if": "always",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=8",
+        "page": 8,
+        "effective_date": "2026-07-01"
+      }
+    }
+  ],
+  "coverage_period": {
+    "days_before_application": null,
+    "days_after_approval": null,
+    "text_en": "An approval covers your unpaid VUMC bills for eligible services, from the earliest one, until six months after the approval date.",
+    "citation": {
+      "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+      "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=4",
+      "page": 4,
+      "effective_date": "2026-07-01"
+    }
+  },
+  "conditions": [
+    {
+      "text_en": "Above 3.5 times the poverty guideline: VUMC may still help through Catastrophic Financial Assistance if your unreimbursed VUMC medical bills in one year are more than your household's yearly income.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=9",
+        "page": 9,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "VUMC tests adjusted gross income (AGI) from your tax return, for the current or prior year. This estimate used the yearly income you typed.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=8",
+        "page": 8,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "The deadline counts from the FIRST bill after you left the hospital. VUMC encourages applying within 120 days of that bill.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=9",
+        "page": 9,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "If you are enrolled in TennCare or another state Medicaid program, VUMC gives a 100% discount automatically.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=6",
+        "page": 6,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "VUMC also has an Alternate Charity Process (for example SNAP, WIC, homelessness, or TennCare spend-down) that does not need this application.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=7",
+        "page": 7,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "The 85% discount is applied in percentage increments based on income and family size, so it can be lower than 85%.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=8",
+        "page": 8,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "Not every provider in a VUMC building is covered; VUMC publishes a list of providers covered by this policy.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=5",
+        "page": 5,
+        "effective_date": "2026-07-01"
+      }
+    },
+    {
+      "text_en": "Vanderbilt Clarksville Hospital has different terms (Appendix C); this estimate does not cover it.",
+      "citation": {
+        "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+        "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=9",
+        "page": 9,
+        "effective_date": "2026-07-01"
+      }
+    }
+  ],
+  "rules_review_by": "2027-01-01",
+  "contacts": {
+    "phone": "(615) 936-3938",
+    "email": "financial.assistance@vumc.org",
+    "payment_plan_phone": "(615) 936-0910",
+    "citation": {
+      "source": "Vanderbilt University Medical Center Financial Assistance Policy (approved September 2026; tables effective 7/1/2026)",
+      "url": "https://www.vanderbilthealth.com/sites/default/files/2026-10/financial-assistance-policy-english.pdf#page=15",
+      "page": 15,
+      "effective_date": "2026-07-01"
+    }
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "hospital_id": "ascension_saint_thomas",
+  "hospital_name": "Ascension Saint Thomas",
+  "synthetic": false,
+  "source_note": "Real published policy, read from the PDF by Claude (Opus) 2026-10-18; bills used with it are synthetic. Not affiliated with Ascension Saint Thomas.",
+  "accessed": "2026-10-18",
+  "match_names": [
+    "Ascension Saint Thomas",
+    "Saint Thomas Midtown Hospital",
+    "Saint Thomas West",
+    "Saint Thomas Rutherford Hospital",
+    "Saint Thomas DeKalb Hospital",
+    "Saint Thomas Hickman Hospital",
+    "Saint Thomas Highlands Hospital",
+    "Saint Thomas River Park Hospital",
+    "Saint Thomas Stones River Hospital"
+  ],
+  "exclude_names": [
+    "Ascension Saint Thomas Behavioral Health Hospital",
+    "Ascension Saint Thomas Rehabilitation Hospital"
+  ],
+  "tiers": [
+    {
+      "id": "free_care",
+      "max_percent": 250,
+      "discount_percent": 100,
+      "label_en": "Free care (100% charity care)",
+      "eligible": true,
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=2",
+        "page": 2,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "discount",
+      "max_percent": 300,
+      "discount_percent": 86,
+      "label_en": "86% assistance",
+      "eligible": true,
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=3",
+        "page": 3,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "discount",
+      "max_percent": 350,
+      "discount_percent": 81,
+      "label_en": "81% assistance",
+      "eligible": true,
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=3",
+        "page": 3,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "discount",
+      "max_percent": 400,
+      "discount_percent": 79,
+      "label_en": "79% assistance",
+      "eligible": true,
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=3",
+        "page": 3,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "not_eligible",
+      "max_percent": null,
+      "discount_percent": 0,
+      "label_en": "Not eligible for the income tiers - a means test may apply",
+      "eligible": false,
+      "other_route_en": "Ascension Saint Thomas may still give 79% under its Means Test if your total medical debt (from any provider) is at least your household's yearly gross income.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=3",
+        "page": 3,
+        "effective_date": "2025-07-01"
+      }
+    }
+  ],
+  "application_window": {
+    "days_from_statement": 240,
+    "text_template_en": "Apply by {date} if this is your first bill after leaving the hospital; if not, your deadline is earlier. Ascension's policy counts 240 days from the first discharge bill.",
+    "citation": {
+      "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+      "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=2",
+      "page": 2,
+      "effective_date": "2025-07-01"
+    }
+  },
+  "documents": [
+    {
+      "id": "hospital_form",
+      "label_en": "Ascension Saint Thomas's own Financial Assistance Application form (fill it in; this app never asks for your SSN)",
+      "required_if": "always",
+      "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "proof_income",
+      "label_en": "Copies of your 3 most recent pay stubs, Social Security or pension award letter, or unemployment receipt",
+      "required_if": "always",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "tax_return",
+      "label_en": "Your most recent yearly tax return (all schedules if self-employed)",
+      "required_if": "files_tax_return",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "bank_statements",
+      "label_en": "Current bank statements (checking and savings) from the last 3 months",
+      "required_if": "always",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "id": "medicaid_decision",
+      "label_en": "Approval or denial of eligibility for Medicaid and/or state-funded medical assistance",
+      "required_if": "always",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    }
+  ],
+  "coverage_period": null,
+  "coverage_note_en": "Ascension's policy does not say whether one application covers several bills; ask the hospital. An application completed less than six months earlier can be used again.",
+  "conditions": [
+    {
+      "text_en": "Above 400% of the poverty level: under the Means Test you may still get 79% if your total medical debt (from any provider) is at least your household's yearly gross income.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=3",
+        "page": 3,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Only for residents of 13 Middle Tennessee counties: Cannon, Davidson, DeKalb, Hickman, Rutherford, Warren, White, Montgomery, Putnam, Sumner, Williamson, Wilson and Humphreys (or continuing care from another Ascension facility).",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Asset test: a patient whose assets exceed 250% of their poverty-level amount may not be eligible.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=3",
+        "page": 3,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "The deadline counts from the FIRST discharge bill. You can apply after 240 days, but then help covers only the unpaid balance.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=2",
+        "page": 2,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Uninsured patients must work with a financial counselor to apply for Medicaid or other public programs first.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=5",
+        "page": 5,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "Ascension may also decide eligibility by presumptive scoring, without a full application.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=4",
+        "page": 4,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "The policy names its hospitals (DeKalb, Hickman, Highlands, River Park, Rutherford, Midtown, Stones River, West, Three Rivers, Hospital for Specialty Surgery); Ascension Saint Thomas Behavioral Health and Rehabilitation hospitals are not named and are not covered by this estimate.",
+      "citation": {
+        "source": "Saint Thomas Health dba Ascension Saint Thomas Financial Assistance Policy (July 1, 2025)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap/runningfile_tnnas_english_financial-assistance-policy.pdf#page=1",
+        "page": 1,
+        "effective_date": "2025-07-01"
+      }
+    },
+    {
+      "text_en": "An incomplete application is not processed.",
+      "citation": {
+        "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+        "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=2",
+        "page": 2,
+        "effective_date": "2025-07-01"
+      }
+    }
+  ],
+  "rules_review_by": "2026-12-01",
+  "contacts": {
+    "phone": "931-738-2669",
+    "email": null,
+    "payment_plan_phone": "931-738-2669",
+    "citation": {
+      "source": "Ascension Saint Thomas Financial Assistance Application (English)",
+      "url": "https://healthcare.ascension.org/-/media/healthcare/financial-assistance/tennessee/tnnas/fap-application/runningfile_tnnas_english_financial-assistance-application.pdf#page=2",
+      "page": 2,
+      "effective_date": "2025-07-01"
+    }
+  }
+}

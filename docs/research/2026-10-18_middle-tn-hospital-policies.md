@@ -5,8 +5,7 @@
 **Question:** Which Middle Tennessee hospitals hold the largest 75% of
 acute-care beds, and what do their financial assistance policies (FAPs) say?
 **For:** Evan and the team. It feeds the roadmap decision on encoding real
-policies (features brief candidate 1) and judge Q&A. It does NOT change the
-demo: the app stays on the synthetic Cumberland General policy (hard rule).
+policies (features brief candidate 1) and judge Q&A. Update 2026-10-18: Evan decided to use the real VUMC and Ascension Saint Thomas policies in the demo, with synthetic bills.
 **Status:** compiled by the orchestrator from agent reports. The orchestrator
 has NOT re-fetched the sources. Stage 10.5 (cold assessment) NOT run. Every
 policy number is the hospital's own document (VENDOR-SELF-REPORTED by nature;
@@ -20,7 +19,7 @@ Sources (full text, citations, verification tables):
 - docs/research/raw/2026-10-17_mtn-hca-tristar.md - HCA TriStar
 - docs/research/raw/2026-10-17_mtn-other-systems.md - everyone else
 
-> 2026-10-18 00:13 CDT: cold assessment run - 3 factual errors and 1 scope error found (L35-37 "same county", L40-41 VUMC 120/240, L100-101 4 -> 5 outside 501(r), L79 HCA 4% emergency only); see docs/research/2026-10-18_cold-assessments.md section 4. Not yet corrected here.
+> 2026-10-18 00:13 CDT: cold assessment run - 3 factual errors and 1 scope error found (L35-37 "same county", L40-41 VUMC 120/240, L100-101 4 -> 5 outside 501(r), L79 HCA 4% emergency only); see docs/research/2026-10-18_cold-assessments.md section 4. Not yet corrected here. Corrected 2026-10-18 08:31 CDT: all 5 fixes applied (same county, VUMC 120/240, 4 -> 5 outside 501(r), HCA 4% emergency only, AGI).
 
 ## TL;DR
 
@@ -34,13 +33,9 @@ Sources (full text, citations, verification tables):
   Sumner, one each. 3 systems cover 9 of the 13, plus 4 single-hospital
   policies.
 - **Free-care ceilings range from 100% FPL (Williamson, Cookeville, Maury)
-  to 350% FPG (Vanderbilt Clarksville).** Same county, different answer: a
-  household at 220% FPL gets 100% free at VUMC, 100% free at Ascension, 25%
-  off at Cookeville and nothing free at Maury.
+  to 350% FPG (Vanderbilt Clarksville).** Different counties, different answers: a household at 220% FPL gets 100% free at VUMC (Davidson; VUMC tests adjusted gross income), 100% free at Ascension (only inside its 13-county area and subject to its asset test), 25% off at Cookeville (Putnam) and nothing free at Maury (Maury).
 - **Application windows range from 60 days after service (Highpoint
-  Sumner) to 240 days after the first statement (Ascension).** VUMC's own
-  policy contradicts itself (240 in a definition, 120 in the operative
-  text). BillScan reads the window from the policy JSON
+  Sumner) to 240 days after the first statement (Ascension).** VUMC's policy defines the application period as 240 days after the first post-discharge statement and encourages applying within 120 days (FAP p.3 and p.9). BillScan reads the window from the policy JSON
   (days_from_statement), so a real policy can carry its own window, but the
   "from service" vs "from statement" anchor differs too.
 - **Residency limits are common:** Ascension 13 named counties; Cookeville
@@ -75,10 +70,10 @@ Winchester 152, Nashville General 150.
 
 | Policy | Free care | Discount tiers | Residency / assets | Window | Other |
 |---|---|---|---|---|---|
-| VUMC (approved Sep 2026; tables eff. 7/1/2026) | <= 300% FPG | 85% for 300-350%; catastrophic above if VUMC bills > 100% of income | none stated / none in FAP | 240 days (definition) vs 120 (operative) | TennCare = automatic 100%; SNAP/WIC/homeless presumptive; AGB 24% (Wilson 17%); "does not engage in any" ECAs |
+| VUMC (approved Sep 2026; tables eff. 7/1/2026) | <= 300% FPG | 85% for 300-350%; catastrophic above if VUMC bills > 100% of income | none stated / none in FAP | 240 days (120 encouraged) | TennCare = automatic 100%; SNAP/WIC/homeless presumptive; AGB 24% (Wilson 17%); "does not engage in any" ECAs |
 | VUMC Clarksville (Appendix C) | <= 350% FPG | none | same | same | AGB 12% |
 | Ascension Saint Thomas (2025-07-01) | <= 250% FPL | 86/81/79% to 400%; means test above | 13 counties; asset test at 250% ("may") | 240 days from first discharge bill | uninsured must apply to Medicaid; presumptive scoring; AGB capped at 20% |
-| HCA TriStar (system page, undated) | 0-200% FPL | 201-400% if balance > $1,500; HCA page caps at 4% of income | not stated | not published | uninsured discount ~92%; for-profit, 501(r) does not apply; HCA says no credit reporting or lawsuits |
+| HCA TriStar (system page, undated) | 0-200% FPL | 201-400% if balance > $1,500; HCA page caps at 4% of income (emergency services only, per HCA's page) | not stated | not published | uninsured discount ~92%; for-profit, 501(r) does not apply; HCA says no credit reporting or lawsuits |
 | Williamson (updated 2026-02-18) | <= 100% FPL | 90/80/70/60% at 150/175/200/250% | 60 miles for scheduled care; assets considered | 20 days to complete an incomplete app | catastrophic: pay 15-30% of income; 47% automatic uninsured discount |
 | Cookeville (web page, undated) | <= 100% FPL | 75/50/25% at 150/200/300% | 14 counties; $500 minimum balance | not stated | liability capped at 10% of income at <= 200% FPL; must apply to Medicaid |
 | Maury (2024; printed expiry 9/13/2025, still the linked file) | <= 100% FPL | discounted to 250% FPL | citizens and legal immigrants; limited assets | not read | catastrophic route; AGB <= most favored commercial rate |
@@ -91,16 +86,15 @@ Winchester 152, Nashville General 150.
    catastrophic rules and income caps. The current policy JSON schema
    (synthetic) holds tiers and a window; residency, minimum balance,
    catastrophic and "insured patients excluded" (Highpoint) do not exist
-   yet. Encoding real policies is schema work, not just data entry.
+   yet. Encoding real policies is schema work, not just data entry. VUMC tests adjusted gross income (AGI); the other policies test gross household income.
 2. **Window anchor differs.** "From first statement" (Ascension, VUMC
    definition) vs "from service" (Highpoint, 60 days). A wrong anchor gives
    a wrong "Apply by" date - the one number a family acts on.
-3. **Stale and self-contradicting documents exist.** Maury links an
-   expired policy; VUMC's 120 vs 240; Ascension's summary predates its FAP
+3. **Stale and ambiguous documents exist.** Maury links an expired policy; VUMC's policy defines the application period as 240 days after the first post-discharge statement and encourages applying within 120 days (FAP p.3 and p.9); Ascension's summary predates its FAP
    and lists a different mailing address. Any real-policy feature needs a
    `review_by` date and a human check per policy.
-4. **For-profit HCA is outside 501(r).** Collections-protection text
-   (features brief candidate 4) must be off for 4 of the 13 hospitals.
+4. **For-profit HCA and Highpoint Sumner are outside 501(r).** Collections-protection text
+   (features brief candidate 4) must be off for 5 of the 13 hospitals (the 4 HCA TriStar hospitals and Highpoint Sumner, which is Lifepoint-majority and for-profit).
 
 ## Conflicts between agent reports (unresolved)
 

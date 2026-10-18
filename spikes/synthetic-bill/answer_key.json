@@ -80,7 +80,7 @@
     "insurance_status": "self_pay"
   },
   "bill-11": {
-    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
     "statement_date": "2026-10-16",
     "account_number": "CGH-00582417",
     "amount_due_cents": 635740,
@@ -88,7 +88,7 @@
     "insurance_status": "self_pay"
   },
   "bill-12": {
-    "hospital_name": "Ascension Saint Thomas West (SYNTHETIC)",
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
     "statement_date": "2026-10-16",
     "account_number": "CGH-00588650",
     "amount_due_cents": 185850,
@@ -96,7 +96,7 @@
     "insurance_status": "self_pay"
   },
   "bill-13": {
-    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
     "statement_date": "2026-10-17",
     "account_number": "CGH-00594203",
     "amount_due_cents": 220600,
@@ -104,11 +104,11 @@
     "insurance_status": "insured"
   },
   "bill-14": {
-    "hospital_name": "Vanderbilt University Medical Center (SYNTHETIC)",
+    "hospital_name": "Cumberland General Hospital (SYNTHETIC)",
     "statement_date": "2026-10-17",
     "account_number": "CGH-00599781",
     "amount_due_cents": 31000,
     "date_of_service": "2026-10-08",
-    "insurance_status": "insured"
+    "insurance_status": "medicaid"
   }
 }

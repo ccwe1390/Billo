@@ -82,6 +82,7 @@ the dated entry, not the digest.
 - [AT - Audit 3 pre-1PM fixes: presenter sheet, HANDOFF, Result-screen deadline, safety lines, deploy health check](#appendix-at---audit-3-pre-1pm-fixes-presenter-sheet-handoff-result-screen-deadline-safety-lines-deploy-health-check-2026-10-18-0744-cdt) (10-18)
 - [AU - Deploy 984a537 live (audit 3 fixes), health check worked, live checks pass](#appendix-au---deploy-984a537-live-audit-3-fixes-health-check-worked-live-checks-pass-2026-10-18-0751-cdt) (10-18)
 - [AV - Real published policies (VUMC + Ascension Saint Thomas) with synthetic bills: audited plan, 5 agents, live bdc76df](#appendix-av---real-published-policies-vumc--ascension-saint-thomas-with-synthetic-bills-audited-plan-5-agents-live-bdc76df-2026-10-18-0852-cdt) (10-18)
+- [AW - Audit 4 (6 workers) after the real-policy change: 1 crit (pitch language claim), 7 high](#appendix-aw---audit-4-6-workers-after-the-real-policy-change-1-crit-pitch-language-claim-7-high-2026-10-18-0941-cdt) (10-18)
 
 ---
 
@@ -1687,3 +1688,19 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **Docs:** presenter sheet banner + rows for the real-policy demo and a judge Q&A card (safe numbers only); contracts.md addendum; experiments.md note. Rollback target now 984a537 (`deploy.ps1 -Commit bdc76df -Rollback`). Local main = bdc76df (not pushed).
 
 **Open:** Evan's phone checks (QR on the NEW bill-02, upload, https padlock); reprint bill-02; presenters re-brief; push when told; delete the temporary plan, strings file and pdfs folder after this entry.
+
+# Appendix AW - Audit 4 (6 workers) after the real-policy change: 1 crit (pitch language claim), 7 high (2026-10-18, ~09:41 CDT)
+**When:** 2026-10-18 08:58-09:41 CDT. Evan: "Run slash audit with six Sonnet agents, four on code and two on docs." Report: docs/2026-10-18_audit-4.md. The findings pass changed no code.
+
+**Headline:** 1 crit, 7 high, ~17 med, ~12 low rows, 8 edge cases, 2 new policy questions (B1 Home with more than one policy; B2 bills with no hospital name) plus audit-3 A1/A2 still open. The crit and every high were reproduced by the session model:
+- crit: the presenter sheet says the 5 hand-written languages were "written by the team" (pitch-corrections.md:15, :53) - they are Claude drafts, unreviewed;
+- blank or missing hospital name -> VUMC estimate and packet, no warning;
+- Home is VUMC-only: an Ascension bill shows VUMC's Apply-by, phone and .ics, and "all N bills" counts the uncounted row;
+- pitch rev2:345 "application filled in" vs the packet's "apply on the hospital's own form"; pitch lines 343/344/347 have no replacement rows;
+- HANDOFF deploy path lost its backslashes; operations.md has no bdc76df entry and the wrong rollback target; HANDOFF contradicts itself (live commit, VUMC "unverified", push state, who deploys).
+
+**Clean:** policy JSONs vs freshly downloaded PDFs (25+ values, 0 defects); tier math exact on 135 boundary rows; no-policy bills make no OCI call and get no packet; links and packet escaping safe; caps exact; 14 deploy sandbox scenarios behave as written; 6/6 test files pass; mutation score 165/196 (84.2%). Correction forward: records AU and AV said "not pushed"; f10 and main were pushed 08:54:19 CDT (main 984a537 at 07:52:53).
+
+**Cost:** 6 Sonnet workers, 441 tool calls, ~1.52M subagent tokens, ~41 min. Side effects: one worker killed 6 local processes during its own cleanup (live site still 200); one wrote and removed 2 scratch files in the repo root (git status clean).
+
+**Open:** fixes await Evan (fix order section 7; B1/B2 decisions).

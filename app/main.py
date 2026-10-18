@@ -1,4 +1,4 @@
-"""BillScan - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
+"""Billow - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
 
 Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet, /household;
 GET /stats; static UI at /.
@@ -46,7 +46,7 @@ NOTICE_EN = "This is a draft you choose to send. The hospital makes the final de
 with open(LANGUAGES_PATH, encoding="utf-8") as _f:
     LANGS = {x["code"]: x for x in json.load(_f)}  # the one language list (app/data/languages.json)
 
-app = FastAPI(title="BillScan", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="Billow", docs_url=None, redoc_url=None, openapi_url=None)
 
 
 @app.exception_handler(RequestValidationError)

@@ -26,7 +26,7 @@ os.environ.setdefault("OCI_TEXT_MODEL_ID", "cohere.command-a-03-2025")
 from app import oci_client  # noqa: E402
 
 INLINE = {"en", "es", "ar", "zh-CN", "zh-TW"}
-KEEP = ["SYNTHETIC DEMO", "SYNTHETIC", "BillScan", "PNG", "JPEG"]
+KEEP = ["SYNTHETIC DEMO", "SYNTHETIC", "Billow", "PNG", "JPEG"]
 NAMED = re.compile(r"\{([A-Za-z_]\w*)\}")
 BATCH = 20  # documents per OCI Language call
 # Machine translations whose meaning flipped when translated back to English (OCI Language,

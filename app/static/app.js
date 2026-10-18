@@ -1,5 +1,5 @@
 "use strict";
-// BillScan UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
+// Billow UI. All state lives in this object in memory only: no localStorage, no cookies, no disk.
 
 // Tennessee Justice Center's phone for the help card. null until the number is verified on their own page: the line then shows the name only.
 const TJC_PHONE = "(615) 255-0331"; // verified 2026-10-18 08:35 CDT on tnjustice.org/contact ("Call us at 615-255-0331")
@@ -49,7 +49,7 @@ const dirOf = c => (LANGS.find(l => l.code === c) || {}).dir || "ltr";
 // en, es, ar, zh-CN and zh-TW are inline below. Every other language's interface strings are fetched on demand
 // from i18n/<code>.json into I18N (see loadLang); t() falls back to English for any missing key.
 const T = {
-  app_title:   {en: "BillScan", es: "BillScan", ar: "BillScan", "zh-CN": "BillScan", "zh-TW": "BillScan"}, // brand name: identical in every language
+  app_title:   {en: "Billow", es: "Billow", ar: "Billow", "zh-CN": "Billow", "zh-TW": "Billow"}, // brand name: identical in every language
   notice:      {en: "Nothing you enter is saved. Demo uses synthetic bills only.", es: "Nada de lo que escribe se guarda. La demostración usa solo facturas sintéticas.", ar: "لا يتم حفظ أي شيء تدخله. العرض التجريبي يستخدم فواتير اصطناعية فقط.", "zh-CN": "您输入的任何内容都不会被保存。演示仅使用合成账单。", "zh-TW": "您輸入的任何內容都不會被儲存。示範僅使用合成帳單。"}, // TODO-REVIEW es+ar+zh
   no_id:       {en: "We do not ask for your name, immigration status, Social Security number, or ID.", es: "No pedimos su nombre, su estatus migratorio, su número de Seguro Social ni su identificación.", ar: "لا نطلب اسمك أو وضعك في الهجرة أو رقم الضمان الاجتماعي أو أي هوية.", "zh-CN": "我们不会询问您的姓名、移民身份、社会安全号码或身份证件。", "zh-TW": "我們不會詢問您的姓名、移民身分、社會安全號碼或身分證件。"}, // TODO-REVIEW es+ar+zh
   pick_lang:   {en: "Choose a language", es: "Elija un idioma", ar: "اختر اللغة", "zh-CN": "选择语言", "zh-TW": "選擇語言"}, // TODO-REVIEW es+ar+zh
@@ -139,7 +139,7 @@ const T = {
   r_mismatch_any:{en: "Your bill names a hospital this demo has no policy for, so we cannot estimate it. The demo has the published policies of Vanderbilt University Medical Center and Ascension Saint Thomas. Ask your hospital for its own financial assistance policy.", es: "Su factura menciona un hospital cuya política no está en esta demostración, así que no podemos hacer una estimación. La demostración tiene las políticas publicadas de Vanderbilt University Medical Center y Ascension Saint Thomas. Pida a su hospital su propia política de asistencia financiera.", ar: "تذكر فاتورتك مستشفى لا تتوفر سياسته في هذا العرض التجريبي، لذا لا يمكننا تقديم تقدير. يتضمن العرض السياسات المنشورة لـ Vanderbilt University Medical Center و Ascension Saint Thomas. اطلب من مستشفاك سياسة المساعدة المالية الخاصة به.", "zh-CN": "您账单上的医院不在本演示的政策范围内，因此我们无法估算。本演示包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。请向您的医院索取其财务援助政策。", "zh-TW": "您帳單上的醫院不在本示範的政策範圍內，因此我們無法估算。本示範包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。請向您的醫院索取其財務援助政策。"}, // TODO-REVIEW es+ar+zh
   r_other_route:{en: "Your income is above this hospital's income tiers. The hospital may still help another way - see what it also checks below. Ask the hospital; this app does not make a packet for that.", es: "Su ingreso está por encima de los niveles de ingreso de este hospital. El hospital aún podría ayudarle de otra forma: vea abajo lo que también revisa. Pregunte al hospital; esta aplicación no crea un paquete para eso.", ar: "دخلك أعلى من شرائح الدخل في هذا المستشفى. قد يساعدك المستشفى بطريقة أخرى، انظر أدناه ما يتحقق منه أيضًا. اسأل المستشفى؛ هذا التطبيق لا ينشئ حزمة لذلك.", "zh-CN": "您的收入高于该医院的收入档次。医院仍可能以其他方式提供帮助，请看下方医院还会核查的内容。请咨询医院；本应用不会为此生成申请材料。", "zh-TW": "您的收入高於該醫院的收入級距。醫院仍可能以其他方式提供協助，請看下方醫院還會核查的內容。請洽詢醫院；本應用程式不會為此產生申請資料。"}, // TODO-REVIEW es+ar+zh
   help_title: {en: "Want a person to help?", es: "¿Quiere que una persona le ayude?", ar: "هل تريد أن يساعدك شخص؟", "zh-CN": "想找人帮忙吗？", "zh-TW": "想找人幫忙嗎？"}, // TODO-REVIEW es+ar+zh
-  help_note:  {en: "These offices and groups help for free. BillScan does not send them anything.", es: "Estas oficinas y grupos ayudan gratis. BillScan no les envía nada.", ar: "تساعد هذه المكاتب والجهات مجانًا. لا يرسل BillScan إليها أي شيء.", "zh-CN": "这些办公室和机构免费提供帮助。BillScan 不会向它们发送任何信息。", "zh-TW": "這些辦公室和機構免費提供協助。BillScan 不會向它們傳送任何資訊。"}, // TODO-REVIEW es+ar+zh
+  help_note:  {en: "These offices and groups help for free. Billow does not send them anything.", es: "Estas oficinas y grupos ayudan gratis. Billow no les envía nada.", ar: "تساعد هذه المكاتب والجهات مجانًا. لا يرسل Billow إليها أي شيء.", "zh-CN": "这些办公室和机构免费提供帮助。Billow 不会向它们发送任何信息。", "zh-TW": "這些辦公室和機構免費提供協助。Billow 不會向它們傳送任何資訊。"}, // TODO-REVIEW es+ar+zh
   r_deadline_passed:{en: "This date has passed. Ask the hospital whether it will still accept your application.", es: "Esta fecha ya pasó. Pregunte al hospital si todavía aceptará su solicitud.", ar: "لقد مضى هذا التاريخ. اسأل المستشفى هل سيقبل طلبك رغم ذلك.", "zh-CN": "这个日期已经过了。请询问医院是否仍会接受您的申请。", "zh-TW": "這個日期已經過了。請詢問醫院是否仍會接受您的申請。"}, // TODO-REVIEW es+ar+zh
   income_hint: {en: "Type the amount in US dollars, like 38000 or 38,000.50.", es: "Escriba el monto en dólares de EE. UU., como 38000 o 38,000.50.", ar: "اكتب المبلغ بالدولار الأمريكي، مثل 38000 أو 38,000.50.", "zh-CN": "请用美元填写金额，例如 38000 或 38,000.50。", "zh-TW": "請用美元填寫金額，例如 38000 或 38,000.50。"}, // TODO-REVIEW es+ar+zh
   home_open:   {en: "All bills from this visit", es: "Todas las facturas de esta visita", ar: "جميع فواتير هذه الزيارة", "zh-CN": "本次就诊的所有账单", "zh-TW": "本次就診的所有帳單"}, // TODO-REVIEW es+ar+zh
@@ -158,10 +158,10 @@ const T = {
   rem_follow:  {en: "30 days after you apply: if you have no decision yet, call {phone}.", es: "30 días después de presentarla: si aún no tiene una decisión, llame al {phone}.", ar: "بعد 30 يومًا من التقديم: إن لم يصلك قرار، اتصل على {phone}.", "zh-CN": "申请 30 天后：如果还没有决定，请致电 {phone}。", "zh-TW": "申請 30 天後：如果還沒有決定，請致電 {phone}。"}, // TODO-REVIEW es+ar+zh
   rem_reuse:   {en: "Another bill from this hospital? Your answers are reused while this page is open.", es: "¿Otra factura de este hospital? Sus respuestas se reutilizan mientras esta página esté abierta.", ar: "فاتورة أخرى من هذا المستشفى؟ يُعاد استخدام إجاباتك ما دامت هذه الصفحة مفتوحة.", "zh-CN": "这家医院还有其他账单？本页面打开期间，您的回答会被重复使用。", "zh-TW": "這家醫院還有其他帳單？本頁面開啟期間，您的回答會被重複使用。"}, // TODO-REVIEW es+ar+zh
   rem_ics:     {en: "Add to my calendar", es: "Agregar a mi calendario", ar: "أضف إلى تقويمي", "zh-CN": "添加到我的日历", "zh-TW": "加入我的行事曆"}, // TODO-REVIEW es+ar+zh
-  ics_deadline:{en: "BillScan: apply for financial assistance by today", es: "BillScan: presente hoy, a más tardar, la solicitud de asistencia financiera", ar: "BillScan: قدّم طلب المساعدة المالية اليوم كحد أقصى", "zh-CN": "BillScan：今天是申请经济援助的最后期限", "zh-TW": "BillScan：今天是申請財務援助的最後期限"}, // TODO-REVIEW es+ar+zh
-  ics_follow:  {en: "BillScan: follow up on your financial assistance application", es: "BillScan: dé seguimiento a su solicitud de asistencia financiera", ar: "BillScan: تابع طلب المساعدة المالية", "zh-CN": "BillScan：跟进您的经济援助申请", "zh-TW": "BillScan：追蹤您的財務援助申請"}, // TODO-REVIEW es+ar+zh
+  ics_deadline:{en: "Billow: apply for financial assistance by today", es: "Billow: presente hoy, a más tardar, la solicitud de asistencia financiera", ar: "Billow: قدّم طلب المساعدة المالية اليوم كحد أقصى", "zh-CN": "Billow：今天是申请经济援助的最后期限", "zh-TW": "Billow：今天是申請財務援助的最後期限"}, // TODO-REVIEW es+ar+zh
+  ics_follow:  {en: "Billow: follow up on your financial assistance application", es: "Billow: dé seguimiento a su solicitud de asistencia financiera", ar: "Billow: تابع طلب المساعدة المالية", "zh-CN": "Billow：跟进您的经济援助申请", "zh-TW": "Billow：追蹤您的財務援助申請"}, // TODO-REVIEW es+ar+zh
   chip_selected:{en: "{name} selected", es: "{name} seleccionado", ar: "تم اختيار {name}", "zh-CN": "已选择 {name}", "zh-TW": "已選擇 {name}"}, // TODO-REVIEW es+ar+zh
-  qr_alt:      {en: "QR code that opens BillScan on a phone", es: "Código QR que abre BillScan en un teléfono", ar: "رمز QR يفتح BillScan على الهاتف", "zh-CN": "可在手机上打开 BillScan 的二维码", "zh-TW": "可在手機上開啟 BillScan 的 QR 碼"}, // TODO-REVIEW es+ar+zh
+  qr_alt:      {en: "QR code that opens Billow on a phone", es: "Código QR que abre Billow en un teléfono", ar: "رمز QR يفتح Billow على الهاتف", "zh-CN": "可在手机上打开 Billow 的二维码", "zh-TW": "可在手機上開啟 Billow 的 QR 碼"}, // TODO-REVIEW es+ar+zh
   qr_caption:  {en: "Scan to open on a phone", es: "Escanee para abrir en un teléfono", ar: "امسح الرمز للفتح على الهاتف", "zh-CN": "扫码即可在手机上打开", "zh-TW": "掃描即可在手機上開啟"}, // TODO-REVIEW es+ar+zh
   theme_auto:  {en: "Theme: auto", es: "Tema: automático", ar: "السمة: تلقائي", "zh-CN": "主题：自动", "zh-TW": "主題：自動"}, // TODO-REVIEW es+ar+zh
   theme_light: {en: "Theme: light", es: "Tema: claro", ar: "السمة: فاتح", "zh-CN": "主题：浅色", "zh-TW": "主題：淺色"}, // TODO-REVIEW es+ar+zh
@@ -861,10 +861,10 @@ function foldLine(line) {
 }
 // events: [{date: "YYYYMMDD", summary: text}] -> iCalendar text, CRLF line endings (pure: easy to test)
 function buildIcs(events, now) {
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//BillScan//Demo//EN"];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Billow//Demo//EN"];
   events.forEach((ev, i) => {
     const uid = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : Date.now() + "-" + i;
-    lines.push("BEGIN:VEVENT", "UID:" + uid + "@billscan.demo", "DTSTAMP:" + utcStamp(now),
+    lines.push("BEGIN:VEVENT", "UID:" + uid + "@billow.demo", "DTSTAMP:" + utcStamp(now),
       "DTSTART;VALUE=DATE:" + ev.date, "SUMMARY:" + icsText(ev.summary), "END:VEVENT");
   });
   lines.push("END:VCALENDAR");
@@ -879,7 +879,7 @@ function downloadIcs(h) {
     {date: ymd, summary: t("ics_follow")},
   ], now);
   const url = URL.createObjectURL(new Blob([ics], {type: "text/calendar"}));
-  const a = el("a", {href: url, download: "billscan-reminders.ics"});
+  const a = el("a", {href: url, download: "billow-reminders.ics"});
   document.body.append(a);
   a.click();
   a.remove();

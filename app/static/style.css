@@ -334,6 +334,19 @@ img.preview { display: block; width: 100%; max-height: 28rem; object-fit: contai
 .field .hint { font-size: .875rem; font-weight: 700; color: var(--warning); }
 .field .state-ok { font-weight: 700; color: var(--success); }
 
+/* charge lines under the six fields: one column at phone width (description, amount, remove stack), three columns from 640px */
+.lines.confirmed { background-color: var(--success-surface); }
+.lines .hint { font-size: .875rem; font-weight: 700; color: var(--warning); }
+.line-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; padding-block-end: .75rem; border-block-end: 1px solid var(--border); }
+.line-row > * { min-width: 0; }
+.line-money { display: flex; flex-direction: column; gap: .25rem; }
+.line-money input { font-variant-numeric: tabular-nums; }
+.line-desc { display: flex; flex-direction: column; gap: .25rem; }
+.line-rm { justify-self: start; }
+@media (min-width: 640px) {
+  .line-row { grid-template-columns: minmax(0, 1fr) 9rem auto; align-items: end; }
+}
+
 .num-step { display: flex; align-items: center; gap: .75rem; }
 .num-step input { width: 6rem; text-align: center; font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .money-in { position: relative; max-width: 20rem; }
@@ -366,6 +379,13 @@ tr.you { background-color: var(--accent); color: var(--accent-fg); font-weight: 
   background-color: var(--primary); color: var(--primary-fg); font-size: .875rem; font-weight: 700;
 }
 .tbl-note { font-size: .875rem; color: var(--muted-fg); }
+
+/* "Things to ask the hospital about" card on the result screen */
+ul.flags { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .75rem; }
+ul.flags li { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; }
+ul.flags li > span:first-child { flex: 1 1 16rem; min-width: 0; overflow-wrap: anywhere; }
+.flag-amt { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.chk-total { font-size: 1.125rem; font-weight: 700; }
 mark.hl { padding-inline: .25rem; border-radius: var(--radius-sm); background-color: var(--highlight); color: var(--highlight-fg); font-weight: 700; }
 
 ol.docs { padding-inline-start: 1.25rem; }

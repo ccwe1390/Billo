@@ -175,6 +175,24 @@ const T = {
   confirmed_word:{en: "Confirmed", es: "Confirmado", ar: "تم التأكيد", "zh-CN": "已确认", "zh-TW": "已確認"}, // TODO-REVIEW es+ar+zh
   machine_note:{en: "Machine translated by Oracle AI. The English line under important text is what counts.", es: "Traducido automáticamente por Oracle AI. Lo que cuenta es la línea en inglés bajo los textos importantes.", ar: "تمت الترجمة آليًا بواسطة Oracle AI. المعتمد هو السطر الإنجليزي أسفل النصوص المهمة.", "zh-CN": "由 Oracle AI 机器翻译。以重要文字下方的英文为准。", "zh-TW": "由 Oracle AI 機器翻譯。以重要文字下方的英文為準。"}, // TODO-REVIEW es+ar+zh
   steps_label: {en: "Progress", es: "Progreso", ar: "التقدّم", "zh-CN": "进度", "zh-TW": "進度"}, // TODO-REVIEW es+ar+zh
+  ins_medicaid:{en: "TennCare / Medicaid", es: "TennCare / Medicaid", ar: "TennCare / Medicaid", "zh-CN": "TennCare / Medicaid", "zh-TW": "TennCare / Medicaid"}, // TODO-REVIEW es+ar+zh
+  lines_title: {en: "Charges on your bill", es: "Cargos en su factura", ar: "الرسوم في فاتورتك", "zh-CN": "账单上的收费项目", "zh-TW": "帳單上的收費項目"}, // TODO-REVIEW es+ar+zh
+  lines_hint:  {en: "Check each charge against your bill. Fix mistakes, remove lines that are not on the bill, and add any that are missing.", es: "Compare cada cargo con su factura. Corrija los errores, elimine las líneas que no estén en la factura y agregue las que falten.", ar: "قارن كل رسم بفاتورتك. صحّح الأخطاء، واحذف الأسطر غير الموجودة في الفاتورة، وأضف أي سطر ناقص.", "zh-CN": "请对照账单检查每一项收费。修正错误，删除账单上没有的行，并补上遗漏的行。", "zh-TW": "請對照帳單檢查每一項收費。修正錯誤，刪除帳單上沒有的列，並補上遺漏的列。"}, // TODO-REVIEW es+ar+zh
+  line_desc:   {en: "Description", es: "Descripción", ar: "الوصف", "zh-CN": "说明", "zh-TW": "說明"}, // TODO-REVIEW es+ar+zh
+  line_amt:    {en: "Amount (US dollars)", es: "Monto (dólares)", ar: "المبلغ (بالدولار)", "zh-CN": "金额（美元）", "zh-TW": "金額（美元）"}, // TODO-REVIEW es+ar+zh
+  line_remove: {en: "Remove", es: "Quitar", ar: "إزالة", "zh-CN": "删除", "zh-TW": "刪除"}, // TODO-REVIEW es+ar+zh
+  line_add:    {en: "Add a line", es: "Agregar una línea", ar: "أضف سطرًا", "zh-CN": "添加一行", "zh-TW": "新增一列"}, // TODO-REVIEW es+ar+zh
+  lines_total: {en: "Total charges (US dollars)", es: "Cargos totales (dólares)", ar: "إجمالي الرسوم (بالدولار)", "zh-CN": "总费用（美元）", "zh-TW": "總費用（美元）"}, // TODO-REVIEW es+ar+zh
+  lines_paid:  {en: "Payments and adjustments (US dollars)", es: "Pagos y ajustes (dólares)", ar: "المدفوعات والتسويات (بالدولار)", "zh-CN": "付款和调整（美元）", "zh-TW": "付款和調整（美元）"}, // TODO-REVIEW es+ar+zh
+  lines_ok:    {en: "These charges match my bill", es: "Estos cargos coinciden con mi factura", ar: "هذه الرسوم تطابق فاتورتي", "zh-CN": "这些收费与我的账单一致", "zh-TW": "這些收費與我的帳單一致"}, // TODO-REVIEW es+ar+zh
+  why_lines:   {en: "Confirm the charges to continue", es: "Confirme los cargos para continuar", ar: "أكّد الرسوم للمتابعة", "zh-CN": "请确认收费项目后继续", "zh-TW": "請確認收費項目後繼續"}, // TODO-REVIEW es+ar+zh
+  chk_title:   {en: "Things to ask the hospital about", es: "Cosas para preguntar al hospital", ar: "أمور اسأل المستشفى عنها", "zh-CN": "可向医院询问的事项", "zh-TW": "可向醫院詢問的事項"}, // TODO-REVIEW es+ar+zh
+  chk_total:   {en: "Up to {amount} to ask the hospital about", es: "Hasta {amount} para preguntar al hospital", ar: "ما يصل إلى {amount} للاستفسار عنه من المستشفى", "zh-CN": "最多 {amount} 可向医院询问", "zh-TW": "最多 {amount} 可向醫院詢問"}, // TODO-REVIEW es+ar+zh
+  chk_none:    {en: "Our checks found no repeated charges, and the math adds up. Simple checks can't prove a bill is right.", es: "Nuestras revisiones no encontraron cargos repetidos y las sumas cuadran. Las revisiones simples no pueden demostrar que una factura sea correcta.", ar: "لم تجد فحوصاتنا رسومًا مكررة، والحسابات متطابقة. الفحوص البسيطة لا تثبت أن الفاتورة صحيحة.", "zh-CN": "我们的检查没有发现重复收费，金额也能对得上。简单的检查不能证明账单一定正确。", "zh-TW": "我們的檢查沒有發現重複收費，金額也對得上。簡單的檢查無法證明帳單一定正確。"}, // TODO-REVIEW es+ar+zh
+  chk_safety:  {en: "Found by fixed rules on the charges you confirmed, not by AI. Only the hospital can confirm an error.", es: "Encontrado con reglas fijas sobre los cargos que usted confirmó, no por IA. Solo el hospital puede confirmar un error.", ar: "تم العثور عليه بقواعد ثابتة على الرسوم التي أكدتها، وليس بالذكاء الاصطناعي. المستشفى وحده يستطيع تأكيد وجود خطأ.", "zh-CN": "由固定规则根据您确认的收费项目得出，并非 AI 判断。只有医院才能确认是否有错误。", "zh-TW": "由固定規則根據您確認的收費項目得出，並非 AI 判斷。只有醫院才能確認是否有錯誤。"}, // TODO-REVIEW es+ar+zh
+  chk_letter:  {en: "Create a letter asking the hospital to check this bill", es: "Crear una carta que pida al hospital revisar esta factura", ar: "أنشئ رسالة تطلب من المستشفى مراجعة هذه الفاتورة", "zh-CN": "创建一封请医院核查这份账单的信", "zh-TW": "建立一封請醫院核查這份帳單的信"}, // TODO-REVIEW es+ar+zh
+  load_dispute:{en: "Writing your letter...", es: "Escribiendo su carta...", ar: "جارٍ كتابة رسالتك...", "zh-CN": "正在撰写您的信函...", "zh-TW": "正在撰寫您的信函..."}, // TODO-REVIEW es+ar+zh
+  d_title:     {en: "Your letter to the hospital", es: "Su carta al hospital", ar: "رسالتك إلى المستشفى", "zh-CN": "您给医院的信", "zh-TW": "您給醫院的信"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
 const I18N = {}; // other languages' interface strings, fetched on demand from i18n/<code>.json
@@ -187,7 +205,7 @@ const REQUIRED = new Set(["statement_date", "amount_due_cents"]); // the engine 
 const S = {lang: "en", view: "en", forWhom: "self", bill: null, imageUrl: null, answers: null,
           result: null, explain: null, size: "", income: "", tax: null, busy: false, extractSeq: 0, submitSeq: 0,
           home: null, homeSeq: 0, fromQr: null,
-          extracting: false, packetSeq: 0, theme: "auto"}; // theme is in page memory only and survives restart()
+          extracting: false, packetSeq: 0, check: null, doc: "packet", theme: "auto"}; // theme is in page memory only and survives restart()
 let firstShow = true, curScreen = 0;
 
 // ---------- helpers
@@ -387,7 +405,7 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
                      "home_estimate_note", "home_one_approval", "home_bill_reduction",
                      "r_packet", "r_no_packet", "home_not_eligible", "rem_follow",
-                     "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_no_hospital", "r_other_route"];
+                     "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_no_hospital", "r_other_route", "chk_safety"];
 function machineTranslated(key) {
   return S.view !== "en" && !(T[key] && T[key][S.view]) && !!(I18N[S.view] && I18N[S.view][key]);
 }
@@ -532,15 +550,16 @@ function renderBill() {
   if (S.bill) renderFields();
   updateBillNext();
 }
-// Continue is enabled only when a bill exists and every field is confirmed; p.why says what is missing.
+// Continue is enabled only when a bill exists, every field is confirmed and any charge lines are confirmed; p.why says what is missing.
 function updateBillNext() {
   const next = document.getElementById("bill-next"), why = document.getElementById("bill-why");
   if (!next || !why) return;
   const left = S.bill ? FIELD_ORDER.filter(([n]) => !S.bill.fields[n].confirmed).length : FIELD_ORDER.length;
-  next.disabled = S.extracting || !S.bill || left > 0;
+  const linesOpen = !!(S.bill && S.bill.lines && !S.bill.lines.confirmed); // charge lines exist but "These charges match my bill" is not ticked
+  next.disabled = S.extracting || !S.bill || left > 0 || linesOpen;
   why.hidden = !next.disabled || S.extracting;
   if (why.hidden) fill(why);
-  else fill(why, ...(S.bill ? tNodes("why_bill", {n: left}) : [t("upload")]));
+  else fill(why, ...(S.bill ? (left > 0 ? tNodes("why_bill", {n: left}) : [t("why_lines")]) : [t("upload")]));
 }
 // Downscale big photos in the browser (long side 2000 px, JPEG 0.85) so phone photos fit the upload cap.
 // Any failure returns the original file; the server then accepts or refuses it as before.
@@ -613,7 +632,7 @@ function renderFields() {
     const id = "f-" + name;
     let input;
     if (name === "insurance_status") {
-      input = el("select", {id}, ...[["", "ins_blank"], ["self_pay", "ins_self_pay"], ["insured", "ins_insured"], ["unknown", "ins_unknown"]]
+      input = el("select", {id}, ...[["", "ins_blank"], ["self_pay", "ins_self_pay"], ["insured", "ins_insured"], ["medicaid", "ins_medicaid"], ["unknown", "ins_unknown"]]
         .map(([v, k]) => el("option", {value: v, selected: (f.value || "") === v}, t(k))));
     } else if (name.endsWith("date") || name === "date_of_service") {
       input = el("input", {type: "date", id, dir: "auto", value: f.value || ""});
@@ -646,8 +665,93 @@ function renderFields() {
     wrap.sync = sync;
     return wrap;
   });
-  fill(box, ...rows);
+  fill(box, ...rows, el("section", {class: "panel lines", id: "lines-panel"}));
+  renderLines();
   rows.forEach(r => r.sync());
+}
+
+// ---------- charge lines (Bill screen, under the 6 fields): the charge rows the model read, or lines typed by hand
+const MAX_LINES = 40, MAX_CENTS = 1000000000; // the server's limits (contract D3)
+function centsText(c) { return typeof c === "number" ? centsToDollars(c) : ""; }
+// "" -> {ok: true, cents: null}; "38.5" -> {ok: true, cents: 3850}; text that is not an amount, or is over the cap -> {ok: false, cents: null}
+function parseMoney(v) {
+  const s = (v || "").trim();
+  if (s === "") return {ok: true, cents: null};
+  const c = dollarsToCents(s);
+  return c === null || c > MAX_CENTS ? {ok: false, cents: null} : {ok: true, cents: c};
+}
+function paintLines() { // green when confirmed, like a confirmed field
+  const p = document.getElementById("lines-panel"), L = S.bill && S.bill.lines;
+  if (p) p.className = "panel lines" + (L && L.confirmed ? " confirmed" : "");
+}
+function linesEdited() { // any edit to the charges unticks "These charges match my bill"
+  const L = S.bill.lines;
+  L.confirmed = false;
+  const cb = document.getElementById("lines-ok");
+  if (cb) cb.checked = false;
+  paintLines();
+  updateBillNext();
+}
+function moneyField(id, labelKey, cents, onValue) { // a US-dollars text input; onValue gets integer cents or null
+  const hint = el("p", {class: "hint", id: id + "-hint", hidden: true}, t("income_hint"));
+  const input = el("input", {type: "text", id, dir: "ltr", inputmode: "decimal", autocomplete: "off", "aria-describedby": id + "-hint", value: centsText(cents)});
+  input.addEventListener("input", () => {
+    const m = parseMoney(input.value);
+    hint.hidden = m.ok;
+    if (m.ok) input.removeAttribute("aria-invalid"); else input.setAttribute("aria-invalid", "true");
+    onValue(m.cents);
+    linesEdited();
+  });
+  return el("div", {class: "line-money"}, el("label", {for: id}, t(labelKey)), input, hint);
+}
+function lineRow(item, i) {
+  const base = "line-" + i;
+  const desc = el("input", {type: "text", id: base + "-desc", dir: "auto", maxlength: "120", autocomplete: "off", value: item.description || ""});
+  desc.addEventListener("input", () => { item.description = desc.value; linesEdited(); });
+  return el("div", {class: "line-row"},
+    el("div", {class: "line-desc"}, el("label", {for: base + "-desc"}, t("line_desc")), desc),
+    moneyField(base + "-amt", "line_amt", item.amount_cents, c => { item.amount_cents = c; }),
+    el("button", {type: "button", class: "line-rm", id: base + "-rm", "aria-label": t("line_remove") + ": " + (i + 1), onclick: () => removeLine(i)}, t("line_remove")));
+}
+function removeLine(i) {
+  S.bill.lines.items.splice(i, 1);
+  linesEdited();
+  renderLines();
+  const add = document.getElementById("line-add");
+  if (add && !add.disabled) add.focus({preventScroll: true});
+}
+function addLine() {
+  if (!S.bill.lines) S.bill.lines = {items: [], total_charges_cents: null, payments_cents: null, confirmed: false, read: false}; // typed by hand
+  const L = S.bill.lines;
+  if (!Array.isArray(L.items)) L.items = [];
+  if (L.items.length >= MAX_LINES) return;
+  L.items.push({date: null, description: "", quantity: null, amount_cents: null});
+  linesEdited();
+  renderLines();
+  const d = document.getElementById("line-" + (L.items.length - 1) + "-desc");
+  if (d) d.focus({preventScroll: true});
+}
+function renderLines() {
+  const box = document.getElementById("lines-panel"), L = S.bill.lines || null;
+  if (!box) return;
+  if (L && !Array.isArray(L.items)) L.items = [];
+  const parts = [el("h3", null, t("lines_title"))];
+  if (L) {
+    parts.push(el("p", {class: "muted"}, t("lines_hint")),
+      el("div", {class: "stack-3", id: "lines-rows"}, ...L.items.map(lineRow)));
+  }
+  parts.push(el("div", null, el("button", {type: "button", id: "line-add", disabled: !!L && L.items.length >= MAX_LINES, onclick: addLine}, t("line_add"))));
+  if (L) {
+    const cb = el("input", {type: "checkbox", id: "lines-ok"});
+    cb.checked = !!L.confirmed;
+    cb.addEventListener("change", () => { L.confirmed = cb.checked; paintLines(); updateBillNext(); });
+    parts.push(
+      moneyField("lines-total", "lines_total", L.total_charges_cents, c => { L.total_charges_cents = c; }),
+      moneyField("lines-paid", "lines_paid", L.payments_cents, c => { L.payments_cents = c; }),
+      el("label", {class: "check", for: "lines-ok"}, cb, el("span", null, t("lines_ok"))));
+  }
+  fill(box, ...parts);
+  paintLines();
 }
 
 // ---------- screen 3: three questions
@@ -704,13 +808,15 @@ async function submitAnswers() {
   try {
     const result = await post("/evaluate", {bill: S.bill, answers: S.answers});
     if (seq !== S.submitSeq) return;
+    const checkP = post("/check", {bill: S.bill}, 20000).catch(() => null); // free fixed-rule check, runs beside /explain; a failure only hides the card
     let explain = null; // no policy for the hospital: no estimate to explain, so no /explain call
     if (result.hospital_matches_policy !== false) {
       showBusy(t("load_explain"));
       explain = await post("/explain", {bill: S.bill, answers: S.answers}, 45000); // no result: the server recomputes it (saves ~11 KB uplink)
     }
+    const check = await checkP;
     if (seq !== S.submitSeq) return; // checked BEFORE the assignments: a cancelled submit must not overwrite a newer result
-    S.result = result; S.explain = explain;
+    S.result = result; S.explain = explain; S.check = check;
   } catch (e) {
     if (seq !== S.submitSeq) return;
     S.busy = false; showMsg(e.message); renderQuestions();
@@ -759,12 +865,30 @@ function resultActions(primary) {
     el("button", {type: "button", onclick: () => show(6)}, t("home_open")),
     ghostRestart()], primary || null);
 }
+// "Things to ask the hospital about": the fixed-rule flags from POST /check. Nothing when /check failed (S.check is null).
+// notes: the screen's footnotes, so a flag's citation lands in the same numbered list.
+function checkCard(notes) {
+  const c = S.check;
+  if (!c || typeof c !== "object") return null;
+  const flags = Array.isArray(c.flags) ? c.flags : [];
+  if (!flags.length) return c.lines_checked === true ? panel("", el("p", null, t("chk_none"))) : null;
+  const total = c.total_to_ask_cents;
+  return panel("", el("h3", null, t("chk_title")),
+    el("ul", {class: "flags"}, ...flags.map(f => el("li", null,
+      englishOnly("span", null, f.text_en),
+      typeof f.amount_cents === "number" ? el("span", {class: "flag-amt", dir: "ltr"}, money(f.amount_cents)) : null,
+      notes.mark(f.citation)))),
+    typeof total === "number" && total > 0 ? el("p", {class: "chk-total"}, ...tNodes("chk_total", {amount: money(total)})) : null,
+    el("p", {class: "muted"}, ...tSafe("chk_safety")),
+    el("div", null, el("button", {type: "button", id: "letter-btn", onclick: () => { S.doc = "dispute"; show(5); loadPacket(); }}, t("chk_letter"))));
+}
 function renderResult() {
   const r = S.result, root = document.getElementById("s4");
   if (r.hospital_matches_policy === false) { // no policy for this hospital: no estimate at all, only the warning and where to get help
+    const notes = makeNotes();
     const none = panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe(r.hospital_name_missing === true ? "r_no_hospital" : "r_mismatch_any")));
     none.setAttribute("role", "note");
-    fill(root, el("div", {class: "stack-8"}, screenTitle(t("r_title")), none, helpCard(null), resultActions()));
+    fill(root, el("div", {class: "stack-8"}, screenTitle(t("r_title")), none, checkCard(notes), helpCard(null), notes.list(), resultActions()));
     return;
   }
   const english = S.view === "en";
@@ -784,6 +908,7 @@ function renderResult() {
       typeof r.percent_of_fpl === "number" ? el("span", {class: "pct", dir: "ltr"}, r.percent_of_fpl + "%") : null,
       el("p", {class: "lead"}, ...tNodes("r_percent", {pct: r.percent_of_fpl, year: r.fpl.year}), notes.mark(r.fpl.citation))),
     el("p", {class: "decides"}, ...tSafe("r_decides")));
+  const checkBlock = checkCard(notes); // built here so its footnote marks come right after the hero's
   const policyUsed = typeof r.policy_hospital_name === "string" ? el("p", {class: "muted"}, ...tNodes("r_policy_used", {name: r.policy_hospital_name})) : null;
   const tierBlock = Array.isArray(r.tiers) && r.tiers.length
     ? [el("p", {class: "excerpt-head"}, t("r_tier")), el("div", {class: "tbl"}, tierTable(r))]
@@ -819,6 +944,7 @@ function renderResult() {
     screenTitle(t("r_title")),
     toggle,
     hero,
+    checkBlock,
     policyUsed,
     el("div", {class: "stack-3"}, ...tierBlock, tierNote),
     condPanel,
@@ -832,7 +958,7 @@ function renderResult() {
       : el("p", null, ...tSafe("r_no_packet")),
     helpCard(c.phone),
     notes.list(),
-    resultActions(eligible ? el("button", {type: "button", class: "primary", onclick: () => { show(5); loadPacket(); }}, el("span", null, ...tSafe("r_packet"))) : null)));
+    resultActions(eligible ? el("button", {type: "button", class: "primary", onclick: () => { S.doc = "packet"; show(5); loadPacket(); }}, el("span", null, ...tSafe("r_packet"))) : null)));
 }
 
 // ---------- screen 6: home (all bills from this visit)
@@ -968,7 +1094,7 @@ function renderHome() {
 function packetSkeleton() { return el("div", {class: "skeleton", "aria-hidden": "true"}); }
 function renderPacketShell() {
   fill(document.getElementById("s5"), el("div", {class: "stack-8"},
-    screenTitle(t("p_title"), tSafe("p_sub")),
+    screenTitle(t(S.doc === "dispute" ? "d_title" : "p_title"), tSafe("p_sub")),
     el("div", {class: "paper", id: "packet-paper"}, packetSkeleton()),
     actions([
       el("button", {type: "button", onclick: () => show(4)}, t("back")),
@@ -978,12 +1104,13 @@ function renderPacketShell() {
 async function loadPacket() {
   const seq = (S.packetSeq = (S.packetSeq || 0) + 1); // leaving this screen or starting a new packet makes this reply stale
   const paper = document.getElementById("packet-paper"), print = document.getElementById("print-btn");
-  showBusy(t("load_packet"));
+  const dispute = S.doc === "dispute"; // the letter and the packet share this screen, iframe and print button
+  showBusy(t(dispute ? "load_dispute" : "load_packet"));
   setBusy(print, true);
   try {
-    const page = await post("/packet", {bill: S.bill, answers: S.answers}, 45000, true); // the server recomputes the result
+    const page = await post(dispute ? "/dispute" : "/packet", {bill: S.bill, answers: S.answers}, 45000, true); // the server recomputes the result
     if (seq !== S.packetSeq || curScreen !== 5) return;
-    const frame = el("iframe", {id: "packet-frame", title: t("p_title"), sandbox: "allow-modals allow-same-origin"});
+    const frame = el("iframe", {id: "packet-frame", title: t(dispute ? "d_title" : "p_title"), sandbox: "allow-modals allow-same-origin"});
     fill(paper, frame);
     frame.srcdoc = page;
     setBusy(print, false);
@@ -1002,7 +1129,7 @@ function restart() {
   if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
   // theme is deliberately not reset; every request counter is bumped (never reset to 0) so any
   // in-flight reply is dropped and cannot match the next request's number
-  Object.assign(S, {view: viewFor(S.lang), bill: null, imageUrl: null, answers: null, result: null, explain: null, size: "", income: "", tax: null, busy: false,
+  Object.assign(S, {view: viewFor(S.lang), bill: null, imageUrl: null, answers: null, result: null, explain: null, check: null, doc: "packet", size: "", income: "", tax: null, busy: false,
                     extractSeq: S.extractSeq + 1, submitSeq: S.submitSeq + 1, home: null, homeSeq: S.homeSeq + 1, extracting: false, packetSeq: S.packetSeq + 1});
   showMsg(""); show(1);
 }

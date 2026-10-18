@@ -26,7 +26,7 @@ MEDICAID_TEXT = (
     "were billed."
 )
 MEDICAID_LETTER = (
-    "I had TennCare coverage on the date of service. Please confirm whether this bill was submitted "
+    "My bill lists TennCare coverage. Please confirm whether this bill was submitted "
     "to my TennCare health plan, and whether this amount is a copay TennCare requires."
 )
 
@@ -294,6 +294,15 @@ def test_insurance_unpaid_needs_confirmed_payments():
     assert "insurance_unpaid" not in ids(r), ids(r)   # payments not confirmed by the person: quiet
     r = checks.run(make(50000, "insured", items=[row("Visit", 50000)], total=50000, payments=0, confirmed=True))
     assert ids(r) == ["insurance_unpaid"], ids(r)
+
+
+def test_lines_checked_only_when_the_sum_ran():
+    r = checks.run(make(50000, items=[row("Visit", 50000)], total=None))
+    assert r["flags"] == [] and r["lines_checked"] is False, r      # no total read: no "math adds up"
+    r = checks.run(make(50000, items=[row("Visit", None)], total=50000))
+    assert r["lines_checked"] is False, r
+    r = checks.run(make(-500, items=[row("A", 100), row("A", 100)], total=200))
+    assert r["total_to_ask_cents"] == 0, r                           # never negative
 
 
 if __name__ == "__main__":

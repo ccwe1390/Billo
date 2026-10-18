@@ -352,6 +352,8 @@ def _norm_insurance(v):
     t = s.lower()
     if any(k in t for k in _SELF_PAY):
         return "self_pay"
+    if "pending" in t or any(k in t for k in ("no medicaid", "not medicaid", "no tenncare", "not tenncare")):
+        return "unknown"  # "Medicaid pending" / "No Medicaid" do not say the person has coverage (O2 #3)
     if "tenncare" in t or "medicaid" in t:  # before the general insured match (plan D4)
         return "medicaid"
     if any(k in t for k in _INSURED):
@@ -378,6 +380,11 @@ def _norm_quantity(v):
 
 
 MAX_LINES = 40
+MAX_LINE_CENTS = 10 ** 9  # LinesIn limit: a bigger read becomes None instead of a 422 on every later call (O2 #1)
+
+
+def _line_cents(c):
+    return c if c is not None and c <= MAX_LINE_CENTS else None
 
 
 def _norm_lines(raw):
@@ -396,9 +403,9 @@ def _norm_lines(raw):
         desc = re.sub(" {2,}", " ", _CONTROL.sub(" ", str(row.get("description") or ""))).strip()[:120]
         items.append({"date": _norm_date(row.get("date")), "description": desc,
                       "quantity": _norm_quantity(row.get("quantity")),
-                      "amount_cents": _norm_cents(row.get("amount"))})
-    return {"items": items, "total_charges_cents": _norm_cents(raw.get("total_charges")),
-            "payments_cents": _norm_payments(raw.get("payments_and_adjustments")),
+                      "amount_cents": _line_cents(_norm_cents(row.get("amount")))})
+    return {"items": items, "total_charges_cents": _line_cents(_norm_cents(raw.get("total_charges"))),
+            "payments_cents": _line_cents(_norm_payments(raw.get("payments_and_adjustments"))),
             "confirmed": False, "read": True}
 
 

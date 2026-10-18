@@ -1293,4 +1293,12 @@ finally:
 # ---- static UI is mounted
 assert any(getattr(r, "path", None) in ("", "/") and getattr(r, "name", "") == "static" for r in main.app.routes)
 
+# ---- O2 review fixes: an over-limit line read becomes None (never a 422 later); pending / no Medicaid is not coverage
+_bn = main.normalize_bill({"hospital_name": "Cumberland General Hospital (SYNTHETIC)", "line_items": [{"description": "X", "amount": "12345678.00"}],
+                          "total_charges": "12345678.00", "payments_and_adjustments": "0"})
+assert _bn["lines"]["items"][0]["amount_cents"] is None and _bn["lines"]["total_charges_cents"] is None, _bn["lines"]
+main.LinesIn(**_bn["lines"])   # still a valid LinesIn
+for _txt, _want in (("Medicaid pending", "unknown"), ("No Medicaid", "unknown"), ("TennCare (SYNTHETIC member)", "medicaid")):
+    assert main._norm_insurance(_txt) == _want, (_txt, main._norm_insurance(_txt))
+
 print("ALL PASS")

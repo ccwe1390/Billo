@@ -19,7 +19,7 @@ MEDICAID_TEXT_EN = (
     "Ask the hospital and your TennCare health plan why you were billed."
 )
 MEDICAID_LETTER_EN = (
-    "I had TennCare coverage on the date of service. Please confirm whether this bill was "
+    "My bill lists TennCare coverage. Please confirm whether this bill was "
     "submitted to my TennCare health plan, and whether this amount is a copay TennCare requires."
 )
 
@@ -150,5 +150,7 @@ def run(bill):
         ))
 
     amount_sum = sum(f["amount_cents"] for f in flags if f["amount_cents"] is not None)
-    total_to_ask = min(amount_sum, due) if due is not None else amount_sum
-    return {"flags": flags, "total_to_ask_cents": total_to_ask, "lines_checked": line_rules}
+    total_to_ask = max(0, min(amount_sum, due) if due is not None else amount_sum)
+    # "the math adds up" is only shown when the sum check really ran: a total and every amount were read (O2 #2)
+    math_ran = line_rules and total is not None and all(_is_int(it.get("amount_cents")) for it in items)
+    return {"flags": flags, "total_to_ask_cents": total_to_ask, "lines_checked": math_ran}

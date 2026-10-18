@@ -1341,6 +1341,36 @@ test("m9. new strings: every eob_ key and eob_f_<field> exists in all five inlin
   assert.strictEqual(T.eob_not_eob.en, "This doesn't look like an insurance summary. Try another photo, or tap Not yet.");
 });
 
+test("n1. Sources: the citation list sits in a closed dropdown; a footnote mark opens it", "Evan 2026-10-18", async () => {
+  const s4 = await landResult(makeResult(115));
+  const box = s4.all().find(n => n.tag === "details" && n.classList.contains("notes-box"));
+  assert.ok(box, "no Sources dropdown");
+  assert.ok(!box.open && box.getAttribute("open") === null, "Sources must start closed");
+  const sum = box.children.find(n => n.tag === "summary");
+  assert.ok(sum && sum.textContent.startsWith(T.srcs.en + " ("), "summary text: " + (sum && sum.textContent));
+  assert.ok(box.all().some(n => n.tag === "ol" && n.classList.contains("notes")), "the list must be inside the dropdown");
+  const mark = s4.all().find(n => n.tag === "a" && n.parent && n.parent.classList.contains("fn-mark"));
+  assert.ok(mark, "no footnote mark");
+  mark.click();
+  assert.strictEqual(box.open, true, "a footnote mark must open the dropdown");
+});
+test("n2. Remove photo: drops the photo and every field read from it; a read still in flight is ignored", "Evan 2026-10-18", async () => {
+  resetApp(); A.show(2);
+  const file = new File([new Uint8Array(10)], "bill.png", {type: "image/png"});
+  const done = byId("bill-file").dispatch("change", {target: {files: [file]}});
+  await flush();
+  const req = take("/extract");
+  const btn = byId("s2").all().find(n => n.tag === "button" && n.textContent === T.photo_remove.en);
+  assert.ok(btn, "no Remove photo button while a photo is shown");
+  btn.click();
+  assert.strictEqual(S.imageUrl, null, "photo not removed");
+  assert.strictEqual(S.bill, null, "fields from the photo must be dropped");
+  assert.strictEqual(S.extracting, false, "still marked as reading");
+  assert.ok(!byId("s2").all().some(n => n.tag === "button" && n.textContent === T.photo_remove.en), "button still shown with no photo");
+  respond(req, {contract_version: 1, fields: {}}); await done; await flush();
+  assert.strictEqual(S.bill, null, "a stale read brought the removed photo's fields back");
+});
+
 // ---------- run
 let finished = false; // a test whose promise never settles empties the event loop: Node would exit 0 with no ALL PASS
 process.on("exit", code => { if (!finished && code === 0) { console.log("FAIL: the run stopped before every test finished"); process.exitCode = 1; } });

@@ -400,6 +400,8 @@ dl.kv dt { color: var(--muted-fg); }
 .explain, .explain p { white-space: pre-wrap; }
 
 /* footnotes */
+details.notes-box > summary { cursor: pointer; font-weight: 700; color: var(--muted-fg); padding-block: .5rem; }
+details.notes-box[open] > summary { margin-block-end: .5rem; }
 ol.notes { list-style: none; padding: 0; display: flex; flex-direction: column; gap: .5rem; font-size: .875rem; color: var(--muted-fg); }
 ol.notes li { scroll-margin-block-start: 1rem; }
 ol.notes .fn-num { font-weight: 700; color: var(--fg); }

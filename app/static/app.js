@@ -223,6 +223,8 @@ const T = {
   eob_f_denial_reason:{en: "Denial reason", es: "Motivo de la denegación", ar: "سبب الرفض", "zh-CN": "拒付原因", "zh-TW": "拒付原因"}, // TODO-REVIEW es+ar+zh
   eob_f_appeal_deadline:{en: "Appeal deadline", es: "Fecha límite para apelar", ar: "الموعد النهائي للاستئناف", "zh-CN": "申诉截止日期", "zh-TW": "申訴截止日期"}, // TODO-REVIEW es+ar+zh
   eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
+  srcs:        {en: "Sources", es: "Fuentes", ar: "المصادر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
+  photo_remove:{en: "Remove photo", es: "Quitar la foto", ar: "إزالة الصورة", "zh-CN": "删除照片", "zh-TW": "刪除照片"}, // TODO-REVIEW es+ar+zh
 };
 const LANG_NAMES = Object.fromEntries(LANGS.map(l => [l.code, l.native]));
 const I18N = {}; // other languages' interface strings, fetched on demand from i18n/<code>.json
@@ -474,22 +476,25 @@ function isolate(text) {
 // Numbered footnotes for one screen: mark(c) returns the [n] marker, list() returns the ONE ordered list. Same citation = same number.
 function makeNotes(prefix) { // prefix keeps the anchor ids unique: the Result and Home screens both stay in the DOM
   const items = [], index = new Map(), pre = prefix || "fn";
+  let box = null; // the Sources dropdown: closed by default, opened by a tap on any footnote mark
   return {
     mark(c) {
       if (!c || !c.source) return null;
       const key = [c.source, c.page, c.effective_date].join("|");
       if (!index.has(key)) { items.push(c); index.set(key, items.length); }
       const n = index.get(key);
-      return el("sup", {class: "fn-mark"}, el("a", {href: "#" + pre + "-" + n}, el("bdi", {dir: "ltr"}, "[" + n + "]")));
+      return el("sup", {class: "fn-mark"}, el("a", {href: "#" + pre + "-" + n, onclick: () => { if (box) box.open = true; }}, el("bdi", {dir: "ltr"}, "[" + n + "]")));
     },
     list() {
       if (!items.length) return null;
-      return el("ol", {class: "notes", role: "list", "aria-label": t("src")}, ...items.map((c, i) => {
+      const ol = el("ol", {class: "notes", role: "list", "aria-label": t("src")}, ...items.map((c, i) => {
         const row = [el("span", {class: "fn-num", dir: "ltr"}, "[" + (i + 1) + "]"), el("span", {class: "fn-text"}, ...citeParts(c))];
         return el("li", {id: pre + "-" + (i + 1)}, c.url
           ? el("a", {class: "note", href: c.url, target: "_blank", rel: "noopener"}, ...row)
           : el("span", {class: "note"}, ...row));
       }));
+      box = el("details", {class: "notes-box"}, el("summary", null, t("srcs") + " (" + items.length + ")"), ol);
+      return box;
     },
   };
 }
@@ -568,7 +573,8 @@ function renderBill() {
   file.addEventListener("change", onFile);
   const drop = el("label", {class: "drop", "aria-disabled": S.extracting ? "true" : false},
     icon("camera"), el("span", null, t("upload")), el("small", {lang: "en", dir: "ltr"}, "PNG / JPEG"), file);
-  const left = el("div", {class: "stack-3"}, drop, S.imageUrl ? el("img", {class: "preview", src: S.imageUrl, alt: ""}) : null);
+  const left = el("div", {class: "stack-3"}, drop, S.imageUrl ? el("img", {class: "preview", src: S.imageUrl, alt: ""}) : null,
+    S.imageUrl ? el("button", {type: "button", class: "ghost", id: "photo-remove", onclick: removePhoto}, t("photo_remove")) : null);
   const right = el("div", {id: "fields", class: "stack-3"});
   fill(root, el("div", {class: "stack-8"},
     screenTitle(t("bill_title"), t("bill_hint")),
@@ -612,6 +618,14 @@ async function shrinkImage(file) {
   } catch (e) {
     return file;
   }
+}
+function removePhoto() { // the person takes the photo back: it, and every field read from it, are dropped
+  S.extractSeq = (S.extractSeq || 0) + 1; // a read still in flight becomes stale and is ignored
+  if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
+  S.imageUrl = null; S.bill = null; S.home = null; S.extracting = false;
+  clearEob();
+  showMsg("");
+  renderBill();
 }
 async function onFile(ev) {
   const f = ev.target.files[0];

@@ -99,6 +99,7 @@ the dated entry, not the digest.
 - [BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live](#appendix-bk---audit-5-10-agent-fast-sweep-11-fixes-790eb38-live-2026-10-18-1249-cdt) (10-18)
 - [BL - Concurrent deploy overwrote 790eb38 with 58d8908; 790eb38 redeployed](#appendix-bl---concurrent-deploy-overwrote-790eb38-with-58d8908-790eb38-redeployed-2026-10-18-1251-cdt) (10-18)
 - [BM - Second QR: downloadable synthetic test bills page, df69369 live](#appendix-bm---second-qr-downloadable-synthetic-test-bills-page-df69369-live-2026-10-18-1312-cdt) (10-18)
+- [BN - No Explanation of Benefits Available button + no-summary wording, 8cd1d09 live](#appendix-bn---no-explanation-of-benefits-available-button--no-summary-wording-8cd1d09-live-2026-10-18-1437-cdt) (10-18)
 
 ---
 
@@ -2104,3 +2105,37 @@ Fixes landed in 3547230 + 790eb38, on top of the forked session's 58d8908 (QR ->
 - Before deploying, live was 790eb38, the expected state, so no other session had deployed in between.
 
 **Rollback:** `deploy.ps1 -Commit df69369 -Rollback` restores 790eb38.
+
+# Appendix BN - No Explanation of Benefits Available button + no-summary wording, 8cd1d09 live (2026-10-18 ~14:37 CDT)
+**What.**
+- Evan: "replace the not yet button with a always clickable button saying 'No Explanation of Benefits Available'". Then: "change the card and letter to say I don't have my insurer's summary yet (not that the claim is still processing). Then commit, deploy and live check."
+- Commit 8cd1d09; Claude deployed it at Evan's word.
+
+**How.**
+- app.js:
+  - eob_not_yet now reads "No Explanation of Benefits Available", with es/ar/zh drafts marked TODO-REVIEW.
+  - The `disabled: S.eobExtracting` was removed from the button, so it is never disabled.
+  - Tapping it during a read calls clearEob(), which bumps eobSeq, so the read in flight goes stale and its result is ignored.
+  - eob_not_eob and eob_read_failed now say "tap No Explanation of Benefits Available".
+- eob_checks.run splits the flag; the flag id stays `pending`, so the UI, /dispute and the tests that key on it are unchanged:
+  - `not_yet` gets new text: "You don't have your insurer's summary for this visit yet. Ask the hospital whether you can wait for it before paying."
+  - Its letter reads: "I have not received my insurer's explanation of benefits (insurance summary) for this visit yet. Please hold this bill until it arrives."
+  - A real EOB claim_status of "pending" keeps the "still processing" wording.
+- This also closes the audit 5 site-text finding #2 (record BK): the "Not yet" path stated a fact about the insurer that the data did not support.
+
+**Verification.**
+- New JS test m10:
+  - the button stays enabled while a read is in flight;
+  - tapping it goes to the questions, clears the spinner and state, and ignores the late read.
+  - It FAILS against the old app.js (checked with git stash) and passes on the new one.
+- test_eob_checks pins the no-summary text and letter and asserts that neither contains "processing".
+- All 9 suites pass: test_app_js 80; eob_checks 25; checks 21; dispute 21; api, engine, numlock, policy_page and answer_key ALL PASS.
+- Browser (fake OCI, 375 px): the button reads "No Explanation of Benefits Available" and wraps to two lines with no overflow. It is enabled with S.eobExtracting true. A real click lands on s3 with eobNotYet true, eobExtracting false and the spinner hidden.
+- Before deploying, live was confirmed as df69369 (app.js 0019423dacb1), so no other session had deployed in between.
+- Deploy: "DEPLOYED 8cd1d09 (service active, /stats 200)".
+- Live, on both https://207.211.181.174 and https://billow.duckdns.org:
+  - app.js 2ae6b2921fe0 = 8cd1d09 (CR stripped), with the new label present;
+  - /stats 200;
+  - POST /check with bill-13 + eob_not_yet returns one `pending` flag with the new text and letter, and "says processing: False".
+
+**Rollback:** `deploy.ps1 -Commit 8cd1d09 -Rollback` restores df69369.

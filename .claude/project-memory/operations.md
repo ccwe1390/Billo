@@ -153,3 +153,4 @@
 - 2026-10-18 12:15 CDT - Claude deployed 02e3d18 (docs-only commits on top of 189163e; app identical). Rollback restores 189163e.
 - 2026-10-18 12:51 CDT: LIVE = 790eb38 (audit 5 fixes, record BK) on https://207.211.181.174 and https://billow.duckdns.org. A forked session's 58d8908 deploy overwrote it at 12:50; it was redeployed at 12:51 (record BL). Rollback -Commit 790eb38 -Rollback restores 2e74b20. Rule: only one session deploys (there is no deploy lock).
 - 2026-10-18 13:11 CDT: LIVE = df69369 (second QR -> /test-bills/, record BM); rollback restores 790eb38.
+- 2026-10-18 14:37 CDT: LIVE = 8cd1d09 (No Explanation of Benefits Available button, record BN); rollback restores df69369.

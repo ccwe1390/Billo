@@ -24,3 +24,4 @@ STATUS: pointer (2026-10-18 07:43 CDT) - Built: 5-screen journey (start, bill, t
 - 2026-10-18 12:14 CDT - LIVE 189163e: one "This is correct" box per screen (bill 6 fields, EOB 12 fields) instead of one
   per field; pending flag asks whether you can wait; dashboard counts checks_run, disputes, eobs_read (record BH).
 - 2026-10-18 13:11 CDT: Start screen shows a second QR (>= 900 px) to /test-bills/: 17 synthetic bills + 5 bill/EOB pairs to download, SYNTHETIC banner (df69369, record BM).
+- 2026-10-18 14:37 CDT: EOB screen button 'No Explanation of Benefits Available' (was 'Not yet'), never disabled; its pending card/letter say the person has no insurer summary yet; a real pending claim status keeps 'still processing' (8cd1d09, record BN).

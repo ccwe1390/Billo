@@ -140,6 +140,29 @@ orchestrator; full text in docs/research/raw/2026-10-17_hospital-economics-regul
   closest buyer evidence is the LA County RFP, funded by a payer plus a
   public-health coalition, not one hospital.
 
+Update 2026-10-17 23:53 CDT, Merge 2 (research-money-2; agent-reported, NOT
+re-verified by the orchestrator; full text in
+docs/research/raw/2026-10-17_funding-evidence-money2.md):
+- Agent verdicts: H2 (grants/philanthropy) survived; H1 (SaaS to nonprofit
+  hospitals) mostly died for a patient-side screener; H5 (government)
+  partly alive (cities and states fund Undue; LA County bought
+  presumptive-eligibility data and a portal).
+- Dollar For FY2025 990: $1,460,202 revenue, 96.8% contributions, $0
+  government grants, 18 employees, 18,000 patients helped (self-reported);
+  about $91 of expense per patient helped (agent's arithmetic).
+- Undue FY2025 990: $62.5M revenue, $31.4M (50.2%) government grants.
+- Hospitals buy presumptive scoring from incumbents (Experian, Waystar),
+  tiered per transaction, no public price; Oregon hospitals complained of
+  OVER-awarding and lobbied the screening threshold from $500 to $1,500
+  (HB 4040, 2026) - one state's episode, not national evidence.
+- VUMC already runs a presumptive charity policy (990 Schedule H: financial
+  assistance at cost $233.1M, FYE June 2025).
+- Middle TN funders: CFMT grants average about $21,000 with no medical-debt
+  focus; HCA Healthcare Foundation $2.1M to 89 Middle TN nonprofits.
+- Interest concentration: about 60% of load-bearing numbers are
+  self-reported (990s, vendor pages). Same-source: the anti-H1 case rests
+  on Oregon alone.
+
 ## F3. Comparables and hospital economics
 
 Pending (merge). Only prior figure: Mediloop at $129 per bill (crowding

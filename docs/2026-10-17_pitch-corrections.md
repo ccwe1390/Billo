@@ -73,6 +73,14 @@ from their hospital"; 2,984 verified (AHA 2026); 175%, VUMC 24% and 282,294
 still unverified there. VUMC's current policy (agent report
 docs/research/raw/2026-10-17_mtn-vumc.md) gives AGB 24% and free care at or
 below 300% FPG.
+**2026-10-18 00:13 CDT update - cold assessment (docs/research/2026-10-18_cold-assessments.md, section 1):**
+do NOT say $7B or $14B even with attribution ($7B is built from KFF's $2.7B
+plus Dollar For imputations, so $2.7B is not independent support either);
+"34% ... forms hard" must keep "in the past three years"; 91,000 could not be
+re-fetched by the assessor (Cloudflare 403) - say "CBPP estimates"; "2,984
+nonprofit hospitals" does not cover HCA TriStar (for-profit); do NOT say
+"Arabic is Davidson's #2 language", 66.5% bankruptcies, "80% of bills have
+errors", 175%, VUMC 24%, 282,294.
 Verified 2026-10-17 by Claude against the Federal Register notice
 (2026-00755, published 2026-01-15, effective 2026-01-13): the 2026 poverty
 guidelines $15,960 for 1 person, $33,000 for 4, +$5,680 per person (the

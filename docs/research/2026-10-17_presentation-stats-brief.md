@@ -46,7 +46,7 @@ Three pitch numbers are out of date or wrong:
 
 **Phase effects (2026-10-17):**
 - 8.5 verify: changed two numbers (95,000 -> 91,000; 9.3% -> 9.7%). Caught one NOT-FOUND, confirmed on the official bill page: the Tennessee credit-reporting ban claim is false. Added two limitations: Dollar For's sample-size conflict and unpublished method, and the same-source dependency between $2.7B, $7B and $14B. Downgraded one wording ("52% never told" -> "52% got no information from their hospital").
-- 10.5 assess: skipped per the orchestrator (one cold assessment will cover both briefs).
+- 10.5 assess: skipped per the orchestrator (one cold assessment will cover both briefs). -> RUN 2026-10-18 00:08-00:12 CDT by fresh agents; findings and effects in docs/research/2026-10-18_cold-assessments.md (brief text not yet changed)
 
 ## Findings
 

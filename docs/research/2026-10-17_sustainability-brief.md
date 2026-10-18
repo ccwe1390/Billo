@@ -75,7 +75,7 @@ Phase effects (2026-10-17):
                character) and caught a conflict (current price list: first
                1,000 translation transactions free; archived page: first
                5,000). No verdict flipped - there was no verdict yet.
-  10.5 assess - run by the orchestrator over all briefs (see the end).
+  10.5 assess - run by the orchestrator over all briefs (see the end). -> RUN 2026-10-18 00:08-00:12 CDT by fresh agents; findings and effects in docs/research/2026-10-18_cold-assessments.md (brief text not yet changed)
 
 ## F1. Unit economics (verified prices, estimated quantities)
 

@@ -20,6 +20,8 @@ Sources (full text, citations, verification tables):
 - docs/research/raw/2026-10-17_mtn-hca-tristar.md - HCA TriStar
 - docs/research/raw/2026-10-17_mtn-other-systems.md - everyone else
 
+> 2026-10-18 00:13 CDT: cold assessment run - 3 factual errors and 1 scope error found (L35-37 "same county", L40-41 VUMC 120/240, L100-101 4 -> 5 outside 501(r), L79 HCA 4% emergency only); see docs/research/2026-10-18_cold-assessments.md section 4. Not yet corrected here.
+
 ## TL;DR
 
 - **13 hospitals hold 76.7% of 8,149 licensed acute beds** in the 41

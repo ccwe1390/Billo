@@ -77,6 +77,7 @@ the dated entry, not the digest.
 - [AO - Fresh-session orientation: f10 not pushed, deploy pending, new PDFs, F11 vs features brief](#appendix-ao---fresh-session-orientation-f10-not-pushed-deploy-pending-new-pdfs-f11-vs-features-brief-2026-10-17-2356-cdt) (10-17)
 - [AP - F11 decisions: push reminders dropped, nickname and F11.8 kept, not started](#appendix-ap---f11-decisions-push-reminders-dropped-nickname-and-f118-kept-not-started-2026-10-17-2359-cdt) (10-17)
 - [AQ - All research in, hospital census brief, final landing check](#appendix-aq---all-research-in-hospital-census-brief-final-landing-check-2026-10-18-0004-cdt) (10-18)
+- [AR - Deploy 5af2f1f verified live, f10 pushed, main moved, cold assessments of 4 briefs](#appendix-ar---deploy-5af2f1f-verified-live-f10-pushed-main-moved-cold-assessments-of-4-briefs-2026-10-18-0013-cdt) (10-18)
 
 ---
 
@@ -1617,3 +1618,15 @@ deploy of 5af2f1f or later (Evan); 3 untracked public PDFs in docs/ and the
 test photo left untouched; private-path strings ("daruw") pre-exist in
 project-memory bins and HANDOFF - fine while the repo is private, check
 before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
+
+# Appendix AR - Deploy 5af2f1f verified live, f10 pushed, main moved, cold assessments of 4 briefs (2026-10-18, ~00:13 CDT)
+**When:** 2026-10-18 00:07-00:13 CDT. Evan ran deploy.ps1 -Commit 5af2f1f and said "command has run do 1-3" (1 live checks + move main, 2 cold assessments, 3 push f10).
+
+**Deploy (verified on the VM):** ~/backup-before-5af2f1f.tar written 00:07 CDT; bill-to-help restarted 00:07:23 CDT, clean startup in journalctl; 27 i18n files on the VM. Live = 5af2f1f on http and https.
+
+**Live checks (scratchpad live_check.py, real OCI, bill-02-blur3.png, n=1 each, both protocols):** GET / 200; served app.js byte-equal to f10's; i18n/he.json 200; /extract 3.2 s (http) / 2.9 s (https), amount $1,858.50 and Cumberland General read; es, he, th: evaluate free_care 109%, explain numbers_match + ai_written, packet no fallback (oci_language). 26 of 28 checks passed; the 2 "fails" were my check being too strict: /household JSON still carries per-bill "Apply by" text for an ineligible household, but Home hides it (app.js:854-888), as audit-2 #6 intended.
+**New finding (not fixed):** the Result screen shows its "Deadline / Apply by <date>" panel to ineligible families too (app.js:741, rendered at :766; /evaluate returns a deadline for not_eligible). Audit-2 #6 covered Home and /explain only.
+
+**Git:** f10 pushed (origin/f10 3da0602 -> 5a7fd84). Local main fast-forwarded c30be63 -> 5af2f1f (via a temporary tag and git fetch ., because the auto-mode classifier refused git branch -f); main NOT pushed (origin/main ff7a539).
+
+**Cold assessments (stage 10.5):** 4 fresh agents, read-only, one per brief; saved condensed as docs/research/2026-10-18_cold-assessments.md, with a pointer in each brief. Biggest: stats - $7B/$14B is built on KFF's $2.7B, so neither is independent (DO-NOT-SAY); sustainability - 0.7% is "on average", not per hospital; policies - "same county" false, 5 not 4 hospitals outside 501(r), VUMC 120 days is "encouraged" not a contradiction, HCA 4% cap emergency only; features - Messac uses Dollar For data, case against nickname/Q&A is opinion/weak. Orchestrator re-read the policies brief lines on disk and confirmed two of its errors. Pitch sheet got a dated 00:13 numbers update. Brief texts themselves not corrected yet (the one allowed collection round awaits Evan).

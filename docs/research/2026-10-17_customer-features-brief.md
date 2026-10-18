@@ -52,7 +52,7 @@ Phase effects (2026-10-17):
                 Added 1 finding: Nashville's top LEP languages are missing from the
                 app's 32.
                 Killed 0 load-bearing claims; no verdict flipped.
-  10.5 assess - skipped by instruction (orchestrator runs one for both briefs)
+  10.5 assess - skipped by instruction (orchestrator runs one for both briefs) -> RUN 2026-10-18 00:08-00:12 CDT by fresh agents; findings and effects in docs/research/2026-10-18_cold-assessments.md (brief text not yet changed)
 ```
 
 ## Stage 3 - hypotheses (23:23 CDT, before collection)

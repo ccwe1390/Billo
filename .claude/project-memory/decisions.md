@@ -179,3 +179,10 @@ Standing decisions (what is decided NOW). History lives in the record.
   vendored (download approved). Web Awesome dropped from all pages (Claude's
   call; two cascades + a dark theme). PR #1 stays open; its fate is the
   team's call.
+- 2026-10-17 ~19:50-20:05 CDT - Languages (Evan, record AI): every language
+  Oracle Translate lists (31 codes = 29 languages) plus Hindi, all with a
+  translated interface, picked from a dropdown; the tier-2 English interface
+  is gone. Interface text machine-translated once by OCI (Claude's call:
+  build time, not at runtime). Evan chose "Bilingual" for safety lines after
+  the back-translation check found meaning flips; Claude also left the
+  flipped strings English-only.

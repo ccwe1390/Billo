@@ -68,6 +68,7 @@ the dated entry, not the digest.
 - [AF - UI port: Dipayan's design system in the vanilla app (light/dark, Atkinson)](#appendix-af---ui-port-dipayans-design-system-in-the-vanilla-app-lightdark-atkinson-2026-10-17-1921-cdt) (10-17)
 - [AG - Deploy go; live restart blocked by the auto-mode classifier; PowerShell deploy script for Evan](#appendix-ag---deploy-go-live-restart-blocked-by-the-auto-mode-classifier-powershell-deploy-script-for-evan-2026-10-17-1930-cdt) (10-17)
 - [AH - Deployed: D1 cc3c333, HTTPS (Let's Encrypt IP certificate), D2 c30be63 - F10 and the new UI live](#appendix-ah---deployed-d1-cc3c333-https-lets-encrypt-ip-certificate-d2-c30be63---f10-and-the-new-ui-live-2026-10-17-1943-cdt) (10-17)
+- [AI - All 29 Oracle Translate languages (31 codes) + Hindi: dropdown, machine-translated interface, safety-line guard](#appendix-ai---all-29-oracle-translate-languages-31-codes--hindi-dropdown-machine-translated-interface-safety-line-guard-2026-10-17-2013-cdt) (10-17)
 
 ---
 
@@ -1274,3 +1275,75 @@ fast-forwarded to c30be63.
 | Rollback | deploy.ps1 -Commit c30be63 -Rollback restores cc3c333's app; backup-before-cc3c333.tar restores c4a28f0 |
 | Features live | F10.1 Home, F10.2 coverage rule, F10.3 reminders + .ics, F10.4 QR chip + Start QR, F10.5 dashboard, R1-R3, UI port (record AF) |
 | Open | Evan's phone checks (photo upload; https padlock; QR scan on bill-02); rollback not rehearsed (skipped to avoid two extra live restarts) |
+
+# Appendix AI - All 29 Oracle Translate languages (31 codes) + Hindi: dropdown, machine-translated interface, safety-line guard (2026-10-17 20:13 CDT)
+**When:** 2026-10-17 ~19:50-20:13 CDT, branch f10, not deployed (live is
+still c30be63; landing-check: https://207.211.181.174/i18n/th.json -> 404).
+
+**What:** Evan: "have all the text be translated into all 29 languages
+supported by Oracle's AI. Change the UI to match the change (use a
+dropdown)." Oracle's list (docs.oracle.com/en-us/iaas/language/using/
+translate.htm, read 2026-10-17) has 31 codes = 29 languages, because
+French (fr, fr-CA) and Portuguese (pt, pt-BR) each have two. All 31 are in,
+plus Hindi (not in Oracle Translate; Command A, as before): 32 codes. The
+tier-2 "English interface" is gone: every language now gets a translated
+interface.
+
+**How:**
+- One language list, app/data/languages.json (code, native name, English
+  name, dir, explanation route). main.py validates AnswersIn.language
+  against it (unknown codes -> 422); oci_client.LANGUAGE_NAMES is built
+  from it; app.js LANGS mirrors it and tests/test_api.py checks the two
+  agree.
+- Explanation route: Command A (phrase) for the languages Command A
+  documents; OCI Language (translate_many, numbers masked) for da, hr, hu,
+  no, sk, sl, fi, sv, th. Both go through the number lock and the English
+  fallback, unchanged. Packet letter rule unchanged (Hindi via Command A,
+  the rest OCI Language). rtl now from languages.json: ar and he.
+- Interface strings: en, es, ar, zh-CN, zh-TW stay hand-written inside
+  app.js. The other 27 get app/static/i18n/<code>.json, machine-translated
+  once by scripts/build_i18n.py (OCI Language; Hindi via Command A) with
+  {placeholders} masked and checked; input = node
+  scripts/dump_ui_strings.js. Every language kept 119 of 119 strings with
+  placeholders intact (one Danish trial 7.3 s, then 26 languages in one run).
+  app.js fetches a language's file only when it is picked.
+- Start screen: one native <select id=lang-select> (native names, lang attr
+  per option) replaces the two button grids; focus stays on it after a pick.
+- Plan-split: Sonnet agent A (main.py, oci_client.py, test_api.py), agent B
+  (app.js, style.css: dropdown, loadLang, dir, :lang stacks for ja, th, he,
+  el); Opus wrote languages.json, the build script and the safety layer.
+
+**Problem found and fixed: machine translation changed safety meaning.**
+The Hebrew result screen read "the hospital received the final decision".
+Claude back-translated three safety strings of all 26 non-Hindi machine
+languages into English with OCI Language: r_decides came back past tense
+("the hospital made the final decision") in cs, he, ja, th, tr, vi; Thai
+notice came back as "the information you entered has been saved" (the
+negation was lost); home_estimate came back as "reduce TO {amt}" in he,
+hr, it, ru, sk. Evan chose "Bilingual" (~20:05). Fix, two layers:
+1. app.js tSafe: 10 safety keys (notice, no_id, r_decides, p_sub, ai_note,
+   r_mismatch, home_estimate, home_estimate_note, home_one_approval,
+   home_bill_reduction) show the English line under a machine translation.
+2. The 12 strings that back-translated to a changed meaning are left out
+   (scripts/build_i18n.py DROP), so those show English only: th notice,
+   r_decides; cs, ja, tr, vi r_decides; he r_decides, home_estimate; hr,
+   it, ru, sk home_estimate.
+Hindi was not back-checked (OCI Language has no Hindi source). The other
+~108 keys per language were not back-checked. All 3,201 shipped strings
+keep their placeholders (landing-check).
+
+**Verification:** 5 test files ALL PASS (fake mode). Browser (fake mode):
+Hebrew full journey at 375px - rtl, Hebrew interface, result 115%, Home
+$8,837.65, English line under the safety text, no sideways scroll, 0
+console errors; Thai shows the English privacy line only; es/en show no
+extra line; all 27 files load with every key. Landing-check (fresh agent):
+code SAFE, 32/32 codes agree across languages.json, app.js and the
+validator, DROP matches the missing keys exactly, no leaks; it found the
+stale docs fixed by this entry's docs pass, the unused more_langs string
+(removed with its 27 translations) and the build input not reproducible
+from the repo (scripts/dump_ui_strings.js added).
+
+**Not done / open:** a human review of any machine translation (all 27
+files are unreviewed machine output); phone check of the dropdown; deploy
+(Evan runs deploy.ps1). Browsers that cached an old i18n file keep it until
+they revalidate (seen in testing); first-time visitors are unaffected.

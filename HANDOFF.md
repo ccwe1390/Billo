@@ -6,7 +6,7 @@
 [Name] turns a photo of a Nashville hospital bill into that hospital's
 financial assistance packet - eligibility estimate against the hospital's own
 published policy (every rule cited), pre-filled application fields, document
-checklist, deadline and cover letter - explained in 11 languages (Arabic, Spanish and Chinese with a translated
+checklist, deadline and cover letter - explained in 11 languages [2026-10-17 20:13: now 32 languages (all 31 Oracle Translate codes = 29 languages, plus Hindi via Command A; every one with a translated interface, record AI)] (Arabic, Spanish and Chinese with a translated
 interface) for the family member helping a parent. The AI reads and phrases; a rules engine
 decides; the family submits; the hospital decides. Nothing is stored.
 
@@ -22,8 +22,8 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-17 19:43 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-AH).
+**Last updated: 2026-10-17 20:14 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-AI).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -41,7 +41,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-AH).
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each | experiments.md |
 | VUMC policy thresholds | **UNVERIFIED** - 3:00 PM Sat gate, else synthetic hospital | plan |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + language tiers (tier 1 en/es/ar/zh-CN/zh-TW; tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53; the live server runs c4a28f0 (audit fixes, deployed 16:58 CDT, live journey 10.7 s; operations.md) | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (on f10 since record AI: 32 codes from app/data/languages.json, dropdown, no tiers; live c30be63 still has tier 1 en/es/ar/zh-CN/zh-TW + tier 2 vi/fr/ko/ru/de/hi); 4 test files ALL PASS; live with real OCI since 14:53; the live server runs c4a28f0 (audit fixes, deployed 16:58 CDT, live journey 10.7 s; operations.md) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -86,6 +86,12 @@ snapshot; history lives in the record (Phase 0, Appendices A-AH).
   `deploy/` (not in the repo). Rollback target now: cc3c333.
 - Open: Evan's phone checks (photo upload, https padlock, QR scan on
   bill-02); the rollback was not rehearsed live.
+- ON f10, NOT DEPLOYED (record AI): 32 languages (all 31 Oracle Translate
+  codes + Hindi) from app/data/languages.json; Start-screen dropdown; 27
+  machine-translated interface files app/static/i18n/<code>.json (built by
+  scripts/build_i18n.py, unreviewed); safety lines show English under a
+  machine translation (tSafe), and 12 meaning-flipped strings are English
+  only (build_i18n.py DROP). Tests ALL PASS; landing-check code SAFE.
 - If the team picks React: every server change is additive, so the React
   app keeps working; the vanilla-only UI work (Home, reminders, QR chip,
   downscaling) would not be in the demo.
@@ -137,8 +143,8 @@ DIRECTION fork + F9 amendments), then the record's last 3 appendices and
 .claude/project-memory/operations.md (VM details).
 
 State (2026-10-17 19:31 CDT): "BillScan" (formerly Bill to Help) - bill photo -> hospital
-financial-assistance packet, explained in 11 languages (tier 1 en/es/ar/
-zh-CN/zh-TW). Python FastAPI + plain HTML/JS. LIVE with real OCI at
+financial-assistance packet. Live: 11 languages (tier 1 en/es/ar/
+zh-CN/zh-TW). On f10, not deployed: 32 languages with a dropdown (record AI). Python FastAPI + plain HTML/JS. LIVE with real OCI at
 http://207.211.181.174/ (E5.Flex VM, /opt/bill-to-help, systemd + Apache,
 instance-principal auth, no keys on the server). Gate 1 and the 5:00 PM
 gate passed (blurred photo -> cited result -> Spanish packet, 11.8 s).
@@ -147,7 +153,7 @@ opc@207.211.181.174. UI on main/live: "Paper Trail" (Web Awesome CSS + IBM Plex)
 Dipayan's design system ported (record AF; light/dark, Atkinson
 Hyperlegible, no Web Awesome); policy table with your row highlighted and
 footnoted citations kept. Record is
-current through Appendix AH. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
+current through Appendix AI. Audit: docs/2026-10-17_full-audit.md. Pre-mortem: docs/2026-10-17_pre-mortem.md
 (T4, T5 done; T8 mostly done - MySQL deleted, budget alert open; T2, T3
 open). Translated letters keep the hospital name verbatim (protected like
 numbers, Hindi included since the audit fixes) and fall back to English if
@@ -158,8 +164,10 @@ ground truth); venue closes Sat 9:00 PM. Synthetic data only. No diagnosis.
 OCI only. $500 credits, $0 beyond. Commit only when asked; push only when
 told; no Co-Authored-By lines.
 
-Next, in order: (0) Evan's phone checks on the live c30be63 (photo
-upload, https padlock, QR on bill-02); feature freeze ~23:00;
+Next, in order: (0) deploy the 32-language f10 head (Evan: deploy.ps1
+-Commit <f10 head>; Claude: live journey incl. a he and a th check), then
+Evan's phone checks (photo upload, https padlock, QR on bill-02, dropdown);
+feature freeze ~23:00;
 (1) presenters adopt docs/2026-10-17_pitch-corrections.md;
 (2) pre-mortem T1/T3/T8 (Evan: organizers, phone test, budget alert); V1
 done (record AC); (3) fluent review of es/ar/zh strings

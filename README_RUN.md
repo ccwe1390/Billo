@@ -33,12 +33,20 @@ verified live on 2026-10-17 for es, fr, de, ru, ar, zh-CN, zh-TW, ko and vi
 
 ## Languages
 
-- Tier 1, translated interface: en, es, ar, zh-CN, zh-TW.
-- Tier 2, English interface; only the explanation and the cover letter and
-  checklist are translated: vi, fr, ko, ru, de, hi. OCI Language has no Hindi,
-  so the Hindi letter is written by Command A; numbers and the hospital name
-  are protected and checked the same way as every other language. No
-  language is back-translated: the check is placeholders plus the number lock.
+- 32 languages, listed once in `app/data/languages.json`: the 31 codes Oracle
+  Translate supports (29 languages; fr/fr-CA and pt/pt-BR) plus Hindi. Every
+  language has a translated interface, picked from a dropdown.
+- Interface text: en, es, ar, zh-CN, zh-TW are hand-written inside
+  `app/static/app.js`; the other 27 are `app/static/i18n/<code>.json`,
+  machine-translated once by OCI (Hindi by Command A) and not human-reviewed.
+  Rebuild: `node scripts/dump_ui_strings.js app/static/app.js t_en.json`, then
+  `py scripts/build_i18n.py t_en.json [codes]` (real OCI, laptop key).
+- Safety lines (estimate, the hospital decides, nothing saved, no ID asked)
+  show the English under a machine translation; strings whose meaning flipped
+  on back-translation are English only (`DROP` in scripts/build_i18n.py).
+- Explanation: Command A or OCI Language per `languages.json`; the cover
+  letter: OCI Language, Hindi by Command A. Numbers and the hospital name are
+  protected and checked in every language (placeholders plus the number lock).
 - Tagalog is not supported by OCI Language or Command A: known gap.
 
 ## Tests

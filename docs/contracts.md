@@ -6,7 +6,9 @@ agreement; when one changes, bump `contract_version`.
 Rules that apply to all four:
 - **Money:** integer cents (`4812.40` -> `481240`), never floats.
 - **Dates:** `YYYY-MM-DD`.
-- **Languages:** `"en" | "es" | "ar" | "zh-CN" | "zh-TW" | "vi" | "fr" | "ko" | "ru" | "de" | "hi"`
+- **Languages:** ~~`"en" | "es" | "ar" | "zh-CN" | "zh-TW" | "vi" | "fr" | "ko" | "ru" | "de" | "hi"`~~
+  2026-10-17 20:13 CDT (record AI): any `code` in `app/data/languages.json` (32 codes: the 31
+  Oracle Translate codes + `hi`); any other value -> 422. Earlier note kept below:
   (tier 1 en/es/ar/zh-CN/zh-TW has a translated interface; corrected 2026-10-17
   from `"en" | "es" | "ar"`, which the code stopped matching at c5f04a9).
 - **Eligibility math compares cents, not rounded percents:**

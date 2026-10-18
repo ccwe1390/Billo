@@ -1,1 +1,1 @@
-STATUS: pointer (2026-10-17 16:50 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 11 languages. Not built: PRD F9 Home/Dad's bills, reminders, QR entry, partner dashboard.
+STATUS: pointer (2026-10-17 20:14 CDT) - Built: 5-screen journey (start, bill, three questions, result, packet), 32 languages on f10 (record AI; live c30be63 has 11). Not built: PRD F9 Home/Dad's bills, reminders, QR entry, partner dashboard.

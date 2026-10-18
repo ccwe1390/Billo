@@ -71,3 +71,15 @@ English (for the provider).
   numbers ("4.812,40", "4 812,40"); the number lock then rejects the text
   and falls back to English. If that happens often, protect numbers with
   placeholders before translating.
+- 2026-10-17 20:13 CDT - SUPERSEDES the tier lists above (record AI, Evan):
+  32 languages = the 31 Oracle Translate codes (29 languages; fr/fr-CA,
+  pt/pt-BR) + hi, all with a translated interface; list in
+  app/data/languages.json. 27 interface files machine-translated by OCI (hi
+  by Command A), unreviewed; 118 keys each after more_langs was removed, minus
+  12 dropped meaning-flipped strings (3,174 strings shipped). Back-translation
+  check (OCI Language, 3 safety keys x 26 languages): r_decides went past
+  tense in cs/he/ja/th/tr/vi, Thai notice lost its negation, home_estimate
+  became "reduce TO" in he/hr/it/ru/sk. Guard: tSafe shows English under 10
+  safety keys; the flipped strings are English only. Explanation route:
+  OCI Language for da, hr, hu, no, sk, sl, fi, sv, th (outside Command A's
+  documented languages), Command A for the rest.

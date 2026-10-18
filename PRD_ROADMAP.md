@@ -263,7 +263,7 @@ Nothing a user enters is stored. The family submits; the hospital decides.
 ### F1. Product (the one journey that must work live, in under 90 seconds)
 
 Five screens:
-1. **Start:** pick a language (~~Arabic / Spanish / English~~ 11 languages; tier 1 en/es/ar/zh-CN/zh-TW translated interface, (2026-10-17 16:55 CDT, audit record Z/AA)) and "This bill is
+1. **Start:** pick a language (~~Arabic / Spanish / English~~ ~~11 languages; tier 1 en/es/ar/zh-CN/zh-TW translated interface, (2026-10-17 16:55 CDT, audit record Z/AA))~~ 32 languages from a dropdown, every one with a translated interface (2026-10-17 20:13 CDT, Evan, record AI)) and "This bill is
    for: me / a family member". Show "Nothing you enter is saved. Demo uses
    synthetic bills only."
 2. **Bill:** upload or photograph the bill. Extracted fields appear beside
@@ -545,8 +545,8 @@ and F9 disagree, F10 wins once Evan approves it.
   memory only).
 - **Calendar file:** an "Add to my calendar" button builds an `.ics` file in
   the browser (two events: the deadline and today + 30 days) and downloads
-  it. Nothing goes to the server. Event titles in the chosen tier-1
-  language; dates and the phone number unchanged.
+  it. Nothing goes to the server. Event titles in the chosen ~~tier-1~~
+  language (every language has a translated interface since record AI); dates and the phone number unchanged.
 - **Done-check:** a node check that the generated .ics has 2 VEVENTs with
   DTSTART equal to the deadline and today + 30; browser check that the
   download fires; the button makes no network request.

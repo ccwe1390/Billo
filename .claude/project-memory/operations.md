@@ -143,3 +143,5 @@
   app. Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Live checks pass (record BC).
 - 2026-10-18 11:42 CDT - Claude deployed ba6d1f0 (merge of f13, Phase 3 EOB). Backup ~/backup-before-ba6d1f0.tar = the 99d4851 app.
   Rollback: deploy.ps1 -Commit ba6d1f0 -Rollback (restores 99d4851). Live checks pass (record BE).
+- 2026-10-18 11:56 CDT - Claude deployed deeebda (Remove photo + closed Sources dropdown, a0684aa). Backup ~/backup-before-deeebda.tar = the
+  ba6d1f0 app. Rollback: deploy.ps1 -Commit deeebda -Rollback (restores ba6d1f0). Served app.js = commit; 76 JS tests pass on the live file.

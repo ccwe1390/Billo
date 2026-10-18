@@ -22,7 +22,7 @@ Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
 ## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 11:49 CDT** - this file is the only live
+**Last updated: 2026-10-18 11:58 CDT** - this file is the only live
 snapshot; history lives in the record (Phase 0, Appendices A-BE).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
@@ -81,7 +81,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BE).
   Still open from audit 4: #10 global-bucket half, #12 Ascension mailing address.
 - **10:29 CDT (record BA):** 223013b committed, NOT deployed: Apply by counts from the date of service when known (feature review
   flaw 2; bill-01 now 2027-05-10). Deploy waits for the optimization + security audits (Evan).
-- **11:49 CDT: LIVE = ba6d1f0** (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
+- **11:58 CDT: LIVE = deeebda** (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
   on http + https, record BC). Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Demo error flags ONLY on
   bills 11-14 (fictional Cumberland). Open O2 items #4-#13 (record BC). Pitch: the DO NOT SAY line is lifted (Phase 2 live by 12:40).
   KEEP until after the pitches (Evan 11:23): worktree C:/ClaudeCode/TNHacks27-f12 and ~/.claude/task-plans/tnhacks26-errorcheck.md.

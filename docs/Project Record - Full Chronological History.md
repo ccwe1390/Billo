@@ -84,6 +84,7 @@ the dated entry, not the digest.
 - [AV - Real published policies (VUMC + Ascension Saint Thomas) with synthetic bills: audited plan, 5 agents, live bdc76df](#appendix-av---real-published-policies-vumc--ascension-saint-thomas-with-synthetic-bills-audited-plan-5-agents-live-bdc76df-2026-10-18-0852-cdt) (10-18)
 - [AW - Audit 4 (6 workers) after the real-policy change: 1 crit (pitch language claim), 7 high](#appendix-aw---audit-4-6-workers-after-the-real-policy-change-1-crit-pitch-language-claim-7-high-2026-10-18-0941-cdt) (10-18)
 - [AX - Audit 4 fixes: presenter sheet, HANDOFF, Home gating, no-name bills, deploy f6b6f05](#appendix-ax---audit-4-fixes-presenter-sheet-handoff-home-gating-no-name-bills-deploy-f6b6f05-2026-10-18-1002-cdt) (10-18)
+- [AY - VUMC insured-patient condition (uninsured/underinsured, FAP p.4 + p.6) and pitch line](#appendix-ay---vumc-insured-patient-condition-uninsuredunderinsured-fap-p4--p6-and-pitch-line-2026-10-18-1010-cdt) (10-18)
 
 ---
 
@@ -1716,3 +1717,12 @@ before it ever goes public; deploy.ps1 hardcodes C:\ClaudeCode\TNHacks27.
 **Verification:** 6/6 test files ALL PASS; node --check, bash -n, LF on the .sh, main.py 686/686 CRLF, engine.py untouched. Browser (fake OCI): blank name -> "could not read a hospital name" + help card, no estimate; TriStar -> no-policy screen; VUMC 187% unchanged; Ascension bill then Home -> no reminders, approval line or calendar. Deploy f6b6f05 09:59 CDT by Claude (Evan's "then deploy"): backup-before-f6b6f05.tar, DEPLOYED. Live checks 10:00: all journeys pass as at 08:49; blank-name /evaluate -> matched false + missing true, /explain one line, /packet 422 (http + https); served app.js equals the commit modulo CRLF.
 
 **State:** LIVE f6b6f05; rollback = deploy.ps1 -Commit f6b6f05 -Rollback (restores bdc76df). Local main = f6b6f05, not pushed.
+
+# Appendix AY - VUMC insured-patient condition (uninsured/underinsured, FAP p.4 + p.6) and pitch line (2026-10-18 10:10 CDT)
+**When:** 2026-10-18 ~10:05-10:10 CDT. Request from Evan via a forked side session ("Send option 1 (VUMC uninsured/underinsured condition, p.4 + p.6, plus the pitch line) to the main session to do with its next deploy").
+
+**Why:** many families are insured and care only about what they owe after insurance. Ascension's FAP p.2 applies help to the part "for which the Patient is responsible following payment by an insurer", so the app's math on the statement's amount due matches. VUMC's FAP limits help to "uninsured or underinsured" patients (p.6), and definition Y on p.4 makes "underinsured" mean insured patients whose services are "noncovered" or have "limited benefit coverage". So an insured VUMC patient with an ordinary deductible on covered care may not qualify, yet the app shows "Free care". This was VUMC item 5 in the plan's conditions list and was never encoded (a gap the policy verification did not catch: it checked encoded phrases, not missing ones).
+
+**What (ef1f3d9, data + docs only, no engine change):** app/data/policy_vumc.json gets a new first condition (13 now) citing p.4; both phrases (p.4 definition Y, p.6 "uninsured or underinsured patient is eligible for Financial Assistance") checked by script on the audit-4 page text of the freshly downloaded PDF. Pitch sheet Judge Q&A: "What if the family has insurance?" with the Ascension p.2 / VUMC p.4 + p.6 note and "Do NOT say an insured VUMC patient gets free care". The engine still ignores insurance_status (options 2 and 3, using it in the UI and detecting pending insurance, are not in scope; Evan did not ask for them).
+
+**Verification:** 6/6 test files ALL PASS (numlock, engine, api, policy_page, answer_key, node app_js). Not live yet: ships with the deploy after the landing-check fixes (Evan, 10:08: "you run the deploy after the landing-check fixes, then live check").

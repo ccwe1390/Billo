@@ -1,0 +1,146 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+/* Fonts are bundled from npm (team UI rule 11: no runtime third-party requests). Atkinson Hyperlegible was
+   designed for low-vision readers; it has no Arabic or Devanagari, so the browser falls through to IBM Plex for
+   those scripts (same family the Paper Trail UI vendors). Chinese and Korean use system fonts. */
+@import "@fontsource/atkinson-hyperlegible/400.css";
+@import "@fontsource/atkinson-hyperlegible/700.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-400.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-700.css";
+@import "@fontsource/ibm-plex-sans-devanagari/devanagari-400.css";
+@import "@fontsource/ibm-plex-sans-devanagari/devanagari-700.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Atkinson Hyperlegible', 'IBM Plex Sans Arabic', 'IBM Plex Sans Devanagari', system-ui,
+        'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Malgun Gothic', sans-serif;
+    --color-success: var(--success);
+    --color-success-surface: var(--success-surface);
+    --color-success-foreground: var(--success-foreground);
+    --color-warning: var(--warning);
+    --color-warning-surface: var(--warning-surface);
+    --color-highlight: var(--highlight);
+    --color-highlight-foreground: var(--highlight-foreground);
+    --color-primary-hover: var(--primary-hover);
+    --color-muted-hover: var(--muted-hover);
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Dark only, high contrast. WCAG ratios computed 2026-10-17 against --card #141b1e unless noted:
+   foreground 15.5 | muted-foreground 8.3 (7.5 on --muted) | primary as text 8.5 | button text on primary 8.0,
+   on primary-hover 10.0 | warning 10.4 | destructive 7.6 | success on its surface 8.4 | input border 3.7
+   (non-text minimum 3.0). No opacity tricks: every state is its own solid colour. */
+:root {
+    color-scheme: dark;
+    --background: #0d1214;
+    --foreground: #edf3f2;
+    --card: #141b1e;
+    --card-foreground: #edf3f2;
+    --popover: #141b1e;
+    --popover-foreground: #edf3f2;
+    --primary: #3cc9b4;
+    --primary-hover: #6fdccb;
+    --primary-foreground: #062420;
+    --secondary: #1b2427;
+    --secondary-foreground: #edf3f2;
+    --muted: #1b2427;
+    --muted-hover: #233034;
+    --muted-foreground: #a7b6b8;
+    --accent: #12312d;
+    --accent-foreground: #d3f6ef;
+    --destructive: #ff8a80;
+    --success: #5fd49c;
+    --success-surface: #10291e;
+    --success-foreground: #04170e;
+    --warning: #f2c14e;
+    --warning-surface: #2a2210;
+    --highlight: #f2c14e;
+    --highlight-foreground: #1c1500;
+    --border: #263237;
+    --input: #61777a;
+    --ring: #6fdccb;
+    --chart-1: #3cc9b4;
+    --chart-2: #6fdccb;
+    --chart-3: #5fd49c;
+    --chart-4: #f2c14e;
+    --chart-5: #a7b6b8;
+    --radius: 0.625rem;
+    --sidebar: #141b1e;
+    --sidebar-foreground: #edf3f2;
+    --sidebar-primary: #3cc9b4;
+    --sidebar-primary-foreground: #062420;
+    --sidebar-accent: #12312d;
+    --sidebar-accent-foreground: #d3f6ef;
+    --sidebar-border: #263237;
+    --sidebar-ring: #6fdccb;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    font-size: 106.25%; /* 17px base: easier reading for older parents and phone screens */
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    line-height: 1.6;
+  }
+  /* Visible keyboard focus everywhere (team UI rule 10). */
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+  button:not(:disabled), [role="button"], label[for], summary { cursor: pointer; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

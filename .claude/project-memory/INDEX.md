@@ -41,7 +41,7 @@ Project-specific bins:
 Stubs (first line STATUS): writing, hardware (empty/N/A); architecture, conventions, features, performance, security, testing, tooling (one-line pointers)
 
 Map (not a bin - see SKILL section 5.1):
-- DIRECTORY.md - not built (103 tracked files; the app is 4 Python modules + one JS file)
+- DIRECTORY.md - not built (225 tracked files on 2026-10-18 12:45 CDT; the app is 8 Python modules in app/ + app.js and dashboard.js)
 
 Cross-bin invariants:
 - Synthetic/public/de-identified data only; no autonomous diagnosis or treatment (important.md 1-2).

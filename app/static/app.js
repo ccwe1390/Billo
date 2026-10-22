@@ -134,7 +134,7 @@ const T = {
   err_busy:    {en: "Too many requests right now. Wait a minute and try again.", es: "Hay demasiadas solicitudes en este momento. Espere un minuto e inténtelo de nuevo.", ar: "هناك طلبات كثيرة الآن. انتظر دقيقة ثم حاول مرة أخرى.", "zh-CN": "目前请求过多。请等一分钟后再试。", "zh-TW": "目前請求過多。請等一分鐘後再試。"}, // TODO-REVIEW es+ar+zh
   r_policy_used:{en: "This estimate uses the policy of {name}.", es: "Esta estimación usa la política de {name}.", ar: "يستخدم هذا التقدير سياسة {name}.", "zh-CN": "此估算使用 {name} 的政策。", "zh-TW": "此估算使用 {name} 的政策。"}, // TODO-REVIEW es+ar+zh
   r_mismatch_title:{en: "Different hospital", es: "Hospital distinto", ar: "مستشفى مختلف", "zh-CN": "不同的医院", "zh-TW": "不同的醫院"}, // TODO-REVIEW es+ar+zh
-  r_mismatch:  {en: "Your bill names a different hospital. This demo has only one hospital's policy, and it is synthetic, so this estimate is not about your hospital.", es: "Su factura menciona otro hospital. Esta demostración solo tiene la política de un hospital, y es sintética, así que esta estimación no corresponde a su hospital.", ar: "تذكر فاتورتك مستشفى مختلفًا. يحتوي هذا العرض التجريبي على سياسة مستشفى واحد فقط، وهي اصطناعية، لذا فإن هذا التقدير لا يخص مستشفاك.", "zh-CN": "您的账单上是另一家医院。本演示只有一家医院的政策，而且是合成的，所以此估算与您的医院无关。", "zh-TW": "您的帳單上是另一家醫院。本示範只有一家醫院的政策，而且是合成的，所以此估算與您的醫院無關。"}, // TODO-REVIEW es+ar+zh
+  r_mismatch_real:{en: "Your bills name a different hospital. This estimate uses Vanderbilt University Medical Center's published policy, so it is not about your hospital.", es: "Sus facturas mencionan otro hospital. Este cálculo usa la política publicada de Vanderbilt University Medical Center, así que no se refiere a su hospital.", ar: "تذكر فواتيرك مستشفى مختلفًا. يستخدم هذا التقدير السياسة المنشورة لمركز Vanderbilt University Medical Center، لذا فهو لا يخص مستشفاك.", "zh-CN": "您的账单上是另一家医院。此估算使用 Vanderbilt University Medical Center 公布的政策，因此不适用于您的医院。", "zh-TW": "您的帳單上是另一家醫院。此估算使用 Vanderbilt University Medical Center 公布的政策，因此不適用於您的醫院。"}, // TODO-REVIEW es+ar+zh; audit 5: replaces r_mismatch, which wrongly called the policy synthetic
   r_conditions:{en: "What the hospital also checks (not in this estimate)", es: "Lo que el hospital también revisa (no incluido en esta estimación)", ar: "ما يتحقق منه المستشفى أيضًا (غير مشمول في هذا التقدير)", "zh-CN": "医院还会核查的内容（不在此估算中）", "zh-TW": "醫院還會核查的內容（不在此估算中）"}, // TODO-REVIEW es+ar+zh
   r_mismatch_any:{en: "Your bill names a hospital this demo has no policy for, so we cannot estimate it. The demo has the published policies of Vanderbilt University Medical Center and Ascension Saint Thomas. Ask your hospital for its own financial assistance policy.", es: "Su factura menciona un hospital cuya política no está en esta demostración, así que no podemos hacer una estimación. La demostración tiene las políticas publicadas de Vanderbilt University Medical Center y Ascension Saint Thomas. Pida a su hospital su propia política de asistencia financiera.", ar: "تذكر فاتورتك مستشفى لا تتوفر سياسته في هذا العرض التجريبي، لذا لا يمكننا تقديم تقدير. يتضمن العرض السياسات المنشورة لـ Vanderbilt University Medical Center و Ascension Saint Thomas. اطلب من مستشفاك سياسة المساعدة المالية الخاصة به.", "zh-CN": "您账单上的医院不在本演示的政策范围内，因此我们无法估算。本演示包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。请向您的医院索取其财务援助政策。", "zh-TW": "您帳單上的醫院不在本示範的政策範圍內，因此我們無法估算。本示範包含 Vanderbilt University Medical Center 和 Ascension Saint Thomas 公布的政策。請向您的醫院索取其財務援助政策。"}, // TODO-REVIEW es+ar+zh
   r_other_route:{en: "Your income is above this hospital's income tiers. The hospital may still help another way - see what it also checks below. Ask the hospital; this app does not make a packet for that.", es: "Su ingreso está por encima de los niveles de ingreso de este hospital. El hospital aún podría ayudarle de otra forma: vea abajo lo que también revisa. Pregunte al hospital; esta aplicación no crea un paquete para eso.", ar: "دخلك أعلى من شرائح الدخل في هذا المستشفى. قد يساعدك المستشفى بطريقة أخرى، انظر أدناه ما يتحقق منه أيضًا. اسأل المستشفى؛ هذا التطبيق لا ينشئ حزمة لذلك.", "zh-CN": "您的收入高于该医院的收入档次。医院仍可能以其他方式提供帮助，请看下方医院还会核查的内容。请咨询医院；本应用不会为此生成申请材料。", "zh-TW": "您的收入高於該醫院的收入級距。醫院仍可能以其他方式提供協助，請看下方醫院還會核查的內容。請洽詢醫院；本應用程式不會為此產生申請資料。"}, // TODO-REVIEW es+ar+zh
@@ -162,6 +162,8 @@ const T = {
   ics_follow:  {en: "Billow: follow up on your financial assistance application", es: "Billow: dé seguimiento a su solicitud de asistencia financiera", ar: "Billow: تابع طلب المساعدة المالية", "zh-CN": "Billow：跟进您的经济援助申请", "zh-TW": "Billow：追蹤您的財務援助申請"}, // TODO-REVIEW es+ar+zh
   chip_selected:{en: "{name} selected", es: "{name} seleccionado", ar: "تم اختيار {name}", "zh-CN": "已选择 {name}", "zh-TW": "已選擇 {name}"}, // TODO-REVIEW es+ar+zh
   qr_alt:      {en: "QR code that opens Billow on a phone", es: "Código QR que abre Billow en un teléfono", ar: "رمز QR يفتح Billow على الهاتف", "zh-CN": "可在手机上打开 Billow 的二维码", "zh-TW": "可在手機上開啟 Billow 的 QR 碼"}, // TODO-REVIEW es+ar+zh
+  qr2_alt:     {en: "QR code that opens the page of synthetic test bills", es: "Código QR que abre la página de facturas de prueba sintéticas", ar: "رمز QR يفتح صفحة فواتير الاختبار الاصطناعية", "zh-CN": "打开合成测试账单页面的二维码", "zh-TW": "開啟合成測試帳單頁面的 QR 碼"}, // TODO-REVIEW es+ar+zh
+  qr2_caption: {en: "Scan for test bills to try (synthetic)", es: "Escanee para obtener facturas de prueba (sintéticas)", ar: "امسح الرمز للحصول على فواتير اختبار (اصطناعية)", "zh-CN": "扫码获取测试账单（合成）", "zh-TW": "掃描取得測試帳單（合成）"}, // TODO-REVIEW es+ar+zh
   qr_caption:  {en: "Scan to open on a phone", es: "Escanee para abrir en un teléfono", ar: "امسح الرمز للفتح على الهاتف", "zh-CN": "扫码即可在手机上打开", "zh-TW": "掃描即可在手機上開啟"}, // TODO-REVIEW es+ar+zh
   theme_auto:  {en: "Theme: auto", es: "Tema: automático", ar: "السمة: تلقائي", "zh-CN": "主题：自动", "zh-TW": "主題：自動"}, // TODO-REVIEW es+ar+zh
   theme_light: {en: "Theme: light", es: "Tema: claro", ar: "السمة: فاتح", "zh-CN": "主题：浅色", "zh-TW": "主題：淺色"}, // TODO-REVIEW es+ar+zh
@@ -196,9 +198,9 @@ const T = {
   eob_title:   {en: "Your insurance summary", es: "Su resumen del seguro", ar: "ملخص التأمين الخاص بك", "zh-CN": "您的保险摘要", "zh-TW": "您的保險摘要"}, // TODO-REVIEW es+ar+zh
   eob_ask:     {en: "Do you have your insurer's summary for this visit? It usually says 'This is not a bill.'", es: "¿Tiene el resumen de su aseguradora para esta visita? Suele decir 'Esto no es una factura'.", ar: "هل لديك ملخص شركة التأمين لهذه الزيارة؟ يكتب عادةً «هذه ليست فاتورة».", "zh-CN": "您有保险公司针对这次就诊发出的说明吗？上面通常写着“这不是账单”。", "zh-TW": "您有保險公司針對這次就診發出的說明嗎？上面通常寫著「這不是帳單」。"}, // TODO-REVIEW es+ar+zh
   eob_add:     {en: "Add a photo", es: "Agregar una foto", ar: "أضف صورة", "zh-CN": "添加照片", "zh-TW": "新增照片"}, // TODO-REVIEW es+ar+zh
-  eob_not_yet: {en: "Not yet", es: "Todavía no", ar: "ليس بعد", "zh-CN": "暂时没有", "zh-TW": "暫時沒有"}, // TODO-REVIEW es+ar+zh
+  eob_not_yet: {en: "No Explanation of Benefits Available", es: "Explicación de beneficios no disponible", ar: "لا يتوفر بيان المزايا", "zh-CN": "无可用的福利说明", "zh-TW": "無可用的福利說明"}, // TODO-REVIEW es+ar+zh
   eob_reading: {en: "Reading the insurance summary...", es: "Leyendo el resumen del seguro...", ar: "جارٍ قراءة ملخص التأمين...", "zh-CN": "正在读取保险摘要...", "zh-TW": "正在讀取保險摘要..."}, // TODO-REVIEW es+ar+zh
-  eob_not_eob: {en: "This doesn't look like an insurance summary. Try another photo, or tap Not yet.", es: "Esto no parece un resumen del seguro. Pruebe con otra foto o toque Todavía no.", ar: "لا يبدو هذا ملخص تأمين. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "这看起来不是保险摘要。请换一张照片，或点“暂时没有”。", "zh-TW": "這看起來不是保險摘要。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
+  eob_not_eob: {en: "This doesn't look like an insurance summary. Try another photo, or tap No Explanation of Benefits Available.", es: "Esto no parece un resumen del seguro. Pruebe con otra foto o toque «Explicación de beneficios no disponible».", ar: "لا يبدو هذا ملخص تأمين. جرّب صورة أخرى أو اضغط «لا يتوفر بيان المزايا».", "zh-CN": "这看起来不是保险摘要。请换一张照片，或点“无可用的福利说明”。", "zh-TW": "這看起來不是保險摘要。請換一張照片，或點「無可用的福利說明」。"}, // TODO-REVIEW es+ar+zh
   eob_hint:    {en: "Check each field against your insurance summary, fix mistakes, then confirm each one.", es: "Compare cada campo con su resumen del seguro, corrija los errores y confirme cada uno.", ar: "قارن كل حقل بملخص التأمين وصحح الأخطاء ثم أكّد كل حقل.", "zh-CN": "请对照保险摘要检查每个字段，更正错误，然后逐项确认。", "zh-TW": "請對照保險摘要檢查每個欄位，更正錯誤，然後逐項確認。"}, // TODO-REVIEW es+ar+zh
   eob_blank:   {en: "Not on the summary, or we could not read it. Leave it blank if it is not there.", es: "No aparece en el resumen o no pudimos leerlo. Déjelo en blanco si no está.", ar: "غير موجود في الملخص أو تعذّرت قراءته. اتركه فارغًا إن لم يكن موجودًا.", "zh-CN": "摘要上没有，或我们无法读取。如果摘要上没有，请留空。", "zh-TW": "摘要上沒有，或我們無法讀取。如果摘要上沒有，請留空。"}, // TODO-REVIEW es+ar+zh
   eob_retake:  {en: "Use a different photo", es: "Usar otra foto", ar: "استخدم صورة أخرى", "zh-CN": "换一张照片", "zh-TW": "換一張照片"}, // TODO-REVIEW es+ar+zh
@@ -223,8 +225,14 @@ const T = {
   eob_f_denial_reason:{en: "Denial reason", es: "Motivo de la denegación", ar: "سبب الرفض", "zh-CN": "拒付原因", "zh-TW": "拒付原因"}, // TODO-REVIEW es+ar+zh
   eob_f_appeal_deadline:{en: "Appeal deadline", es: "Fecha límite para apelar", ar: "الموعد النهائي للاستئناف", "zh-CN": "申诉截止日期", "zh-TW": "申訴截止日期"}, // TODO-REVIEW es+ar+zh
   eob_f_insurer_phone:{en: "Insurer phone", es: "Teléfono de la aseguradora", ar: "هاتف شركة التأمين", "zh-CN": "保险公司电话", "zh-TW": "保險公司電話"}, // TODO-REVIEW es+ar+zh
+  eob_f_allowed_cents:{en: "Allowed amount", es: "Monto permitido", ar: "المبلغ المسموح به", "zh-CN": "允许金额", "zh-TW": "允許金額"}, // TODO-REVIEW es+ar+zh
+  eob_f_deductible_cents:{en: "Deductible", es: "Deducible", ar: "المبلغ المقتطع (الخصم السنوي)", "zh-CN": "免赔额", "zh-TW": "自付額"}, // TODO-REVIEW es+ar+zh
+  eob_f_copay_cents:{en: "Copay", es: "Copago", ar: "المبلغ الثابت المشترك", "zh-CN": "固定自付费", "zh-TW": "定額自付額"}, // TODO-REVIEW es+ar+zh
+  eob_f_coinsurance_cents:{en: "Coinsurance", es: "Coseguro", ar: "التأمين المشترك", "zh-CN": "共同保险费", "zh-TW": "共同保險費"}, // TODO-REVIEW es+ar+zh
+  eob_f_not_covered_cents:{en: "Not covered", es: "No cubierto", ar: "غير مغطى", "zh-CN": "不予承保", "zh-TW": "不予承保"}, // TODO-REVIEW es+ar+zh
+  pay_parts:   {en: "Insurance {ins} + adjustments {adj} + your payments {pat}", es: "Seguro {ins} + ajustes {adj} + sus pagos {pat}", ar: "التأمين {ins} + التسويات {adj} + مدفوعاتك {pat}", "zh-CN": "保险 {ins} + 调整 {adj} + 您的付款 {pat}", "zh-TW": "保險 {ins} + 調整 {adj} + 您的付款 {pat}"}, // TODO-REVIEW es+ar+zh
   srcs:        {en: "Sources", es: "Fuentes", ar: "المصادر", "zh-CN": "来源", "zh-TW": "來源"}, // TODO-REVIEW es+ar+zh
-  eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap Not yet.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque Todavía no.", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «ليس بعد».", "zh-CN": "目前无法读取照片。请换一张照片，或点“暂时没有”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「暫時沒有」。"}, // TODO-REVIEW es+ar+zh
+  eob_read_failed:{en: "Reading the photo is not available right now. Try another photo, or tap No Explanation of Benefits Available.", es: "La lectura de fotos no está disponible ahora. Pruebe con otra foto o toque «Explicación de beneficios no disponible».", ar: "قراءة الصورة غير متاحة الآن. جرّب صورة أخرى أو اضغط «لا يتوفر بيان المزايا».", "zh-CN": "目前无法读取照片。请换一张照片，或点“无可用的福利说明”。", "zh-TW": "目前無法讀取照片。請換一張照片，或點「無可用的福利說明」。"}, // TODO-REVIEW es+ar+zh
   why_all:     {en: "Check each detail, then tick \"This is correct\" to continue.", es: "Revise cada dato y marque «Esto es correcto» para continuar.", ar: "راجع كل معلومة، ثم ضع علامة على «هذا صحيح» للمتابعة.", "zh-CN": "请核对每一项，然后勾选“此项正确”继续。", "zh-TW": "請核對每一項，然後勾選「此項正確」繼續。"}, // TODO-REVIEW es+ar+zh
   photo_remove:{en: "Remove photo", es: "Quitar la foto", ar: "إزالة الصورة", "zh-CN": "删除照片", "zh-TW": "刪除照片"}, // TODO-REVIEW es+ar+zh
 };
@@ -437,7 +445,7 @@ function tNodes(key, vars) { return tplNodes(t(key), vars); }
 // Safety lines (estimate, the hospital decides, nothing saved, no ID asked) in a machine-translated
 // language also show the English line under the translation: Oracle's translation changed their
 // meaning in some languages (back-translation check 2026-10-17), and the English is what counts.
-const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch", "home_estimate",
+const SAFETY_KEYS = ["notice", "no_id", "r_decides", "p_sub", "ai_note", "r_mismatch_real", "home_estimate",
                      "home_estimate_note", "home_one_approval", "home_bill_reduction",
                      "r_packet", "r_no_packet", "home_not_eligible", "rem_follow",
                      "rem_apply", "home_bill_deadline", "r_deadline_passed", "r_mismatch_any", "r_no_hospital", "r_other_route", "chk_safety"];
@@ -491,7 +499,7 @@ function makeNotes(prefix) { // prefix keeps the anchor ids unique: the Result a
       if (!items.length) return null;
       const ol = el("ol", {class: "notes", role: "list", "aria-label": t("src")}, ...items.map((c, i) => {
         const row = [el("span", {class: "fn-num", dir: "ltr"}, "[" + (i + 1) + "]"), el("span", {class: "fn-text"}, ...citeParts(c))];
-        return el("li", {id: pre + "-" + (i + 1)}, c.url
+        return el("li", {id: pre + "-" + (i + 1)}, c.url && /^https?:\/\//i.test(c.url) // only web links, never javascript:
           ? el("a", {class: "note", href: c.url, target: "_blank", rel: "noopener"}, ...row)
           : el("span", {class: "note"}, ...row));
       }));
@@ -537,11 +545,19 @@ function qrFigure() {
   try {
     if (typeof qrcode !== "function" || !window.matchMedia("(min-width: 900px)").matches) return null;
     const q = qrcode(0, "M");
-    q.addData(location.origin + "/?hospital=vumc");
+    const origin = location.hostname === "207.211.181.174" ? "https://billow.duckdns.org" : location.origin; // the live site by name (Evan 2026-10-18)
+    q.addData(origin + "/?hospital=vumc");
     q.make();
-    return el("figure", {class: "qr"},
-      el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),
-      el("figcaption", null, t("qr_caption")));
+    const q2 = qrcode(0, "M"); // second code: the page of downloadable synthetic test bills (Evan 2026-10-18)
+    q2.addData(origin + "/test-bills/");
+    q2.make();
+    return el("div", {class: "qr-pair"},
+      el("figure", {class: "qr"},
+        el("img", {src: q.createDataURL(4, 2), alt: t("qr_alt"), width: "164", height: "164"}),
+        el("figcaption", null, t("qr_caption"))),
+      el("figure", {class: "qr"},
+        el("img", {src: q2.createDataURL(4, 2), alt: t("qr2_alt"), width: "164", height: "164"}),
+        el("figcaption", null, el("a", {href: "/test-bills/"}, t("qr2_caption")))));
   } catch (e) {
     return null;
   }
@@ -583,8 +599,8 @@ function renderBill() {
     el("div", {class: "bill-grid"}, left, right),
     el("div", {class: "stack-3"},
       actions([el("button", {type: "button", onclick: () => show(1)}, t("back"))],
-        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, onclick: () => show(billInsured() ? 7 : 3)}, t("continue_"))),
-      el("p", {class: "why", id: "bill-why", hidden: true}))));
+        el("button", {type: "button", class: "primary", id: "bill-next", disabled: true, "aria-describedby": "bill-why", onclick: () => show(billInsured() ? 7 : 3)}, t("continue_"))),
+      el("p", {class: "why", id: "bill-why", role: "status", hidden: true}))));
   if (S.extracting) showBusy(t("reading")); // a re-render while the photo is still being read keeps the spinner
   if (S.bill) renderFields();
   updateBillNext();
@@ -628,6 +644,7 @@ function removePhoto() { // the person takes the photo back: it, and every field
   clearEob();
   showMsg("");
   renderBill();
+  const up = document.getElementById("bill-file"); if (up) up.focus(); // focus was on the removed button
 }
 async function onFile(ev) {
   const f = ev.target.files[0];
@@ -770,7 +787,8 @@ function lineRow(item, i) {
   const desc = el("input", {type: "text", id: base + "-desc", dir: "auto", maxlength: "120", autocomplete: "off", value: item.description || ""});
   desc.addEventListener("input", () => { item.description = desc.value; linesEdited(); });
   return el("div", {class: "line-row"},
-    el("div", {class: "line-desc"}, el("label", {for: base + "-desc"}, t("line_desc")), desc),
+    el("div", {class: "line-desc"}, el("label", {for: base + "-desc"}, t("line_desc")), desc,
+      typeof item.code === "string" && item.code.trim() ? el("small", {class: "muted", lang: "en", dir: "ltr"}, " " + item.code) : null), // display only: the code stays on the item for /check
     moneyField(base + "-amt", "line_amt", item.amount_cents, c => { item.amount_cents = c; }),
     el("button", {type: "button", class: "line-rm", id: base + "-rm", "aria-label": t("line_remove") + ": " + (i + 1), onclick: () => removeLine(i)}, t("line_remove")));
 }
@@ -792,6 +810,13 @@ function addLine() {
   const d = document.getElementById("line-" + (L.items.length - 1) + "-desc");
   if (d) d.focus({preventScroll: true});
 }
+function payPartsNote(p) { // display only: how the payments total splits into insurance, adjustments and the person's own payments
+  if (!p || typeof p !== "object") return null;
+  const part = c => typeof c === "number" ? money(c) : "-";
+  if (![p.insurance_cents, p.adjustments_cents, p.patient_cents].some(c => typeof c === "number")) return null;
+  return el("p", {class: "muted", id: "lines-paid-parts"},
+    ...tNodes("pay_parts", {ins: part(p.insurance_cents), adj: part(p.adjustments_cents), pat: part(p.patient_cents)}));
+}
 function renderLines() {
   const box = document.getElementById("lines-panel"), L = S.bill.lines || null;
   if (!box) return;
@@ -809,6 +834,7 @@ function renderLines() {
     parts.push(
       moneyField("lines-total", "lines_total", L.total_charges_cents, c => { L.total_charges_cents = c; }),
       moneyField("lines-paid", "lines_paid", L.payments_cents, c => { L.payments_cents = c; }),
+      payPartsNote(L.payment_parts),
       el("label", {class: "check", for: "lines-ok"}, cb, el("span", null, t("lines_ok"))));
   }
   fill(box, ...parts);
@@ -817,8 +843,10 @@ function renderLines() {
 
 // ---------- screen 7: insurance summary (EOB), between Bill and Questions when the bill says "insured"
 const EOB_FIELDS = ["insurer_name", "provider_name", "date_of_service", "claim_number", "claim_status", "amount_billed_cents",
-  "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "denial_reason", "appeal_deadline", "insurer_phone"];
-const EOB_MONEY = new Set(["amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents"]);
+  "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "allowed_cents", "deductible_cents", "copay_cents", "coinsurance_cents",
+  "not_covered_cents", "denial_reason", "appeal_deadline", "insurer_phone"];
+const EOB_MONEY = new Set(["amount_billed_cents", "plan_discount_cents", "plan_paid_cents", "patient_owes_cents", "allowed_cents",
+  "deductible_cents", "copay_cents", "coinsurance_cents", "not_covered_cents"]);
 const EOB_DATES = new Set(["date_of_service", "appeal_deadline"]);
 const EOB_STATUS = ["paid", "partially_paid", "denied", "pending"];
 // S.eobDraft is the summary being checked; S.eob is that same object only while everything is confirmed (else null).
@@ -896,14 +924,14 @@ function renderEob() {
     screenTitle(t("eob_title"), t("eob_ask")),
     drop,
     actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back"))],
-      el("button", {type: "button", id: "eob-notyet", disabled: S.eobExtracting, onclick: eobNotYet}, t("eob_not_yet")))));
+      el("button", {type: "button", id: "eob-notyet", onclick: eobNotYet}, t("eob_not_yet")) /* always clickable (Evan 2026-10-18); a read in flight goes stale via clearEob */)));
   if (S.eobExtracting) showBusy(t("eob_reading")); // a re-render while the photo is still being read keeps the spinner
 }
 // Continue is enabled only when every field is confirmed and any service lines are confirmed; p.why says what is missing.
 function eobSync() {
   const E = S.eobDraft, next = document.getElementById("eob-next"), why = document.getElementById("eob-why");
   if (!E || !next || !why) return;
-  const left = EOB_FIELDS.filter(n => !E.fields[n].confirmed).length;
+  const left = EOB_FIELDS.filter(n => !(E.fields[n] && E.fields[n].confirmed)).length;
   const linesOpen = !!(E.lines && !E.lines.confirmed);
   next.disabled = left > 0 || linesOpen;
   S.eob = next.disabled ? null : E;
@@ -1006,14 +1034,14 @@ function renderEobConfirm(root) {
     eobSync();
   };
   eobAllCb.addEventListener("change", () => { EOB_FIELDS.forEach(n => { E.fields[n].confirmed = eobAllCb.checked; }); eobSyncAll(); });
-  const next = el("button", {type: "button", class: "primary", id: "eob-next", disabled: true, onclick: () => { if (S.eob) { S.eobNotYet = false; show(3); } }}, t("continue_"));
+  const next = el("button", {type: "button", class: "primary", id: "eob-next", disabled: true, "aria-describedby": "eob-why", onclick: () => { if (S.eob) { S.eobNotYet = false; show(3); } }}, t("continue_"));
   fill(root, el("div", {class: "stack-8"},
     screenTitle(t("eob_title"), t("eob_hint")),
     el("div", {id: "eob-fields", class: "stack-3"}, ...rows, eobAllBox, el("section", {class: "panel lines", id: "eob-lines-panel"})),
     el("div", {class: "stack-3"},
       actions([el("button", {type: "button", id: "eob-back", onclick: eobBack}, t("back")),
                el("button", {type: "button", class: "ghost", id: "eob-retake", onclick: () => { clearEob(); renderEob(); }}, t("eob_retake"))], next),
-      el("p", {class: "why", id: "eob-why", hidden: true}))));
+      el("p", {class: "why", id: "eob-why", role: "status", hidden: true}))));
   renderEobLines();
   eobSyncAll();
 }
@@ -1304,7 +1332,7 @@ function renderHome() {
   const eligible = h.eligible === true; // not eligible: no covers panel, no "Apply by", no reminders, no calendar file
   const noneCounted = h.bills.length > 0 && h.bills.every(b => b.hospital_matches_policy !== true); // false = another hospital, null = no name: not counted
   const headline = eligible && noneCounted
-    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch")))
+    ? panel("warn", el("h3", null, t("r_mismatch_title")), el("p", null, ...tSafe("r_mismatch_real")))
     : eligible
     ? panel("hero",
         el("p", {class: "big-money", dir: "ltr"}, money(h.estimate_cents)),

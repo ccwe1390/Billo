@@ -94,6 +94,14 @@ the dated entry, not the digest.
 - [BF - Remove photo + Sources dropdown (a0684aa, not live); swarm plan held; quick usability brief](#appendix-bf---remove-photo--sources-dropdown-a0684aa-not-live-swarm-plan-held-quick-usability-brief-2026-10-18-1155-cdt) (10-18)
 - [BG - Review fixes live (af1d5f6); swarm results; kit remade](#appendix-bg---review-fixes-live-af1d5f6-swarm-results-kit-remade-2026-10-18-1207-cdt) (10-18)
 - [BH - One confirm box per screen; pending wording; dashboard counters (189163e)](#appendix-bh---one-confirm-box-per-screen-pending-wording-dashboard-counters-189163e-2026-10-18-1214-cdt) (10-18)
+- [BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open)](#appendix-bi---swarm-ui-fixes-2e74b20-live-8-of-10-translations-and-hebrew-billing-office-open-2026-10-18-1228-cdt) (10-18)
+- [BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80)](#appendix-bj---https-only-http-308-redirects-to-https-acme-path-kept-on-80-2026-10-18-1233-cdt) (10-18)
+- [BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live](#appendix-bk---audit-5-10-agent-fast-sweep-11-fixes-790eb38-live-2026-10-18-1249-cdt) (10-18)
+- [BL - Concurrent deploy overwrote 790eb38 with 58d8908; 790eb38 redeployed](#appendix-bl---concurrent-deploy-overwrote-790eb38-with-58d8908-790eb38-redeployed-2026-10-18-1251-cdt) (10-18)
+- [BM - Second QR: downloadable synthetic test bills page, df69369 live](#appendix-bm---second-qr-downloadable-synthetic-test-bills-page-df69369-live-2026-10-18-1312-cdt) (10-18)
+- [BN - No Explanation of Benefits Available button + no-summary wording, 8cd1d09 live](#appendix-bn---no-explanation-of-benefits-available-button--no-summary-wording-8cd1d09-live-2026-10-18-1437-cdt) (10-18)
+- [BO - Real-format bills and EOBs: real samples tested, app support, new test docs (041fe7e, not deployed)](#appendix-bo---real-format-bills-and-eobs-real-samples-tested-app-support-new-test-docs-041fe7e-not-deployed-2026-10-18-1502-cdt) (10-18)
+- [BP - 4531549 live (real-format reader, QR real-format pairs)](#appendix-bp---4531549-live-real-format-reader-qr-real-format-pairs-2026-10-18-1505-cdt) (10-18)
 
 ---
 
@@ -1931,3 +1939,295 @@ Tests n3 + an API test; m4 updated; 77 JS tests. All 9 suites ALL PASS. Served a
 - Live /check with eob_not_yet returns the new pending text on both schemes.
 - On the live site at 390 px: f-all-ok and lines-ok are the only confirm boxes; the reason text shows; no sideways scroll.
 - Rollback: deploy.ps1 -Commit 189163e -Rollback restores af1d5f6. Kit v10 updated.
+
+# Appendix BI - Swarm UI fixes 2e74b20 live (8 of 10; translations and Hebrew Billing Office open) (2026-10-18 ~12:28 CDT)
+**What.** Evan, 12:18 CDT: "do these fixes fast" (the 10 open swarm UI items from record BG/BH). 8 were done in commit 2e74b20, which was deployed by Claude at 12:27 CDT at Evan's word. 2 were skipped.
+
+**Fixed (2e74b20):**
+- EOB service rows: the 5-column grid at >= 640 px is gone, and rows now use 2 columns. A probe at 1024 px showed the 5-column row was only 621 px wide, which left the description column 35 px. So the bug was not only at 640-720 px: the content width is capped, so 5 columns never fit. Probe after the fix: 0 px overflow at 640, 720 and 1024.
+- The disabled-button reason (`bill-why`, `eob-why`) is now `role="status"`. The Continue buttons point to it with `aria-describedby`.
+- Remove photo moves focus to the upload control (`bill-file`).
+- Footnote marks: min-width 1.5rem. The measured link is 25.5 px wide, above the 24 px target.
+- Checkmark: physical `border-right`/`border-bottom`, and the `[dir="rtl"]` scaleX(-1) rule is deleted. A screenshot in dir=rtl shows the normal check shape.
+- Denied card: a reason that ends in `.`, `!` or `?` is quoted verbatim, with no second period (the old output was `service.".`).
+  - First try: strip the period inside the quote. Test pair08 caught that this alters the printed reason, so it was replaced.
+- Letters say "explanation of benefits (insurance summary)", matching the screens' word.
+- TennCare card: the 55-word sentence now opens with the question "Did you have TennCare on the date of service?". The conditions and the citation are unchanged.
+
+**Skipped (open):**
+- U02, 54 untranslated keys x 26 languages: build_i18n.py could machine-translate them, but every earlier language needed the back-translation review (its DROP list). There was no time for that review, and unreviewed safety text is worse than English.
+- Hebrew letter keeps "Billing Office" in English: this comes from OCI Language output, not the keep list. A fix cannot be verified without paid calls.
+
+**Verification.**
+- Tests: test_eob_checks 25, test_checks 21, test_dispute 21, test_api and test_engine ALL PASS; test_app_js 78 ALL PASS; `node --check` ok.
+- Deploy: backup ~/backup-before-2e74b20.tar, import check ok, "DEPLOYED 2e74b20 (service active, /stats 200)".
+  - One "Connection refused" line came from the startup poll before the service was up.
+- Live: served app.js and style.css match `git show 2e74b20` byte for byte after CR is stripped (app.js 271e1dfad059, style.css 54c419a506af), on both http and https. /stats is 200 on both.
+  - First hash check: `/static/<f>` gave the same hash for both files, so that path does not serve them. The real paths are `/app.js` and `/style.css`.
+
+**Slips.**
+- The first deploy attempt (12:23) was blocked by the auto-mode classifier. Claude stopped and asked, and Evan approved at about 12:26.
+- No live paid call was made for the server text changes. The denied wording and letter wording are proven by the unit tests and by the deployed archive, which is the same commit.
+
+**Rollback:** `deploy.ps1 -Commit 2e74b20 -Rollback` restores 02e3d18.
+
+# Appendix BJ - HTTPS only: http 308-redirects to https (ACME path kept on :80) (2026-10-18 ~12:33 CDT)
+**What.** Evan, about 12:30 CDT: "drop the http support only support https". At 12:31 Claude ran deploy/https-only-remote.sh on the VM. It writes /etc/httpd/conf.d/bill-to-help-https-only.conf: every http request gets a 308 to the same https URL, query string included. The one exception is /.well-known/acme-challenge/.
+
+**Why this shape, not closing port 80.**
+- The Let's Encrypt IP certificate (lineage billscan-ip) expires 2026-10-24 15:39 GMT and has no auto-renewal. An IP certificate cannot use DNS validation, so a renewal by the current webroot method needs the challenge path on :80. Closing port 80 would make the certificate impossible to renew in place.
+- A redirect also keeps old http links and a typed bare IP working.
+- 308, not 301, so a POST stays a POST.
+- No HSTS: browsers ignore HSTS for IP-address hosts (RFC 6797), so it would add nothing here.
+
+**How.**
+- mod_rewrite rules go in server context, which covers only :80. The *:443 vhost does not inherit them, and a `%{HTTPS} !=on` guard rules out a loop anyway.
+- configtest runs before the graceful reload, and any failed check removes the file and reloads again.
+
+**Verification (real output).**
+- On the VM:
+  - `http /stats?x=1 -> 308 https://207.211.181.174/stats?x=1`;
+  - `acme probe over http: probe-ok`;
+  - https `/`, `/stats` and `/app.js` all 200 (curl with certificate verification);
+  - `HTTPS-ONLY OK`.
+- From the laptop:
+  - http GET / -> 308 https://207.211.181.174/;
+  - http POST /check -> 308;
+  - http /stats with redirects followed -> 200 at https;
+  - https / -> 200 with verify=0 (the certificate checks out).
+
+**Collateral.**
+- The presenter kit's "If https fails, use http://" fallback is gone: http now only redirects. The kit now says the typed IP redirects to https.
+- Updated: HANDOFF (TLS bullet), operations.md and security.md.
+- Every claim of "live on http and https" in earlier records is history and stays as written.
+
+**Undo:** `sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful`.
+
+# Appendix BK - Audit 5: 10-agent fast sweep, 11 fixes, 790eb38 live (2026-10-18 ~12:49 CDT)
+**What.** At 12:38 CDT Evan asked for a sweeping /audit-docs plus /audit-code: "BE FAST you have 15 minutes including doing the fixes". At 12:43 he added "2 subagents on the details on the website itself".
+
+10 Sonnet auditors ran, read-only, each with a 5-minute budget:
+- 5 code: main.py; engine/checks/eob_checks; dispute/numlock/oci_client/eob_prompt; app.js; UI shell + deploy scripts.
+- 3 docs: HANDOFF/README/PRD/NOTICE; the project-memory bins; docs/*.md except the record.
+- 2 site text: the bill flow; EOB, letters and dashboard.
+
+Fixes landed in 3547230 + 790eb38, on top of the forked session's 58d8908 (QR -> billow.duckdns.org). Claude deployed 790eb38 at 12:49 CDT at Evan's word.
+
+**Shortcuts (stated, not hidden).**
+- The audit skills' reference files (fanout, methods, reporting) were not read.
+- There was no pre-registered rubric and no coverage manifest beyond the file split above.
+- Not swept: tests/, app/data except the policies, app/static/i18n, spikes/, the record.
+- Crit/high findings were reproduced by reading the code at the cited line, not by fresh repro scripts. The exception is the long hospital name (normalize_bill on 250 chars -> 200 after the fix).
+
+**Fixed (790eb38).**
+- Home r_mismatch said the estimate's policy "is synthetic". Home uses VUMC's real published policy (main.py DEFAULT_POLICY_ID). A new key, r_mismatch_real, holds the true text in English, with es/ar/zh drafts marked TODO-REVIEW. The 27 machine languages fall back to English, so the old false translations are no longer shown.
+- credit_mismatch said "a plan discount of $0.00" when the summary had no discount. The discount clause is now left out when it is missing. Found by 2 auditors.
+- A blank charge description printed "None" in the flag and the letter; it now prints "this charge".
+- A negative patient_owes_cents is clamped to 0, so total_to_ask cannot exceed the amount due.
+- The OCI Language client gets timeout=(10, 40), the same as GenAI.
+- Footnote citation links render only for http(s) URLs.
+- normalize_bill cuts hospital_name and account_number to 200 chars. Before, a long model read made every later call 422.
+- Docs:
+  - HANDOFF: https only, live 2e74b20 then 790eb38, 9 test files, the stale "LIVE e53d1ce" marked superseded;
+  - README: all 9 test commands, Billow title;
+  - pitch sheet: a correction banner (one "This is correct" box per screen; 14 test bills, not 10; the DO NOT SAY was lifted);
+  - bins: testing, INDEX and security.
+
+**Slip.** 3547230 was committed while test_api failed. The `&&` chain did not gate the commit on the test loop. The new key lacked the inline zh/es/ar strings that test_api line 219 requires. 790eb38 adds them.
+
+**Verification.**
+- Tests on 790eb38: test_eob_checks 25, test_checks 21, test_dispute 21; test_api, test_engine, test_numlock, test_policy_page and test_answer_key ALL PASS; test_app_js 78 ALL PASS.
+- Deploy: backup ~/backup-before-790eb38.tar, import check ok, "DEPLOYED 790eb38 (service active, /stats 200)".
+- Live, on both https://207.211.181.174 and https://billow.duckdns.org:
+  - served app.js 7fbf2eca8fa8 and style.css 54c419a506af match `git show 790eb38` (CR stripped);
+  - /stats 200 with certificate verification ok;
+  - http -> 308 https.
+
+**Open (not fixed; ranked).**
+1. HIGH, ops: the IP certificate expires 2026-10-24 15:39 GMT and has no renewal timer. With https only, the site is effectively down after that. The duckdns certificate needs the same.
+2. The "Not yet" path gets the pending flag, which states the claim is "still being processed". A provider-name abbreviation reads as "different visit". not_on_eob fires when an EOB line has no amount.
+3. Deploy scripts:
+   - a redeploy keeps an older backup, so a rollback can restore the wrong state;
+   - a failed health check leaves the broken app live;
+   - $Commit is not validated.
+4. A household just over a tier line shows the floored "300%" while getting the lower tier.
+5. More main.py gaps:
+   - /check returns 200 with no flags on empty or garbage fields;
+   - _norm_cents accepts "1e5";
+   - the per-IP limit trusts the last X-Forwarded-For;
+   - /household's message hides "not confirmed".
+6. Wording:
+   - "Nothing you enter is saved" omits that photos go to an Oracle Cloud AI service;
+   - the 30-day follow-up reads like a hospital rule;
+   - chk_none says "the math adds up" even when the payments check did not run;
+   - the denial_reason prompt has no copy-verbatim rule.
+7. Already known: the number lock compares sets, not counts (audit 3 A1).
+8. Docs: PRD has no Phase 2/3 or Billow entry; contracts.md section headers still say f12/f13 are not merged; testing.md gives a Python count for only 4 files.
+
+# Appendix BL - Concurrent deploy overwrote 790eb38 with 58d8908; 790eb38 redeployed (2026-10-18 ~12:51 CDT)
+**What.**
+- 12:49 CDT: this session deployed 790eb38 (record BK) at Evan's word.
+- 12:50: a forked session, working on the billow.duckdns.org name, deployed 58d8908. That overwrote 790eb38: the served app.js hash became 443db1674c2e, which is 58d8908's.
+- 12:51: this session confirmed the overwrite, told the forked session to stop deploying, and redeployed 790eb38.
+
+**Why the redeploy is safe.** 790eb38 is a descendant of 58d8908, so it contains the QR change as well. Evan's last deploy instruction named 790eb38.
+
+**Verification after the redeploy (12:51:34).** On both https://207.211.181.174 and https://billow.duckdns.org, served app.js is 7fbf2eca8fa8, which is 790eb38's (CR stripped), and /stats is 200.
+
+**Root cause.** Two sessions shared one checkout and one VM, and each ran deploy.ps1 on its own. Nothing serializes deploys, and the forked session did not know the tree had moved past its commit.
+
+**Rollback facts.**
+- The forked session said "-Commit 58d8908 -Rollback restores 2e74b20". That is wrong: backup-before-58d8908.tar was taken from 790eb38's live tree.
+- The 790eb38 redeploy keeps its first backup (deploy-remote.sh keeps an existing one), so `-Commit 790eb38 -Rollback` still restores 2e74b20.
+
+**Open.** Deploys need a lock, or a single owner session. Rule for the rest of the event: only this session deploys.
+
+# Appendix BM - Second QR: downloadable synthetic test bills page, df69369 live (2026-10-18 ~13:12 CDT)
+**What.** Evan (~13:08 CDT): "put the test images as a download from another QR code on the main screen next to the original one so that participants can use them". Commit df69369 does this. Claude deployed it at 13:11 CDT at Evan's word ("check then commit push and deploy"), during the showcase.
+
+**How.**
+- app/static/test-bills/ holds bill-01..14 (bill-02 is the blur0 render), bills 20, 22 and 23, and eob-06..10.
+- It has an index.html generated from spikes/synthetic-bill/answer_key.json and spikes/synthetic-eob/pairs_key.json. Each bill line shows hospital, amount due and insurance status; each pair line gives the order to upload.
+- The page opens with a SYNTHETIC banner: no hospital or insurer issued, reviewed or endorsed these.
+- The Start screen's qrFigure now draws two codes in a .qr-pair row: origin + "/?hospital=vumc" as before, and origin + "/test-bills/".
+- New strings qr2_alt and qr2_caption, with es/ar/zh marked TODO-REVIEW. The QR shows only at >= 900 px, as before.
+- Size: 1.1 MB, 23 files.
+
+**Judgment call, stated.** Bills 01-09 carry real hospital names, labelled "(SYNTHETIC)" and "NOT ISSUED BY", which important.md 7 allows. They are now downloadable by anyone. The planted-error and EOB-pair bills (10-14, 20, 22, 23) all use the fictional Cumberland General Hospital (SYNTHETIC), so plan rule A2 still holds.
+
+**Verification.**
+- All 9 test files pass: test_app_js 78 including j9, which pins the first QR.
+- Every href on the page resolves to a committed file.
+- Local preview: two QR figures at 1024 px; the page has 0 px overflow at 375 px and 24 download links.
+- Live, on both https://207.211.181.174 and https://billow.duckdns.org:
+  - app.js 0019423dacb1 = df69369 (CR stripped);
+  - /test-bills/ 200;
+  - /test-bills/eob-08.png 200 image/png;
+  - /stats 200.
+- Before deploying, live was 790eb38, the expected state, so no other session had deployed in between.
+
+**Rollback:** `deploy.ps1 -Commit df69369 -Rollback` restores 790eb38.
+
+# Appendix BN - No Explanation of Benefits Available button + no-summary wording, 8cd1d09 live (2026-10-18 ~14:37 CDT)
+**What.**
+- Evan: "replace the not yet button with a always clickable button saying 'No Explanation of Benefits Available'". Then: "change the card and letter to say I don't have my insurer's summary yet (not that the claim is still processing). Then commit, deploy and live check."
+- Commit 8cd1d09; Claude deployed it at Evan's word.
+
+**How.**
+- app.js:
+  - eob_not_yet now reads "No Explanation of Benefits Available", with es/ar/zh drafts marked TODO-REVIEW.
+  - The `disabled: S.eobExtracting` was removed from the button, so it is never disabled.
+  - Tapping it during a read calls clearEob(), which bumps eobSeq, so the read in flight goes stale and its result is ignored.
+  - eob_not_eob and eob_read_failed now say "tap No Explanation of Benefits Available".
+- eob_checks.run splits the flag; the flag id stays `pending`, so the UI, /dispute and the tests that key on it are unchanged:
+  - `not_yet` gets new text: "You don't have your insurer's summary for this visit yet. Ask the hospital whether you can wait for it before paying."
+  - Its letter reads: "I have not received my insurer's explanation of benefits (insurance summary) for this visit yet. Please hold this bill until it arrives."
+  - A real EOB claim_status of "pending" keeps the "still processing" wording.
+- This also closes the audit 5 site-text finding #2 (record BK): the "Not yet" path stated a fact about the insurer that the data did not support.
+
+**Verification.**
+- New JS test m10:
+  - the button stays enabled while a read is in flight;
+  - tapping it goes to the questions, clears the spinner and state, and ignores the late read.
+  - It FAILS against the old app.js (checked with git stash) and passes on the new one.
+- test_eob_checks pins the no-summary text and letter and asserts that neither contains "processing".
+- All 9 suites pass: test_app_js 80; eob_checks 25; checks 21; dispute 21; api, engine, numlock, policy_page and answer_key ALL PASS.
+- Browser (fake OCI, 375 px): the button reads "No Explanation of Benefits Available" and wraps to two lines with no overflow. It is enabled with S.eobExtracting true. A real click lands on s3 with eobNotYet true, eobExtracting false and the spinner hidden.
+- Before deploying, live was confirmed as df69369 (app.js 0019423dacb1), so no other session had deployed in between.
+- Deploy: "DEPLOYED 8cd1d09 (service active, /stats 200)".
+- Live, on both https://207.211.181.174 and https://billow.duckdns.org:
+  - app.js 2ae6b2921fe0 = 8cd1d09 (CR stripped), with the new label present;
+  - /stats 200;
+  - POST /check with bill-13 + eob_not_yet returns one `pending` flag with the new text and letter, and "says processing: False".
+
+**Rollback:** `deploy.ps1 -Commit 8cd1d09 -Rollback` restores df69369.
+
+# Appendix BO - Real-format bills and EOBs: real samples tested, app support, new test docs (041fe7e, not deployed) (2026-10-18 ~15:02 CDT)
+**What.** Evan asked how close the synthetic bills and EOBs are to real ones, then: check them against real ones; "go" (download CMS's public sample EOB); "also change app code to support the updated test docs and try to find sample bills. also edit the pngs on the qr code"; "UI changes are also allowed". Commit 041fe7e. NOT deployed, NOT pushed (Evan's word needed).
+
+**Real samples used.** Public teaching examples with fictional data, downloaded into their own scratchpad dirs, never into the repo:
+- CMS "Reading your EOB" sample, publication #11819, May 2022; PDF sha256 51fd12ba25a7208a...
+- Trinity Health "How to read your statement" sample clinic statement; cropped to the statement half.
+- Both were rendered with a throwaway venv + pymupdf 1.28.2 in the scratchpad.
+
+**Method.**
+- Opus planned; 3 Sonnet agents did the code with disjoint files:
+  - S (server): reader keys, models, derivations, test_api;
+  - U (UI + rules): app.js, eob_checks, their tests;
+  - D (docs): bill-24/25, eob-11/12, pairs 11 and 12, test-bills page.
+- Opus reviewed each diff on disk and re-ran every suite.
+- Two agent deviations were accepted:
+  - S used `_norm_payments`, because my spec's `_norm_cents` rejects negatives;
+  - U stopped on an obsolete pin (test_eob_checks:324, which pinned the old abbreviation shortcut). Opus flipped it as intended.
+- Paid reads: 8 real Command A Vision calls in total, with the NEW prompts, run locally on the laptop key. That is 1 over my stated budget of 7; it was used to re-test after the prompt fixes.
+
+**Round 1 (5 reads), what real formats broke:**
+- bill-24 (new real-format synthetic): all 6 fields, 5 billing codes and the 3 payment parts were correct.
+- eob-11 (two claims): the right claim was picked. But plan_discount was read as the allowed amount (1640 instead of 860), which made a FALSE credit_mismatch flag. There were small OCR slips in descriptions (XRC, COMPREHET, J2045).
+- eob-12: denial_reason came back as the bare code "CO-197", not the key's explanation.
+- CMS EOB:
+  - right: the derived discount 286.33, owes 35.00, copay 35.00;
+  - wrong: plan_paid read as the ALLOWED amount (120.27 instead of 85.27); service dates blank because they are printed as ranges ("3/20/22-3/20/22"); insurer_name read as the campaign logo "C2C Coverage to Care".
+- Trinity statement (running ledger): payment and adjustment rows came back as charge lines, and payments_and_adjustments was read as the amount due (265.00).
+
+**Fixes after round 1:**
+- When billed and allowed are both read, code now derives discount = billed - allowed (it overrides the model's value).
+- A service-date range now resolves to its first date.
+- Prompt rules added:
+  - plan_paid is never the allowed amount;
+  - plan_discount is only a printed discount column;
+  - denial_reason is the code key's text;
+  - insurer_name is null when only a logo is printed;
+  - charge rows only, and payments_and_adjustments is never the amount due.
+
+**Round 2 (3 reads + eob-11 re-normalized from its saved read):**
+- eob-11: discount 86000, and no flags with bill-24 (expected none).
+- eob-12: denial_reason "CO-197: Precertification/authorization absent." (it drops "/notification"); the denied flag fires with bill-25.
+- CMS: plan_paid 85.27 is now right, and the dates resolve to 2022-03-20. insurer_name is still the campaign logo (left as is; the person can clear it).
+- Trinity: the prompt change alone did NOT stop the ledger rows.
+
+**Fixes after round 2 (code; verified on the saved reads, no new calls):**
+- Rows whose description is a payment, adjustment, credit, refund, write-off or previous balance are dropped from the charge lines. Trinity now gives exactly the 4 real charges, summing to 760.00, which matches the statement. A test confirms "ADJUSTABLE KNEE BRACE" is kept.
+- When allowed is 0 (a denial), no discount is derived; before this, eob-12 showed a 3,120 "discount".
+
+**Also in 041fe7e:**
+- UI:
+  - the EOB confirm screen gains 5 optional fields (Allowed amount, Deductible, Copay, Coinsurance, Not covered), covered by the one confirm box;
+  - bill lines show a printed code;
+  - a display-only payment breakdown appears under "Payments and adjustments".
+- Rules:
+  - provider names match after an abbreviation table (closes the audit 5 / record BK item);
+  - the credit check uses insurance + adjustments when the bill splits them, not the patient's own payment.
+- QR test-bills page:
+  - a new "Real-format bill + insurance summary pairs" section with pairs 11 and 12 (bill-24 + eob-11; bill-25 + eob-12);
+  - 27 files.
+- docs/contracts.md addendum.
+
+**Verification.**
+- All 9 suites pass: eob_checks 27, checks 21, dispute 21, api, engine, numlock, policy_page and answer_key ALL PASS, test_app_js 82.
+- Browser (fake OCI, 375 px):
+  - the 5 EOB inputs render, and Continue enables with them blank;
+  - the breakdown reads "Insurance $1,240.00 + adjustments $860.00 + your payments $100.00";
+  - the codes 99284 and 71046 show;
+  - /test-bills/ serves the 4 new PNGs (200), with 28 download links and no overflow.
+
+**Open / honest limits:**
+1. One sample of each real format; no accuracy rate is claimed.
+2. CMS insurer_name picks up a logo name.
+3. The denial text drops a word (it is shown for the person to confirm).
+4. A statement with several visits returns no single date of service (Trinity); the person must type it.
+5. The new reader is not live until deployed.
+
+# Appendix BP - 4531549 live (real-format reader, QR real-format pairs) (2026-10-18 ~15:05 CDT)
+**What.** Evan: "Deploy 4531549 (includes 041fe7e), live check on both https hosts including the test-bills page, then push f10." Claude deployed 4531549 at about 15:05 CDT. Before the deploy, live was confirmed as 8cd1d09 (app.js 2ae6b2921fe0), so no other session had deployed in between. Deploy output: "DEPLOYED 4531549 (service active, /stats 200)".
+
+**Live check, on both https://207.211.181.174 and https://billow.duckdns.org:**
+- app.js, style.css, test-bills/index.html and test-bills/bill-24, bill-25, eob-11 and eob-12 PNGs: all 200, and all MATCH `git show 4531549` (CR stripped for text).
+- /test-bills/ has the "Real-format bill + insurance summary pairs" heading.
+- /stats 200.
+- POST /check, pair 11 (bill-24 + eob-11, with payment_parts and the 5 optional EOB fields): no insurance flags, total 0, as expected.
+- POST /check, pair 12 (bill-25 + eob-12): ["denied"], total 0, as expected.
+- No paid call was made in this check. The reader's prompt changes ran in record BO's 8 local reads; no live /extract was run after the deploy.
+- Not exercised live: the abbreviated provider name, because the payload used the same name on the bill and the EOB. It is covered by the unit tests in test_eob_checks.
+
+**Rollback:** `deploy.ps1 -Commit 4531549 -Rollback` restores 8cd1d09.

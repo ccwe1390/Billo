@@ -128,20 +128,20 @@ def test_pair06_demo():
     assert cm["text_en"] == ('"CT scan, head, without contrast" for $1,385.00 on 2026-09-12 is on this bill '
                              "2 times, but your insurer's summary lists it 1 time.")
     assert cm["letter_en"] == ('"CT scan, head, without contrast" for $1,385.00 on 2026-09-12 is listed 2 times '
-                               "on this bill, but my insurer's explanation of benefits lists it 1 time. "
+                               "on this bill, but my insurer's explanation of benefits (insurance summary) lists it 1 time. "
                                "Please remove the extra charge.")
     tm = flag(r, "totals_mismatch")
     assert tm["amount_cents"] is None and tm["line_indexes"] == []
     assert tm["text_en"] == ("This bill's total charges are $5,822.40, but your insurer's summary shows "
                              "$4,437.40 billed for this visit.")
-    assert tm["letter_en"] == ("This bill's total charges are $5,822.40, but my insurer's explanation of benefits "
+    assert tm["letter_en"] == ("This bill's total charges are $5,822.40, but my insurer's explanation of benefits (insurance summary) "
                                "shows $4,437.40 billed for this visit. "
                                "Please tell me which charges were sent to my insurance.")
     bm = flag(r, "billed_more")
     assert bm["amount_cents"] == 138500 and bm["line_indexes"] == []
     assert bm["text_en"] == ("Your insurer's summary says you owe $200.00 for this visit, but this bill asks for "
                              "$1,585.00. That is $1,385.00 to ask the hospital about.")
-    assert bm["letter_en"] == ("My insurer's explanation of benefits for this visit (claim CLM-SYN-0612) says I owe "
+    assert bm["letter_en"] == ("My insurer's explanation of benefits (insurance summary) for this visit (claim CLM-SYN-0612) says I owe "
                                "$200.00, but this bill says $1,585.00. Please correct the bill to match.")
     assert "credit_mismatch" not in ids(r) and "not_on_eob" not in ids(r)
     assert "duplicate" not in ids(r), ids(r)          # Phase 2 duplicate dropped
@@ -186,9 +186,12 @@ def test_pair07_pending():
     assert f["letter_en"] == ("My insurance claim for this visit is still being processed. Please hold this bill "
                               "until it is finished and send me a corrected bill.")
     assert f["amount_cents"] is None and f["citation"] is None and f["line_indexes"] == []
-    # not_yet with no EOB at all
+    # not_yet with no EOB at all: no-summary wording, never "still processing" (Evan 2026-10-18)
     r2 = eob_checks.run(bill, None, not_yet=True)
     assert ins_ids(r2) == ["pending"] and "insurance_unpaid" in ids(r2, "bill")
+    assert flag(r2, "pending")["text_en"] == "You don't have your insurer's summary for this visit yet. Ask the hospital whether you can wait for it before paying."
+    assert flag(r2, "pending")["letter_en"] == "I have not received my insurer's explanation of benefits (insurance summary) for this visit yet. Please hold this bill until it arrives."
+    assert "processing" not in flag(r2, "pending")["text_en"] + flag(r2, "pending")["letter_en"]
     assert r2["total_to_ask_cents"] == p2["total_to_ask_cents"] and r2["insurer_letter"] is None
     # not_yet beats a paid EOB: no other insurance rule runs
     bill6, eob6 = pair06()
@@ -213,7 +216,7 @@ def test_pair08_denied():
     f = flag(r, "denied")
     assert f["amount_cents"] is None
     assert f["text_en"] == ('Your insurer denied this claim. Reason printed on your summary: '
-                            '"Prior authorization was not obtained for this service.". '
+                            '"Prior authorization was not obtained for this service." '
                             'Appeal by 2027-03-18. Insurer phone: (800) 555-0199.')
     assert f["letter_en"] == ("My insurer denied this claim, and I am asking them to reconsider. "
                               "Please hold this bill while that review is open.")
@@ -317,10 +320,37 @@ def test_provider_matching():
     assert verdict("Mercy", "Mercyland Hospital")                    # prefix needs a word boundary
     assert verdict("Foo Synthetic Hospital", "Mercy") and not verdict("Foo Synthetic Hospital", "Foo Hospital")
     assert not verdict("St. Mary's  Hospital", "ST MARY S HOSPITAL")  # punctuation and spacing do not matter
-    # shortcut documented in the module: an abbreviation reads as a different visit
-    assert verdict("Vanderbilt University Medical Center", "VANDERBILT UNIV MED CTR")
+    # an insurer's abbreviation is the same hospital (ABBREV table, 2026-10-18; was a documented shortcut)
+    assert not verdict("Vanderbilt University Medical Center", "VANDERBILT UNIV MED CTR")
     # one name missing: not a mismatch
     assert not verdict(None, "Mercy") and not verdict("Mercy", None)
+
+
+def test_provider_abbreviations():
+    def verdict(hospital, provider):
+        bill, eob = pair10()
+        bill["fields"]["hospital_name"] = fld(hospital)
+        set_field(eob, "provider_name", provider)
+        return "different_visit" in ins_ids(eob_checks.run(bill, eob))
+
+    assert not verdict("VANDERBILT UNIV MED CTR", "Vanderbilt University Medical Center")
+    assert not verdict("CUMBERLAND GEN HOSP", "Cumberland General Hospital (SYNTHETIC)")
+    assert verdict("TriStar Centennial Medical Center", "Vanderbilt University Medical Center")
+
+
+def test_credit_uses_payment_parts():
+    def go(parts):
+        bill = make_bill("2026-09-12", VUMC, "insured", 10000, [bline("ED visit", 230000)], 230000, 220000)
+        if parts is not None:
+            bill["lines"]["payment_parts"] = parts
+        eob = make_eob("2026-09-12", VUMC, "C1", "paid", 230000, 86000, 124000, 10000,
+                       [eline("ER VISIT", 230000, 10000)])
+        return eob_checks.run(bill, eob)
+
+    parts = {"insurance_cents": 124000, "adjustments_cents": 86000, "patient_cents": 10000}
+    assert "credit_mismatch" not in ids(go(parts)), ids(go(parts))
+    assert "credit_mismatch" in ids(go(None)), ids(go(None))      # same bill without the breakdown
+    assert "credit_mismatch" in ids(go(dict(parts, adjustments_cents=None)))   # a missing part: old behaviour
 
 
 def test_pair10_clean():
@@ -375,7 +405,7 @@ def test_decoy_same_amount_other_date():
     assert f["line_indexes"] == [1] and f["amount_cents"] == 5000
     assert f["text_en"] == '"Lab" for $50.00 on 2026-09-13 is on this bill but not on your insurer\'s summary.'
     assert f["letter_en"] == ('"Lab" for $50.00 on 2026-09-13 is on this bill but not on my insurer\'s '
-                              "explanation of benefits. Please explain this charge or remove it.")
+                              "explanation of benefits (insurance summary). Please explain this charge or remove it.")
     assert "charged_more" not in ids(r)
     # a line with no date takes the document's date of service: matches the dated EOB line
     bill["lines"]["items"][1]["date"] = None
@@ -448,7 +478,7 @@ def test_billed_more_boundary():
     bill["lines"]["payments_cents"] = 214000
     set_field(eob, "claim_number", None)
     assert flag(eob_checks.run(bill, eob), "billed_more")["letter_en"] == (
-        "My insurer's explanation of benefits for this visit says I owe $350.00, "
+        "My insurer's explanation of benefits (insurance summary) for this visit says I owe $350.00, "
         "but this bill says $500.00. Please correct the bill to match.")
     # owes above due: no flag
     bill, eob = pair10()

@@ -41,18 +41,23 @@ def _status(eob):
     return s if s in KNOWN_STATUSES else None
 
 
-def _norm_name(s):
-    s = "".join(c.lower() if c.isalnum() else " " for c in str(s))
-    return " ".join(w for w in s.split() if w != "synthetic")
+ABBREV = {"UNIV": "UNIVERSITY", "MED": "MEDICAL", "CTR": "CENTER", "CNTR": "CENTER", "HOSP": "HOSPITAL",
+          "GEN": "GENERAL", "ST": "SAINT", "REG": "REGIONAL"}
+_DROP_TOKENS = {"INC", "LLC", "THE", "OF"}
+
+
+def _name_tokens(s):
+    s = str(s).upper().replace("(SYNTHETIC)", "")
+    s = "".join(c if c.isalnum() else " " for c in s)
+    return [w for w in (ABBREV.get(w, w) for w in s.split()) if w not in _DROP_TOKENS]
 
 
 def _provider_mismatch(hospital, provider):
     if hospital is None or provider is None:
         return False
-    a, b = _norm_name(hospital), _norm_name(provider)
-    # shortcut: an insurer's abbreviation (e.g. "VANDERBILT UNIV MED CTR") reads as a different visit;
-    # upgrade = a per-hospital alias list.
-    return not (a == b or a.startswith(b + " ") or b.startswith(a + " "))
+    a, b = set(_name_tokens(hospital)), set(_name_tokens(provider))
+    short, long_ = (a, b) if len(a) <= len(b) else (b, a)
+    return not short <= long_  # names match when the shorter name's tokens (after the ABBREV table) all appear in the longer
 
 
 def _times(m):
@@ -88,7 +93,7 @@ def _line_flags(bill, eob, bill_dos, eob_dos):
     eob_groups = _line_groups(eob_items, eob_dos, "amount_billed_cents")
 
     def desc(i):
-        return str(bill_items[i].get("description")).strip()
+        return str(bill_items[i].get("description") or "this charge").strip()  # never print "None"
 
     flags = []
     for (date, amt), idxs in bill_groups.items():
@@ -101,7 +106,7 @@ def _line_flags(bill, eob, bill_dos, eob_dos):
                 f'"{desc(idxs[0])}" for {_money(amt)} on {d} is on this bill {n} times, '
                 f"but your insurer's summary lists it {_times(m)}.",
                 f'"{desc(idxs[0])}" for {_money(amt)} on {d} is listed {n} times on this bill, '
-                f"but my insurer's explanation of benefits lists it {_times(m)}. "
+                f"but my insurer's explanation of benefits (insurance summary) lists it {_times(m)}. "
                 "Please remove the extra charge.",
                 amt * (n - m),
                 idxs,
@@ -114,7 +119,7 @@ def _line_flags(bill, eob, bill_dos, eob_dos):
                 "not_on_eob",
                 f'"{desc(i)}" for {_money(amt)} on {d} is on this bill but not on your insurer\'s summary.',
                 f'"{desc(i)}" for {_money(amt)} on {d} is on this bill but not on my insurer\'s '
-                "explanation of benefits. Please explain this charge or remove it.",
+                "explanation of benefits (insurance summary). Please explain this charge or remove it.",
                 amt,
                 [i],
             ))
@@ -130,6 +135,7 @@ def _money_flags(bill, eob):
     discount = _int_or_none(_field(eob, "plan_discount_cents"))
     plan_paid = _int_or_none(_field(eob, "plan_paid_cents"))
     owes = _int_or_none(_field(eob, "patient_owes_cents"))
+    owes = None if owes is None else max(0, owes)  # a negative "you owe" must not raise the total above the amount due
     claim = _s(_field(eob, "claim_number"))
 
     flags = []
@@ -138,22 +144,29 @@ def _money_flags(bill, eob):
             "totals_mismatch",
             f"This bill's total charges are {_money(bill_total)}, but your insurer's summary shows "
             f"{_money(eob_billed)} billed for this visit.",
-            f"This bill's total charges are {_money(bill_total)}, but my insurer's explanation of benefits "
+            f"This bill's total charges are {_money(bill_total)}, but my insurer's explanation of benefits (insurance summary) "
             f"shows {_money(eob_billed)} billed for this visit. "
             "Please tell me which charges were sent to my insurance.",
         ))
+    parts = lines.get("payment_parts") if isinstance(lines.get("payment_parts"), dict) else {}
+    ins_paid, adjusted = _int_or_none(parts.get("insurance_cents")), _int_or_none(parts.get("adjustments_cents"))
+    if ins_paid is not None and adjusted is not None:
+        payments = ins_paid + adjusted  # the patient's own payments are not an insurer credit
     if payments is not None and plan_paid is not None:
         credit = plan_paid + (discount or 0)
         if abs(payments - credit) > TOLERANCE:
+            if discount is None:  # no discount on the summary: say nothing about one, never "$0.00"
+                said, wrote = f"Your insurer says it paid {_money(plan_paid)}", f"My insurer says it paid {_money(plan_paid)}"
+            else:
+                said = (f"Your insurer says it paid {_money(plan_paid)} and took off a plan discount of "
+                        f"{_money(discount)} ({_money(credit)} in all)")
+                wrote = (f"My insurer says it paid {_money(plan_paid)} and applied a plan discount of "
+                         f"{_money(discount)}, a total of {_money(credit)}")
             flags.append(_ins(
                 "credit_mismatch",
-                f"Your insurer says it paid {_money(plan_paid)} and took off a plan discount of "
-                f"{_money(discount or 0)} ({_money(credit)} in all), but this bill shows "
-                f"{_money(payments)} in payments and adjustments.",
-                f"My insurer says it paid {_money(plan_paid)} and applied a plan discount of "
-                f"{_money(discount or 0)}, a total of {_money(credit)}, but this bill shows "
-                f"{_money(payments)} in payments and adjustments. "
-                "Please apply the full insurance payment and discount.",
+                f"{said}, but this bill shows {_money(payments)} in payments and adjustments.",
+                f"{wrote}, but this bill shows {_money(payments)} in payments and adjustments. "
+                "Please apply the full insurance payment" + (" and discount." if discount is not None else "."),
             ))
     if due is not None and owes is not None and due > owes + TOLERANCE:
         claim_part = f" (claim {claim})" if claim else ""
@@ -161,7 +174,7 @@ def _money_flags(bill, eob):
             "billed_more",
             f"Your insurer's summary says you owe {_money(owes)} for this visit, but this bill asks for "
             f"{_money(due)}. That is {_money(due - owes)} to ask the hospital about.",
-            f"My insurer's explanation of benefits for this visit{claim_part} says I owe {_money(owes)}, "
+            f"My insurer's explanation of benefits (insurance summary) for this visit{claim_part} says I owe {_money(owes)}, "
             f"but this bill says {_money(due)}. Please correct the bill to match.",
             due - owes,
         ))
@@ -179,7 +192,7 @@ def _denied(bill, eob):
     phone = _s(_field(eob, "insurer_phone"))
     text = "Your insurer denied this claim."
     if reason:
-        text += f' Reason printed on your summary: "{reason}".'
+        text += f' Reason printed on your summary: "{reason}"' + ("" if reason[-1] in ".!?" else ".")  # the printed reason stays verbatim; no second "."
     if deadline:
         text += f" Appeal by {deadline}."
     if phone:
@@ -210,9 +223,15 @@ def run(bill, eob=None, not_yet=False, p2=None):
     if eob is None and not not_yet:
         return result([])
 
-    # 2. still processing: one flag, no other insurance rule.
+    # 2. no summary yet, or still processing: one flag, no other insurance rule.
     status = _status(eob)
-    if not_yet or status == "pending":
+    if not_yet:  # the person tapped "No Explanation of Benefits Available": nothing is known about the claim
+        return result([_ins(
+            "pending",
+            "You don't have your insurer's summary for this visit yet. Ask the hospital whether you can wait for it before paying.",
+            "I have not received my insurer's explanation of benefits (insurance summary) for this visit yet. Please hold this bill until it arrives.",
+        )])
+    if status == "pending":
         return result([_ins(
             "pending",
             "Your insurance is still processing this visit. Ask the hospital whether you can wait for your insurer's summary before paying.",
@@ -259,6 +278,7 @@ def run(bill, eob=None, not_yet=False, p2=None):
                   if not (f["id"] == "duplicate" and set(f["line_indexes"]) & charged_idx)]
     due = _int_or_none(_field(bill, "amount_due_cents"))
     owes = _int_or_none(_field(eob, "patient_owes_cents"))
+    owes = None if owes is None else max(0, owes)  # a negative "you owe" must not raise the total above the amount due
     total = p2_total
     if due is not None and owes is not None:
         total = due - owes if due > owes + TOLERANCE else 0

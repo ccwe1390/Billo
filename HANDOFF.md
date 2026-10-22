@@ -20,10 +20,10 @@ via the plan's ClearHealthCosts source, not re-read by Claude). Full plan:
 **Hard deadline: hacking finishes Sun 2026-10-18 1:00 PM CDT.** Venue closes
 Sat 9:00 PM, reopens Sun 9:00 AM (`docs/Hackathon Schedule.txt`).
 
-## Current state - LIVE on OCI at http:// and https://207.211.181.174/ (gates 1 and 2 passed)
+## Current state - LIVE on OCI at https://207.211.181.174/ (HTTPS only since 2026-10-18 12:31 CDT; http 308-redirects; gates 1 and 2 passed)
 
-**Last updated: 2026-10-18 12:14 CDT** - this file is the only live
-snapshot; history lives in the record (Phase 0, Appendices A-BH).
+**Last updated: 2026-10-18 15:05 CDT** - this file is the only live
+snapshot; history lives in the record (Phase 0, Appendices A-BP).
 
 > **2026-10-17 - Pivot adopted (record Appendix M).** Evan adopted the draft
 > "HackTN26 Health Access Plan" with a Python (FastAPI) + plain HTML/JS stack
@@ -37,11 +37,11 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
 | Submission form / repo / video | **UNKNOWN** - ask organizers | - |
 | Team roster and roles | **UNCONFIRMED** (plan assumes 4) | - |
 | OCI account | Exists (tenancy root compartment); Chicago home region per kit guidance | console pastes |
-| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :80. SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
+| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :443 (:80 only redirects to https since 2026-10-18 12:31). SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each - OLD render only (2026-10-17); the re-rendered blur-3 bill misread the date (2026-10-18 08:49, experiments.md); blur 5 not re-run | experiments.md |
 | VUMC + Ascension policy | **REAL, VERIFIED** 2026-10-18: read from their PDFs, page-cited, re-checked by a second AI pass and against freshly downloaded PDFs (audit 4: 0 defects); live since 08:48 | record AV, audit 4 |
-| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 6 test files ALL PASS; live with real OCI since 14:53; the live server runs e53d1ce (deployed 2026-10-18 10:20 CDT, record AZ; real policies) | record P-W |
+| Code | Engine (+ full tier table) + FastAPI app + 5-screen "Paper Trail" UI + synthetic policy page + blur test bills + languages (32 codes from app/data/languages.json, dropdown; live since 00:07); 9 test files ALL PASS (2026-10-18 12:45: checks 21, eob_checks 25, dispute 21, app_js 78); live with real OCI since 14:53; the live server runs 2e74b20 (see the LIVE bullet under Status; the e53d1ce text that follows is history) (e53d1ce deployed 2026-10-18 10:20 CDT, record AZ; real policies) | record P-W |
 | Old-plan artifacts | Synthea snapshot (`data/synthea/`, gitignored), JDK 17 + Synthea jar in `C:\Users\daruw\tools\` - optional now | record H |
 
 ## Architecture (PRD fork F2)
@@ -81,12 +81,12 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
   Still open from audit 4: #10 global-bucket half, #12 Ascension mailing address.
 - **10:29 CDT (record BA):** 223013b committed, NOT deployed: Apply by counts from the date of service when known (feature review
   flaw 2; bill-01 now 2027-05-10). Deploy waits for the optimization + security audits (Evan).
-- **12:14 CDT: LIVE = 189163e** (one confirm box per screen, pending wording, dashboard counters; record BH; rollback restores af1d5f6). Before: LIVE = af1d5f6 (Phase 3 review fixes, record BG; rollback -Commit af1d5f6 -Rollback restores deeebda). Presenter kit: https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX (v9). Swarm open items: record BG. Before: LIVE = deeebda (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
+- **15:05 CDT: LIVE = 4531549** (real-format bills/EOBs reader + EOB optional fields + QR real-format pairs 11-12, records BO-BP; rollback -Commit 4531549 -Rollback restores 8cd1d09). Before: LIVE = 8cd1d09 (always-clickable "No Explanation of Benefits Available" button + no-summary card/letter, record BN; rollback -Commit 8cd1d09 -Rollback restores df69369). Before: LIVE = df69369 (second QR -> /test-bills/ synthetic test bills page, record BM; rollback -Commit df69369 -Rollback restores 790eb38). Before: LIVE = 790eb38 (audit 5 fixes, record BK; rollback -Commit 790eb38 -Rollback restores 2e74b20; also at https://billow.duckdns.org). Before: LIVE = 2e74b20 (8 swarm UI fixes, record BI; rollback -Commit 2e74b20 -Rollback restores 02e3d18; open: 54 untranslated keys in 26 languages, Hebrew letter "Billing Office"). Before: LIVE = 02e3d18 (same app as 189163e, redeployed at the end of the docs sync; rollback -Commit 02e3d18 -Rollback restores 189163e). Before: LIVE = 189163e (one confirm box per screen, pending wording, dashboard counters; record BH; rollback restores af1d5f6). Before: LIVE = af1d5f6 (Phase 3 review fixes, record BG; rollback -Commit af1d5f6 -Rollback restores deeebda). Presenter kit: https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX (v9). Swarm open items: record BG. Before: LIVE = deeebda (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
   on http + https, record BC). Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Demo error flags ONLY on
   bills 11-14 (fictional Cumberland). Open O2 items #4-#13 (record BC). Pitch: the DO NOT SAY line is lifted (Phase 2 live by 12:40).
   KEEP until after the pitches (Evan 11:23): worktree C:/ClaudeCode/TNHacks27-f12 and ~/.claude/task-plans/tnhacks26-errorcheck.md.
   Phase 2 files frozen at 79f1c07 for the Phase 3 fork (f13); nothing merges without Evan.
-- **LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
+- **[SUPERSEDED 2026-10-18 12:27: LIVE is 2e74b20, https only] Earlier LIVE: e53d1ce on http AND https://207.211.181.174/** (deployed by Claude 10:20 CDT at Evan's
   word; live checks 10:21 pass; record AZ). Real published VUMC + Ascension Saint Thomas policies,
   synthetic bills; audit-4 fixes + landing-check fixes + the VUMC uninsured/underinsured condition
   (record AY) live. Rollback:
@@ -103,8 +103,10 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
   12, 13, 14. The rest is listed in its section 7.
 - HTTPS: Let's Encrypt IP certificate (lineage billscan-ip, expires
   2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
-  Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf; no redirect
-  from http (both work).
+  Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf. HTTPS ONLY since
+  2026-10-18 12:31 CDT (record BJ): bill-to-help-https-only.conf sends every http request a 308
+  to the same https URL, except /.well-known/acme-challenge/ (renewal needs it on :80).
+  Undo: sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful.
 - Deploys: Claude ran bdc76df (08:48), f6b6f05 (09:59) and e53d1ce (10:20), each at Evan's explicit request (records AV, AX, AZ); without that say-so,
   or if the auto-mode classifier refuses (record AG), Evan runs it in PowerShell 5.1:
   `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; add -Rollback to restore
@@ -167,7 +169,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BH).
 
 ```
 Project: TNHacks26 Billow (C:/ClaudeCode/TNHacks27, branch f10). Read HANDOFF.md first, then the last 3 record
-appendices (docs/Project Record - Full Chronological History.md, BE-BG). Live: 189163e on http + https://207.211.181.174/
+appendices (docs/Project Record - Full Chronological History.md, BE-BJ). Live: 2e74b20, HTTPS only (http redirects), at https://207.211.181.174/
 (Phase 1 eligibility + packet, Phase 2 Find errors, Phase 3 EOB check, Remove photo, Sources dropdown). Hacking ended
 13:00 CDT 2026-10-18; showcase 13:05, finals 15:30 - do NOT deploy during them. Hard rules: synthetic bills only; never
 imply hospital endorsement; deploy only on Evan's word (deploy.ps1 -Commit <c>, rollback -Rollback); commit only when

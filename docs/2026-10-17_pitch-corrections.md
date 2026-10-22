@@ -1,5 +1,11 @@
 # Pitch corrections - what rev2 says vs what the build does (DRAFT for Evan)
 
+> **2026-10-18 12:46 CDT - audit 5 corrections (these win over older rows below):**
+> - The 10:43 "DO NOT SAY" banner below was LIFTED at 11:20: Phase 2 and Phase 3 are live.
+> - Confirming: the person reviews the fields and ticks ONE "This is correct" box per screen; any edit unticks it (189163e). Do not say "she confirms each field".
+> - Test bills: 14 synthetic bills (bill-01..14 in spikes/synthetic-bill/answer_key.json; bills 10-14 are the fictional Cumberland General Hospital (SYNTHETIC)), not 10.
+> - The site is https only since 12:31 (http redirects). Live commit: see HANDOFF.
+
 > **2026-10-18 10:43 CDT - DO NOT SAY (Evan): no error flags, billing-error checks, "we find mistakes on
 > your bill" or dispute letters, on slides, in the demo or in judge answers, unless Phase 2 ("Find errors")
 > is live-checked on http + https by 12:40 CDT (record BB).** Until then the app checks eligibility only;

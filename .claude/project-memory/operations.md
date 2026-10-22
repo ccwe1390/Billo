@@ -107,7 +107,8 @@
   checked by Claude (record AH): D1 cc3c333 (19:30) -> HTTPS (mod_ssl,
   certbot 5.8.0 in /opt/certbot, cert lineage billscan-ip for IP
   207.211.181.174, expires 2026-10-24 15:39 GMT, no renewal timer; conf.d
-  bill-to-help-acme.conf + bill-to-help-ssl.conf; :80 unchanged) -> D2
+  bill-to-help-acme.conf + bill-to-help-ssl.conf; :80 unchanged) -> D2 [2026-10-18 12:31 CDT: :80 now
+  308-redirects to https except the ACME path; deploy/https-only-remote.sh; record BJ]
   c30be63 (19:41). Backups on the VM: ~/backup-before-cc3c333.tar (=
   c4a28f0 app), ~/backup-before-c30be63.tar (= cc3c333 app). main =
   c30be63. Live journeys pass on http and https; journal clean.
@@ -149,3 +150,8 @@
   Rollback: deploy.ps1 -Commit af1d5f6 -Rollback (restores deeebda). Served app.js = commit; 77 JS tests pass on the live file.
 - 2026-10-18 12:12 CDT - Claude deployed 189163e (one confirm box, pending wording, dashboard counters). Rollback: deploy.ps1
   -Commit 189163e -Rollback (restores af1d5f6). Live checks pass (record BH).
+- 2026-10-18 12:15 CDT - Claude deployed 02e3d18 (docs-only commits on top of 189163e; app identical). Rollback restores 189163e.
+- 2026-10-18 12:51 CDT: LIVE = 790eb38 (audit 5 fixes, record BK) on https://207.211.181.174 and https://billow.duckdns.org. A forked session's 58d8908 deploy overwrote it at 12:50; it was redeployed at 12:51 (record BL). Rollback -Commit 790eb38 -Rollback restores 2e74b20. Rule: only one session deploys (there is no deploy lock).
+- 2026-10-18 13:11 CDT: LIVE = df69369 (second QR -> /test-bills/, record BM); rollback restores 790eb38.
+- 2026-10-18 14:37 CDT: LIVE = 8cd1d09 (No Explanation of Benefits Available button, record BN); rollback restores df69369.
+- 2026-10-18 15:05 CDT: LIVE = 4531549 (real-format reader, record BP); rollback restores 8cd1d09.

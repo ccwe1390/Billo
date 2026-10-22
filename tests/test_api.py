@@ -1119,7 +1119,7 @@ assert fx["lines"]["read"] is True and fx["lines"]["confirmed"] is False
 assert fx["lines"]["total_charges_cents"] == 481240 and fx["lines"]["payments_cents"] == 0
 assert [i["amount_cents"] for i in fx["lines"]["items"]] == [264000, 138500, 41240, 37500]
 assert fx["lines"]["items"][1] == {"date": "2026-09-12", "description": "CT scan, head, without contrast",
-                                   "quantity": 1, "amount_cents": 138500}
+                                   "quantity": 1, "amount_cents": 138500, "code": None}
 assert sum(i["amount_cents"] for i in fx["lines"]["items"]) == fx["lines"]["total_charges_cents"]
 main.BillIn(**fx)                                                          # the extract output is a valid BillIn
 assert oci_client.EXTRACT_PROMPT.endswith("Use null for anything you cannot read clearly. Do not guess.")
@@ -1132,9 +1132,10 @@ nl = main.normalize_bill(dict(_raw6, line_items=[
     {"date": "09/12/2026", "description": "CT  scan,\nhead", "quantity": "1", "amount": "$1,385.00"},
     {"date": None, "description": None, "quantity": 0, "amount": "x"}, "junk"],
     total_charges="$1,585.00", payments_and_adjustments="($200.00)"))["lines"]
-assert nl == {"items": [{"date": "2026-09-12", "description": "CT scan, head", "quantity": 1, "amount_cents": 138500},
-                        {"date": None, "description": "", "quantity": None, "amount_cents": None}],
-              "total_charges_cents": 158500, "payments_cents": 20000, "confirmed": False, "read": True}, nl
+assert nl == {"items": [{"date": "2026-09-12", "description": "CT scan, head", "quantity": 1, "amount_cents": 138500, "code": None},
+                        {"date": None, "description": "", "quantity": None, "amount_cents": None, "code": None}],
+              "total_charges_cents": 158500, "payments_cents": 20000, "payment_parts": None,
+              "confirmed": False, "read": True}, nl
 for printed, want in (("($200.00)", 20000), ("-$200.00", 20000), ("$-200.00", 20000), ("-200", 20000),
                       (-200.0, 20000), ("(200.00)", 20000), ("$(200.00)", 20000), ("$200.00", 20000),
                       (0, 0), ("0.00", 0), ("abc", None), (None, None), (True, None), ("1.234", None)):
@@ -1320,6 +1321,8 @@ def pair_bill(pid):
              "lines": {"items": [dict(date=None, **it) for it in k["bill_lines"]],
                        "total_charges_cents": k["bill_total_charges_cents"], "payments_cents": k["bill_payments_cents"],
                        "confirmed": True, "read": True}}
+        if k.get("bill_payment_parts"):
+            b["lines"]["payment_parts"] = k["bill_payment_parts"]
     return b
 
 
@@ -1390,10 +1393,76 @@ assert _ne["lines"] == {"items": [{"date": "2026-09-12", "description": "A B", "
 main.EobIn(**_ne)
 assert main.normalize_eob({"service_lines": "none"})["lines"] is None
 
+# normalize_eob: code combines the printed columns; a printed value always wins over a derived one
+_nv = lambda raw: {n: f["value"] for n, f in main.normalize_eob(raw)["fields"].items()}
+assert _nv({"amount_billed": 2500, "allowed_amount": 1640})["plan_discount_cents"] == 86000
+assert _nv({"amount_billed": 2500, "allowed_amount": 1640})["allowed_cents"] == 164000
+assert _nv({"amount_billed": 2500, "allowed_amount": 1640, "plan_discount": 1640})["plan_discount_cents"] == 86000  # billed - allowed wins (eob-11 read)
+assert _nv({"amount_billed": 2500, "plan_discount": 500})["plan_discount_cents"] == 50000  # no allowed: the printed discount stands
+assert _nv({"amount_billed": 3120, "allowed_amount": 0, "plan_discount": 0})["plan_discount_cents"] == 0  # a denial is not a discount
+_led = main.normalize_bill({"line_items": [{"description": "PREVIOUS BALANCE:", "amount": 0}, {"description": "REPP MD SURG PATH LEV 4", "amount": 260},
+    {"description": "REPP MD MEDICARE ADJUSTMENT", "amount": None}, {"description": "KAMBA MD MEDICARE PAYMENT", "amount": 34.06},
+    {"description": "COMMERICAL INS PYMT", "amount": 15.26}, {"description": "ADJUSTABLE KNEE BRACE", "amount": 80}]})["lines"]["items"]
+assert [i["description"] for i in _led] == ["REPP MD SURG PATH LEV 4", "ADJUSTABLE KNEE BRACE"], _led  # ledger rows dropped, a real charge kept
+assert main._norm_date("3/20/22-3/20/22") == "2022-03-20" and main._norm_date("2026-10-02") == "2026-10-02"
+assert main._norm_date("10/02/2026 - 10/04/2026") == "2026-10-02" and main._norm_date("13/45/2026") is None
+assert _nv({"amount_billed": 1000, "allowed_amount": 1640})["plan_discount_cents"] is None      # allowed above billed: no guess
+assert _nv({"allowed_amount": 1640})["plan_discount_cents"] is None
+_pv = _nv({"deductible": 0, "copay": 100, "coinsurance": 300})
+assert _pv["patient_owes_cents"] == 40000 and _pv["deductible_cents"] == 0 and _pv["copay_cents"] == 10000, _pv
+assert _pv["coinsurance_cents"] == 30000 and _pv["not_covered_cents"] is None, _pv
+assert _nv({"deductible": 0, "copay": 100, "coinsurance": 300, "patient_owes": 250})["patient_owes_cents"] == 25000
+assert _nv({"allowed_amount": 1640})["patient_owes_cents"] is None
+assert _nv({})["patient_owes_cents"] is None
+_ne = main.normalize_eob({"insurer_name": "X", "amount_billed": 2500, "allowed_amount": 1640, "deductible": 0, "copay": 100,
+                          "coinsurance": 300, "not_covered": 50})
+for _n in ("allowed_cents", "deductible_cents", "copay_cents", "coinsurance_cents", "not_covered_cents"):
+    assert _n in _ne["fields"] and _ne["fields"][_n]["confirmed"] is False, _n
+assert _ne["fields"]["not_covered_cents"] == {"value": 5000, "confidence": None, "confirmed": False}
+assert _ne["fields"]["patient_owes_cents"]["value"] == 45000
+main.EobIn(**_ne)
+
+# bill path: separate insurance / adjustment / patient payments, a row code
+_pb = lambda **kw: main.normalize_bill(dict(_raw6, line_items=[{"description": "ED visit", "code": "99284", "amount": 100}], **kw))["lines"]
+_pl = _pb(insurance_payments=1240, adjustments=-860, patient_payments=100)
+assert _pl["payments_cents"] == 220000 and _pl["payment_parts"] == {"insurance_cents": 124000, "adjustments_cents": 86000,
+                                                                     "patient_cents": 10000}, _pl
+assert _pl["items"][0]["code"] == "99284", _pl["items"]
+_pl = _pb(insurance_payments=1240, adjustments=-860, patient_payments=100, payments_and_adjustments="$2,200.00")
+assert _pl["payments_cents"] == 220000 and _pl["payment_parts"]["adjustments_cents"] == 86000, _pl
+_pl = _pb(insurance_payments=1240, adjustments=-860, patient_payments=100, payments_and_adjustments=999)
+assert _pl["payments_cents"] == 99900, _pl                                                       # printed combined total wins
+_pl = _pb(insurance_payments="($1,240.00)")
+assert _pl["payments_cents"] == 124000 and _pl["payment_parts"] == {"insurance_cents": 124000, "adjustments_cents": None,
+                                                                     "patient_cents": None}, _pl
+_pl = _pb()
+assert _pl["payment_parts"] is None and _pl["payments_cents"] is None, _pl
+assert main.normalize_bill(dict(_raw6, line_items=[{"description": "X", "code": "A" * 30}]))["lines"]["items"][0]["code"] == "A" * 20
+assert main.normalize_bill(dict(_raw6, line_items=[{"description": "X", "code": "  "}]))["lines"]["items"][0]["code"] is None
+main.BillIn(**main.normalize_bill(dict(_raw6, line_items=[{"description": "X", "code": 99284}], insurance_payments=5)))
+
+# models: the new optional keys validate; an old payload without them still does; unknown keys are still rejected
+_bl = {"items": [{"description": "X", "amount_cents": 100, "code": "99284"}], "total_charges_cents": 100,
+       "payment_parts": {"insurance_cents": 1, "adjustments_cents": None, "patient_cents": 3}}
+assert main.LinesIn(**_bl).payment_parts.patient_cents == 3 and main.LinesIn(**_bl).items[0].code == "99284"
+assert main.LinesIn(items=[{"description": "X"}]).payment_parts is None and main.LinesIn(items=[{"description": "X"}]).items[0].code is None
+for _bad in (dict(_bl, payment_parts={"insurance_cents": -1}), dict(_bl, payment_parts={"insurance_cents": 1.5}),
+             dict(_bl, payment_parts={"other_cents": 1}), dict(_bl, items=[{"description": "X", "code": "A" * 21}])):
+    try:
+        main.LinesIn(**_bad)
+        raise AssertionError("accepted " + repr(_bad))
+    except ValidationError:
+        pass
+_eob_new = {"contract_version": 1, "fields": {n: {"value": 100, "confidence": None, "confirmed": True}
+                                              for n in ("allowed_cents", "deductible_cents", "copay_cents",
+                                                        "coinsurance_cents", "not_covered_cents")}}
+main.EobIn(**_eob_new)
+main.EobIn(contract_version=1, fields={"insurer_name": {"value": "Acme", "confidence": None, "confirmed": True}})   # old payload
+
 # /extract kind=eob (FAKE_OCI): eob-06's fields, lines read and unconfirmed, counted
 _before = main._counts["eobs_read"]
 _fe = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png"), kind="eob", date_of_service="2026-09-12"))
-assert {n: f["value"] for n, f in _fe["fields"].items()} == {n: v for n, v in PK["06"]["eob"].items() if n != "service_lines"}
+assert {n: f["value"] for n, f in _fe["fields"].items()} == {n: PK["06"]["eob"].get(n) for n in main._EOB_FIELDS}   # columns pair 06 does not print read as None
 assert all(f["confirmed"] is False for f in _fe["fields"].values())
 assert _fe["lines"]["read"] is True and _fe["lines"]["confirmed"] is False and len(_fe["lines"]["items"]) == 3
 main.EobIn(**_fe)

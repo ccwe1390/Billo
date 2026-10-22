@@ -20,7 +20,7 @@ MEDICAID_CITATION = {
     "url": "https://www.ecfr.gov/current/title-42/chapter-IV/subchapter-C/part-438/subpart-C/section-438.106",
 }
 MEDICAID_TEXT = (
-    "If you had TennCare on the date of service and this was a TennCare-covered service, a hospital "
+    "Did you have TennCare on the date of service? If this was a TennCare-covered service, a hospital "
     "that takes TennCare generally must accept what your TennCare health plan pays, plus any copay "
     "TennCare requires, as payment in full. Ask the hospital and your TennCare health plan why you "
     "were billed."

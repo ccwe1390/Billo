@@ -133,7 +133,7 @@ def real_caller():
     os.environ.pop("FAKE_OCI", None)
     os.environ.setdefault("OCI_COMPARTMENT_ID", oci.config.from_file()["tenancy"])
     os.environ.setdefault("OCI_VISION_MODEL_ID", "cohere.command-a-vision")
-    from app import oci_client
+    from app import ai_client
     from oci.generative_ai_inference import models as m
     model = os.environ["OCI_VISION_MODEL_ID"]
 
@@ -142,8 +142,8 @@ def real_caller():
             uri = "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
         parts = [m.CohereTextContentV2(text=build(date)),
                  m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri))]
-        return oci_client._chat(model, parts, json_mode=True, max_tokens=1500)
-    return call, oci_client.parse_json_object
+        return ai_client._chat(model, parts, json_mode=True, max_tokens=1500)
+    return call, ai_client.parse_json_object
 
 
 def timed(fn, *args):

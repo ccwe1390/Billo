@@ -1,21 +1,40 @@
-# Run Billow (formerly Bill to Help) locally
+# Run Billo (formerly Billo) locally
 
 Python 3 (on this laptop: `py`, 3.14).
 
 ```
 py -m pip install -r requirements.txt
-set FAKE_OCI=1
+set FAKE_AI=1
 py -m uvicorn app.main:app --port 8000
 ```
 
-Open http://127.0.0.1:8000/ . With `FAKE_OCI=1` the whole flow works with no
+Open http://127.0.0.1:8000/ . With `FAKE_AI=1` the whole flow works with no
 network and no credentials: the bill photo is "read" as the fields on
 `spikes/synthetic-bill/bill-01`, the language model echoes the English facts,
 and translations are tagged `[AR draft]` / `[ES draft]` (not real translations).
 
-PowerShell: `$env:FAKE_OCI = "1"`. Bash: `FAKE_OCI=1 py -m uvicorn ...`.
+PowerShell: `$env:FAKE_AI = "1"`. Bash: `FAKE_AI=1 py -m uvicorn ...`.
 
-## Real OCI (not FAKE)
+## Real AI with Claude (the default)
+
+Billo uses the Anthropic API (Claude) unless `AI_PROVIDER=oci`. One model reads the
+bill photo, rewrites the explanation and translates the letter, in every language.
+
+| Env var | Meaning |
+|---|---|
+| `ANTHROPIC_API_KEY` | your key from console.anthropic.com (never commit it) |
+| `BILLO_CLAUDE_MODEL` | optional; default `claude-opus-5-5` |
+| `BILLO_CLAUDE_EFFORT` | optional; default `low` |
+
+```
+set ANTHROPIC_API_KEY=sk-ant-...
+py -m uvicorn app.main:app --port 8000
+```
+
+Numbers and the hospital name are still swapped for `{n}` placeholders before
+translating and checked by the number lock after, exactly as with OCI.
+
+## Real OCI (`AI_PROVIDER=oci`, the TNHacks26 setup)
 
 Needs `~/.oci/config` (profile DEFAULT, or set `OCI_PROFILE`) and:
 
@@ -55,6 +74,7 @@ verified live on 2026-10-17 for es, fr, de, ru, ar, zh-CN, zh-TW, ko and vi
 py tests/test_numlock.py
 py tests/test_engine.py
 py tests/test_api.py
+py tests/test_claude_backend.py
 py tests/test_policy_page.py
 py tests/test_answer_key.py
 py tests/test_checks.py
@@ -63,7 +83,7 @@ py tests/test_dispute.py
 node tests/test_app_js.js
 ```
 
-Each prints ALL PASS. The tests set FAKE_OCI=1 themselves.
+Each prints ALL PASS. The tests set FAKE_AI=1 themselves (FAKE_OCI=1 still works).
 
 Privacy: nothing is written to disk (an upload over 8 MB is refused by its
 Content-Length before it is read; allowed uploads stay in memory) and request bodies are not logged;

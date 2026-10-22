@@ -37,7 +37,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BP).
 | Submission form / repo / video | **UNKNOWN** - ask organizers | - |
 | Team roster and roles | **UNCONFIRMED** (plan assumes 4) | - |
 | OCI account | Exists (tenancy root compartment); Chicago home region per kit guidance | console pastes |
-| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/bill-to-help, systemd + Apache proxy on :443 (:80 only redirects to https since 2026-10-18 12:31). SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
+| Starter kit stack / VM | Re-apply succeeded 13:15 CDT. VM 207.211.181.174, E5.Flex 1 OCPU (paid), Oracle Linux 9.8, Python 3.12 venv in /opt/billo, systemd + Apache proxy on :443 (:80 only redirects to https since 2026-10-18 12:31). SSH key at `C:\Users\daruw\.ssh\HackTN26.pem`. Auth to OCI = instance principal. | operations.md |
 | Budget alert | **UNCONFIRMED** | - |
 | Generative AI access (Command A Vision) | **WORKS FROM CODE** 2026-10-17 14:22: `cohere.command-a-vision`, bill-01 6/6, blur test passed (null at blur 3 and 5), n=1 each - OLD render only (2026-10-17); the re-rendered blur-3 bill misread the date (2026-10-18 08:49, experiments.md); blur 5 not re-run | experiments.md |
 | VUMC + Ascension policy | **REAL, VERIFIED** 2026-10-18: read from their PDFs, page-cited, re-checked by a second AI pass and against freshly downloaded PDFs (audit 4: 0 defects); live since 08:48 | record AV, audit 4 |
@@ -81,7 +81,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BP).
   Still open from audit 4: #10 global-bucket half, #12 Ascension mailing address.
 - **10:29 CDT (record BA):** 223013b committed, NOT deployed: Apply by counts from the date of service when known (feature review
   flaw 2; bill-01 now 2027-05-10). Deploy waits for the optimization + security audits (Evan).
-- **15:05 CDT: LIVE = 4531549** (real-format bills/EOBs reader + EOB optional fields + QR real-format pairs 11-12, records BO-BP; rollback -Commit 4531549 -Rollback restores 8cd1d09). Before: LIVE = 8cd1d09 (always-clickable "No Explanation of Benefits Available" button + no-summary card/letter, record BN; rollback -Commit 8cd1d09 -Rollback restores df69369). Before: LIVE = df69369 (second QR -> /test-bills/ synthetic test bills page, record BM; rollback -Commit df69369 -Rollback restores 790eb38). Before: LIVE = 790eb38 (audit 5 fixes, record BK; rollback -Commit 790eb38 -Rollback restores 2e74b20; also at https://billow.duckdns.org). Before: LIVE = 2e74b20 (8 swarm UI fixes, record BI; rollback -Commit 2e74b20 -Rollback restores 02e3d18; open: 54 untranslated keys in 26 languages, Hebrew letter "Billing Office"). Before: LIVE = 02e3d18 (same app as 189163e, redeployed at the end of the docs sync; rollback -Commit 02e3d18 -Rollback restores 189163e). Before: LIVE = 189163e (one confirm box per screen, pending wording, dashboard counters; record BH; rollback restores af1d5f6). Before: LIVE = af1d5f6 (Phase 3 review fixes, record BG; rollback -Commit af1d5f6 -Rollback restores deeebda). Presenter kit: https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX (v9). Swarm open items: record BG. Before: LIVE = deeebda (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billow rename, deployed 11:16 by Claude at Evan's word; live checks pass
+- **15:05 CDT: LIVE = 4531549** (real-format bills/EOBs reader + EOB optional fields + QR real-format pairs 11-12, records BO-BP; rollback -Commit 4531549 -Rollback restores 8cd1d09). Before: LIVE = 8cd1d09 (always-clickable "No Explanation of Benefits Available" button + no-summary card/letter, record BN; rollback -Commit 8cd1d09 -Rollback restores df69369). Before: LIVE = df69369 (second QR -> /test-bills/ synthetic test bills page, record BM; rollback -Commit df69369 -Rollback restores 790eb38). Before: LIVE = 790eb38 (audit 5 fixes, record BK; rollback -Commit 790eb38 -Rollback restores 2e74b20; also at https://billow.duckdns.org). Before: LIVE = 2e74b20 (8 swarm UI fixes, record BI; rollback -Commit 2e74b20 -Rollback restores 02e3d18; open: 54 untranslated keys in 26 languages, Hebrew letter "Billing Office"). Before: LIVE = 02e3d18 (same app as 189163e, redeployed at the end of the docs sync; rollback -Commit 02e3d18 -Rollback restores 189163e). Before: LIVE = 189163e (one confirm box per screen, pending wording, dashboard counters; record BH; rollback restores af1d5f6). Before: LIVE = af1d5f6 (Phase 3 review fixes, record BG; rollback -Commit af1d5f6 -Rollback restores deeebda). Presenter kit: https://claude.ai/artifact/MLf6h32yyfNT4o5mXRnBSX (v9). Swarm open items: record BG. Before: LIVE = deeebda (Remove photo + closed Sources dropdown on top of Phase 3; rollback -Commit deeebda -Rollback restores ba6d1f0). Before: LIVE = ba6d1f0 (Phase 3 EOB check merged + deployed 11:42, live checks pass, record BE; rollback -Commit ba6d1f0 -Rollback restores 99d4851; the f13 Opus cold review had not reported at merge). Earlier: LIVE = 99d4851 (Phase 2 "Find errors" + Billo rename, deployed 11:16 by Claude at Evan's word; live checks pass
   on http + https, record BC). Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Demo error flags ONLY on
   bills 11-14 (fictional Cumberland). Open O2 items #4-#13 (record BC). Pitch: the DO NOT SAY line is lifted (Phase 2 live by 12:40).
   KEEP until after the pitches (Evan 11:23): worktree C:/ClaudeCode/TNHacks27-f12 and ~/.claude/task-plans/tnhacks26-errorcheck.md.
@@ -103,10 +103,10 @@ snapshot; history lives in the record (Phase 0, Appendices A-BP).
   12, 13, 14. The rest is listed in its section 7.
 - HTTPS: Let's Encrypt IP certificate (lineage billscan-ip, expires
   2026-10-24 15:39 GMT, NO auto-renewal); certbot 5.8.0 in /opt/certbot;
-  Apache conf.d bill-to-help-acme.conf and bill-to-help-ssl.conf. HTTPS ONLY since
-  2026-10-18 12:31 CDT (record BJ): bill-to-help-https-only.conf sends every http request a 308
+  Apache conf.d billo-acme.conf and billo-ssl.conf. HTTPS ONLY since
+  2026-10-18 12:31 CDT (record BJ): billo-https-only.conf sends every http request a 308
   to the same https URL, except /.well-known/acme-challenge/ (renewal needs it on :80).
-  Undo: sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful.
+  Undo: sudo rm /etc/httpd/conf.d/billo-https-only.conf && sudo apachectl graceful.
 - Deploys: Claude ran bdc76df (08:48), f6b6f05 (09:59) and e53d1ce (10:20), each at Evan's explicit request (records AV, AX, AZ); without that say-so,
   or if the auto-mode classifier refuses (record AG), Evan runs it in PowerShell 5.1:
   `powershell -ExecutionPolicy Bypass -File C:\ClaudeCode\TNHacks27\deploy\deploy.ps1 -Commit <c>`; add -Rollback to restore
@@ -168,7 +168,7 @@ snapshot; history lives in the record (Phase 0, Appendices A-BP).
 ## Handoff prompt
 
 ```
-Project: TNHacks26 Billow (C:/ClaudeCode/TNHacks27, branch f10). Read HANDOFF.md first, then the last 3 record
+Project: TNHacks26 Billo (C:/ClaudeCode/TNHacks27, branch f10). Read HANDOFF.md first, then the last 3 record
 appendices (docs/Project Record - Full Chronological History.md, BE-BJ). Live: 2e74b20, HTTPS only (http redirects), at https://207.211.181.174/
 (Phase 1 eligibility + packet, Phase 2 Find errors, Phase 3 EOB check, Remove photo, Sources dropdown). Hacking ended
 13:00 CDT 2026-10-18; showcase 13:05, finals 15:30 - do NOT deploy during them. Hard rules: synthetic bills only; never

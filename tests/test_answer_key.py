@@ -1,9 +1,9 @@
 """Answer key for the engine, computed by hand from the Federal Register table (not from the engine).
-Run from repo root: FAKE_OCI=1 py tests/test_answer_key.py"""
+Run from repo root: FAKE_AI=1 py tests/test_answer_key.py"""
 import os
 import sys
 
-os.environ["FAKE_OCI"] = "1"
+os.environ["FAKE_AI"] = "1"
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 

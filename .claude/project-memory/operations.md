@@ -39,21 +39,21 @@
   delete the state JSON from Downloads (it holds the key).
   VM facts: user opc, Oracle Linux 9.8, x86_64 (so E5.Flex, paid), 2 vCPU,
   3.4 GB RAM, Python 3.9.25 stock -> installed python3.12 (3.12.15) via dnf.
-  Layout: /opt/bill-to-help (app from `git archive HEAD`, .venv,
-  env file chmod 600 with FAKE_OCI=1), systemd unit bill-to-help.service
+  Layout: /opt/billo (app from `git archive HEAD`, .venv,
+  env file chmod 600 with FAKE_OCI=1), systemd unit billo.service
   (uvicorn 127.0.0.1:8000, --no-access-log, User=opc), Apache httpd on :80
-  reverse-proxies to it (/etc/httpd/conf.d/bill-to-help.conf,
+  reverse-proxies to it (/etc/httpd/conf.d/billo.conf,
   LimitRequestBody 10 MB), SELinux httpd_can_network_connect=1. Checked from
   the laptop: / 200, /policy-cumberland.html 200, POST /extract bill-01 200.
   Redeploy = re-run the same git-archive + setup script (scratch, not in repo).
   Not live yet: VM has no OCI credentials (decision pending: instance
   principal vs copying the API key).
-- 2026-10-17 14:55 CDT - VM LIVE with real OCI. /opt/bill-to-help/env
+- 2026-10-17 14:55 CDT - VM LIVE with real OCI. /opt/billo/env
   (chmod 600): OCI_AUTH=instance_principal, OCI_COMPARTMENT_ID=<tenancy>,
   OCI_VISION_MODEL_ID=cohere.command-a-vision,
   OCI_TEXT_MODEL_ID=cohere.command-a-03-2025 (no FAKE_OCI). Redeploy used:
-  `tar --exclude=__pycache__ -cf - app | ssh ... ` into ~/bill-to-help,
-  copy app/ to /opt/bill-to-help/, `sudo systemctl restart bill-to-help`.
+  `tar --exclude=__pycache__ -cf - app | ssh ... ` into ~/billo,
+  copy app/ to /opt/billo/, `sudo systemctl restart billo`.
   Note: this shipped the working tree, not a commit - commit before the
   next deploy so the server matches git.
 - 2026-10-17 15:06 CDT - Redeployed from commit 145c8af (`git archive HEAD
@@ -107,7 +107,7 @@
   checked by Claude (record AH): D1 cc3c333 (19:30) -> HTTPS (mod_ssl,
   certbot 5.8.0 in /opt/certbot, cert lineage billscan-ip for IP
   207.211.181.174, expires 2026-10-24 15:39 GMT, no renewal timer; conf.d
-  bill-to-help-acme.conf + bill-to-help-ssl.conf; :80 unchanged) -> D2 [2026-10-18 12:31 CDT: :80 now
+  billo-acme.conf + billo-ssl.conf; :80 unchanged) -> D2 [2026-10-18 12:31 CDT: :80 now
   308-redirects to https except the ACME path; deploy/https-only-remote.sh; record BJ]
   c30be63 (19:41). Backups on the VM: ~/backup-before-cc3c333.tar (=
   c4a28f0 app), ~/backup-before-c30be63.tar (= cc3c333 app). main =
@@ -135,12 +135,12 @@
   (restores f6b6f05). Live checks 10:21 pass (record AZ). main = e53d1ce, not pushed.
 - 2026-10-18 ~10:38 CDT - Claude deployed 08265fa (Evan: "Do 1-4"). Backup ~/backup-before-08265fa.tar = the e53d1ce app.
   Rollback: `deploy.ps1 -Commit 08265fa -Rollback` (restores e53d1ce). Live checks pass (record BB).
-- 2026-10-18 ~10:35 CDT - Apache (VM only, not in the repo): /etc/httpd/conf.d/bill-to-help-perf.conf (DEFLATE for
-  html/css/js/json/svg/text, DeflateAlterETag NoChange) and `Protocols h2 http/1.1` in bill-to-help-ssl.conf (backup
-  ~/bill-to-help-ssl.conf.before-perf). Undo: delete the perf conf, copy the backup back, `sudo systemctl reload httpd`.
+- 2026-10-18 ~10:35 CDT - Apache (VM only, not in the repo): /etc/httpd/conf.d/billo-perf.conf (DEFLATE for
+  html/css/js/json/svg/text, DeflateAlterETag NoChange) and `Protocols h2 http/1.1` in billo-ssl.conf (backup
+  ~/billo-ssl.conf.before-perf). Undo: delete the perf conf, copy the backup back, `sudo systemctl reload httpd`.
 - 11:11 CDT - Phase 2 build on worktree C:/ClaudeCode/TNHacks27-f12 (branch f12); preview config f12-fake (port 8770) in
   .claude/launch.json. NOT deployed; merge + deploy only on Evan's word, 12:40 CDT hard cut (record BB).
-- 2026-10-18 11:16 CDT - Claude deployed 99d4851 (merge of f12: Phase 2 + Billow). Backup ~/backup-before-99d4851.tar = the 08265fa
+- 2026-10-18 11:16 CDT - Claude deployed 99d4851 (merge of f12: Phase 2 + Billo). Backup ~/backup-before-99d4851.tar = the 08265fa
   app. Rollback: deploy.ps1 -Commit 99d4851 -Rollback (restores 08265fa). Live checks pass (record BC).
 - 2026-10-18 11:42 CDT - Claude deployed ba6d1f0 (merge of f13, Phase 3 EOB). Backup ~/backup-before-ba6d1f0.tar = the 99d4851 app.
   Rollback: deploy.ps1 -Commit ba6d1f0 -Rollback (restores 99d4851). Live checks pass (record BE).

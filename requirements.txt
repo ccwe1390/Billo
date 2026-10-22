@@ -1,5 +1,7 @@
 # Versions tested on the laptop 2026-10-17. The VM venv's installed versions are not recorded.
+# anthropic: added 2026-10-22 for the Claude provider (AI_PROVIDER=claude, the default).
 oci==2.188.0
 fastapi==0.143.3
 uvicorn==0.54.0
 python-multipart==0.0.32
+anthropic==2.1.0

@@ -3,10 +3,10 @@
 # Every http:// request gets a 308 to the same https:// URL (308 keeps POST a POST), except the
 # Let's Encrypt HTTP-01 challenge path, which the certificate renewal still needs on :80.
 # configtest before a graceful reload; any failed check removes the file and reloads again.
-# Undo by hand: sudo rm /etc/httpd/conf.d/bill-to-help-https-only.conf && sudo apachectl graceful
+# Undo by hand: sudo rm /etc/httpd/conf.d/billo-https-only.conf && sudo apachectl graceful
 set -u
 IP=207.211.181.174
-F=/etc/httpd/conf.d/bill-to-help-https-only.conf
+F=/etc/httpd/conf.d/billo-https-only.conf
 undo() { echo "FAILED: $* - undoing"; sudo rm -f $F; sudo apachectl graceful; sleep 2; echo "http after undo: $(curl -s -o /dev/null -w '%{http_code}' -m 5 http://127.0.0.1/)"; exit 1; }
 sudo tee $F >/dev/null <<'EOF'
 # http -> https for everything but the ACME challenge (server context only covers :80; the

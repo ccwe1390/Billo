@@ -1,6 +1,6 @@
 # Third-party notices
 
-Billow ships these third-party files unchanged under app/static/. Each
+Billo ships these third-party files unchanged under app/static/. Each
 license text is in the repo next to the files.
 
 | Component | Where | License | License file |

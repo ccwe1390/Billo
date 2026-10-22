@@ -1,6 +1,6 @@
 """Plain-assert API tests: endpoint functions are called directly (no TestClient / httpx).
 
-Run: py tests/test_api.py   (FAKE_OCI=1 is set here; no network or credentials)
+Run: py tests/test_api.py   (FAKE_AI=1 is set here; no network or credentials)
 """
 import asyncio
 import io
@@ -10,7 +10,8 @@ import sys
 import time
 from types import SimpleNamespace
 
-os.environ["FAKE_OCI"] = "1"
+os.environ["FAKE_AI"] = "1"
+os.environ["AI_PROVIDER"] = "oci"  # these tests check the OCI translator labels; test_claude_backend.py covers Claude
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi import HTTPException  # noqa: E402
@@ -18,7 +19,7 @@ from pydantic import ValidationError  # noqa: E402
 from starlette.datastructures import Headers, UploadFile  # noqa: E402
 from starlette.requests import Request  # noqa: E402
 
-from app import main, numlock, oci_client  # noqa: E402
+from app import main, numlock, ai_client  # noqa: E402
 
 
 PNG_SIG = b"\x89PNG\r\n\x1a\n"
@@ -57,7 +58,7 @@ def _doc_ids(hospital_id, tax):
             if d["required_if"] == "always" or (tax and d["required_if"] == "files_tax_return")]
 
 
-# ---- /extract (FAKE_OCI): fields normalized, none confirmed
+# ---- /extract (FAKE_AI): fields normalized, none confirmed
 bill = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png")))
 F = bill["fields"]
 assert F["statement_date"]["value"] == "2026-10-01"
@@ -115,18 +116,18 @@ ex_en = main.explain(main.ResultIn(bill=B, answers=answers(language="en"), resul
 assert ex_en["text"] == ex_en["text_en"] and not ex_en["fallback_used"]
 ex_ar = main.explain(body)
 assert ex_ar["numbers_match"] and not ex_ar["fallback_used"] and ex_ar["text"]
-real_phrase = oci_client.phrase
-oci_client.phrase = lambda f, lang: f.replace("38,000", "38,500")
+real_phrase = ai_client.phrase
+ai_client.phrase = lambda f, lang: f.replace("38,000", "38,500")
 bad = main.explain(body)
 assert bad["fallback_used"] and not bad["numbers_match"] and bad["text"] == bad["text_en"]
-oci_client.phrase = lambda f, lang: (_ for _ in ()).throw(RuntimeError("down"))
+ai_client.phrase = lambda f, lang: (_ for _ in ()).throw(RuntimeError("down"))
 down = main.explain(body)
 assert down["fallback_used"] and down["text"] == down["text_en"]
-oci_client.phrase = real_phrase
+ai_client.phrase = real_phrase
 # Arabic-Indic digits for the same numbers pass the lock
-oci_client.phrase = lambda f, lang: f.translate({ord(str(i)): chr(0x0660 + i) for i in range(10)})
+ai_client.phrase = lambda f, lang: f.translate({ord(str(i)): chr(0x0660 + i) for i in range(10)})
 assert main.explain(body)["numbers_match"]
-oci_client.phrase = real_phrase
+ai_client.phrase = real_phrase
 
 # ---- /packet: json shape, html page
 pk = main.packet(body, format="json")
@@ -154,14 +155,14 @@ evil_html = main.packet(main.ResultIn(bill=evil, answers=answers(), result=res))
 assert "<script>alert(1)" not in evil_html and "&lt;script&gt;" in evil_html
 
 # translation that changes a number -> fallback to English-only
-real_tr = oci_client.translate_many
-oci_client.translate_many = lambda texts, lang, keep=(): [t.replace("4,812.40", "4,812.04") for t in texts]
+real_tr = ai_client.translate_many
+ai_client.translate_many = lambda texts, lang, keep=(): [t.replace("4,812.40", "4,812.04") for t in texts]
 fb = main.packet(body, format="json")
 assert fb["translation_check"] == {"numbers_match": False, "fallback_used": True}
 assert fb["cover_letter_translated"] == ""
-oci_client.translate_many = lambda texts, lang, keep=(): (_ for _ in ()).throw(NotImplementedError())
+ai_client.translate_many = lambda texts, lang, keep=(): (_ for _ in ()).throw(NotImplementedError())
 assert main.packet(body, format="json")["translation_check"]["fallback_used"]
-oci_client.translate_many = real_tr
+ai_client.translate_many = real_tr
 
 # ---- every non-English language (app/data/languages.json): AI explanation + letter; Hindi letter is not back-checked
 LANG_CODES = [x["code"] for x in main.LANGS.values() if x["code"] != "en"]
@@ -227,33 +228,33 @@ assert "working:" not in t_block and 't("working")' not in js     # replaced by 
 assert "aria-current" in js and "r.tiers" in js
 # ---- Command A Vision fences its JSON even in JSON mode (live run 2026-10-17)
 fenced = '```json\n{\n  "amount_due": "$4,812.40",\n  "statement_date": "10/01/2026"\n}\n```'
-assert oci_client.parse_json_object(fenced) == {"amount_due": "$4,812.40", "statement_date": "10/01/2026"}
-assert oci_client.parse_json_object('{"a": 1}') == {"a": 1}
+assert ai_client.parse_json_object(fenced) == {"amount_due": "$4,812.40", "statement_date": "10/01/2026"}
+assert ai_client.parse_json_object('{"a": 1}') == {"a": 1}
 
 # ---- numbers are shielded from machine translation ("$4,812.40" -> "$4.812,40" seen live)
-masked, nums = oci_client.protect_numbers("Amount due: $4,812.40. Account CGH-00482913. Apply by 2027-05-29.")
+masked, nums = ai_client.protect_numbers("Amount due: $4,812.40. Account CGH-00482913. Apply by 2027-05-29.")
 assert masked == "Amount due: ${0}. Account CGH-{1}. Apply by {2}.", masked
 assert nums == ["4,812.40", "00482913", "2027-05-29"]
-assert oci_client.restore_numbers("Monto: ${0}. Cuenta CGH-{1}. Antes del {2}.", nums) == \
+assert ai_client.restore_numbers("Monto: ${0}. Cuenta CGH-{1}. Antes del {2}.", nums) == \
     "Monto: $4,812.40. Cuenta CGH-00482913. Antes del 2027-05-29."
 many = " ".join(str(i) for i in range(12))
-assert oci_client.restore_numbers(oci_client.protect_numbers(many)[0], oci_client.protect_numbers(many)[1]) == many
+assert ai_client.restore_numbers(ai_client.protect_numbers(many)[0], ai_client.protect_numbers(many)[1]) == many
 
 # names are shielded too: the hospital name must not be machine-translated ("(MONOETIC)" seen live)
 hosp = "Cumberland General Hospital (SYNTHETIC)"
-masked, nums = oci_client.protect_numbers("To %s: due $4,812.40" % hosp, keep=[hosp])
+masked, nums = ai_client.protect_numbers("To %s: due $4,812.40" % hosp, keep=[hosp])
 assert masked == "To {0}: due ${1}", masked
 assert nums == [hosp, "4,812.40"], nums
-assert oci_client.restore_numbers(masked, nums) == "To %s: due $4,812.40" % hosp
-assert oci_client.protect_numbers("Due $4,812.40") == ("Due ${0}", ["4,812.40"])      # no keep: unchanged
-real_tr = oci_client.translate_many
-oci_client.translate_many = lambda texts, lang, keep=(): [t.replace("(SYNTHETIC)", "(MONOETIC)") for t in texts]
+assert ai_client.restore_numbers(masked, nums) == "To %s: due $4,812.40" % hosp
+assert ai_client.protect_numbers("Due $4,812.40") == ("Due ${0}", ["4,812.40"])      # no keep: unchanged
+real_tr = ai_client.translate_many
+ai_client.translate_many = lambda texts, lang, keep=(): [t.replace("(SYNTHETIC)", "(MONOETIC)") for t in texts]
 mangled = main.packet(body, format="json")
 assert mangled["translation_check"]["fallback_used"] is True and mangled["cover_letter_translated"] == ""
-oci_client.translate_many = lambda texts, lang, keep=(): list(texts)
+ai_client.translate_many = lambda texts, lang, keep=(): list(texts)
 intact = main.packet(body, format="json")
 assert intact["translation_check"]["fallback_used"] is False and intact["cover_letter_translated"]
-oci_client.translate_many = real_tr
+ai_client.translate_many = real_tr
 
 # packet layout: <main> landmark, letter columns stack on phones; family wording is unambiguous
 ar_html = main.packet(body).body.decode("utf-8")
@@ -274,7 +275,7 @@ assert "Content pending" not in js and "TODO-CONTENT" not in js
 assert js.count(".replaceChildren(") == 1 and "function fill(" in js
 
 # ---- B1: the model call runs off the event loop (a 0.3 s call must not stall other requests)
-real_extract = oci_client.extract_bill
+real_extract = ai_client.extract_bill
 fake_raw = real_extract(b"", "image/png")
 
 
@@ -294,13 +295,13 @@ async def concurrent_extracts():
                                 main.extract(upload(PNG_SIG + b"2", "image/png")), ticker())
 
 
-oci_client.extract_bill = slow_extract
+ai_client.extract_bill = slow_extract
 try:
     t0 = time.perf_counter()
     _a, _b, ticked = asyncio.run(concurrent_extracts())
     whole = time.perf_counter() - t0
 finally:
-    oci_client.extract_bill = real_extract
+    ai_client.extract_bill = real_extract
 assert ticked < 0.2 and whole < 0.55, (ticked, whole)
 
 # ---- B2: a not-eligible household still passes the lock in another language (locked numbers are allowed, not required)
@@ -313,7 +314,7 @@ assert ex_rich["numbers_match"] is True and ex_rich["fallback_used"] is False an
 # ---- B3: Hindi goes through number/name placeholders; a dropped placeholder fails closed
 HOSP = "X (SYNTHETIC)"
 SRC = "To X (SYNTHETIC): $4,812.40 on 2026-10-01"
-real_fake_fn, real_env, real_chat = oci_client.is_fake, oci_client._env, oci_client._chat
+real_fake_fn, real_env, real_chat = ai_client.is_fake, ai_client._env, ai_client._chat
 
 
 def prompt_text(parts):
@@ -321,23 +322,23 @@ def prompt_text(parts):
 
 
 try:
-    oci_client.is_fake = lambda: False
-    oci_client._env = lambda name: "x"
-    oci_client._chat = lambda model_id, parts, json_mode, max_tokens=600: prompt_text(parts)
-    assert oci_client.translate_genai_many([SRC], "hi", keep=[HOSP]) == [SRC]
+    ai_client.is_fake = lambda: False
+    ai_client._env = lambda name: "x"
+    ai_client._chat = lambda model_id, parts, json_mode, max_tokens=600: prompt_text(parts)
+    assert ai_client.translate_genai_many([SRC], "hi", keep=[HOSP]) == [SRC]
     lit = "Account number: {1}. Due $4,812.40 to X (SYNTHETIC)"
-    assert oci_client.translate_genai_many([lit], "hi", keep=[HOSP]) == [lit]       # literal {1} stays literal
+    assert ai_client.translate_genai_many([lit], "hi", keep=[HOSP]) == [lit]       # literal {1} stays literal
     assert main.build_packet(B, answers(language="hi"), res)["translation_check"]["fallback_used"] is False
-    oci_client._chat = lambda model_id, parts, json_mode, max_tokens=600: prompt_text(parts).replace("{0}", "")
-    assert HOSP not in oci_client.translate_genai_many([SRC], "hi", keep=[HOSP])[0]
+    ai_client._chat = lambda model_id, parts, json_mode, max_tokens=600: prompt_text(parts).replace("{0}", "")
+    assert HOSP not in ai_client.translate_genai_many([SRC], "hi", keep=[HOSP])[0]
     dropped = main.build_packet(B, answers(language="hi"), res)
     assert dropped["translation_check"] == {"numbers_match": False, "fallback_used": True}
     assert dropped["cover_letter_translated"] == ""
 finally:
-    oci_client.is_fake, oci_client._env, oci_client._chat = real_fake_fn, real_env, real_chat
+    ai_client.is_fake, ai_client._env, ai_client._chat = real_fake_fn, real_env, real_chat
 
 # ---- B4: a cut-off model reply is an error, not a short text
-real_env, real_client = oci_client._env, oci_client._genai_client
+real_env, real_client = ai_client._env, ai_client._genai_client
 
 
 def chat_reply(finish):
@@ -347,17 +348,17 @@ def chat_reply(finish):
 
 
 try:
-    oci_client._env = lambda name: "x"
-    oci_client._genai_client = lambda: chat_reply("MAX_TOKENS")
+    ai_client._env = lambda name: "x"
+    ai_client._genai_client = lambda: chat_reply("MAX_TOKENS")
     try:
-        oci_client._chat("m", [], False)
+        ai_client._chat("m", [], False)
         raise AssertionError("MAX_TOKENS accepted")
     except RuntimeError:
         pass
-    oci_client._genai_client = lambda: chat_reply("COMPLETE")
-    assert oci_client._chat("m", [], False) == "cut"
+    ai_client._genai_client = lambda: chat_reply("COMPLETE")
+    assert ai_client._chat("m", [], False) == "cut"
 finally:
-    oci_client._env, oci_client._genai_client = real_env, real_client
+    ai_client._env, ai_client._genai_client = real_env, real_client
 
 # ---- B5: a hospital with no policy gets the default result, no packet and no model call; banners follow the policy
 nopol = main.BillIn(**bill)
@@ -372,9 +373,9 @@ except HTTPException as e:
     assert e.status_code == 422 and e.detail == "No application packet: this demo has no policy for this hospital.", e.detail
 expect_http(422, main.packet, main.ResultIn(bill=nopol, answers=answers(language="en")), format="json")
 _oci_calls = []
-real_phrase, real_tr = oci_client.phrase, oci_client.translate_many
-oci_client.phrase = lambda f, lang: _oci_calls.append("phrase") or f
-oci_client.translate_many = lambda texts, lang, keep=(): _oci_calls.append("translate") or list(texts)
+real_phrase, real_tr = ai_client.phrase, ai_client.translate_many
+ai_client.phrase = lambda f, lang: _oci_calls.append("phrase") or f
+ai_client.translate_many = lambda texts, lang, keep=(): _oci_calls.append("translate") or list(texts)
 try:
     for code in ("ar", "es", "da", "en"):
         ex_np = main.explain(main.ResultIn(bill=nopol, answers=answers(language=code)))
@@ -384,7 +385,7 @@ try:
     main.explain(main.ResultIn(bill=B, answers=answers(language="es")))
     assert _oci_calls == ["phrase"], _oci_calls              # the same call for a bill that has a policy does call it
 finally:
-    oci_client.phrase, oci_client.translate_many = real_phrase, real_tr
+    ai_client.phrase, ai_client.translate_many = real_phrase, real_tr
 real_html = main.packet(body).body.decode("utf-8")
 assert "DEMO - made from a SYNTHETIC bill" in real_html and "published policy" in real_html
 assert "SYNTHETIC DEMO. Fictional hospital" not in real_html and "names a different hospital" not in real_html
@@ -503,9 +504,9 @@ assert time.perf_counter() - t0 < 0.5
 # ---- B12: placeholders for names, numbers and literal {n} come from one pass and round-trip
 lit_text = "Account number: {1}. Due $4,812.40 to X (SYNTHETIC)"
 for keep_names in (["X (SYNTHETIC)"], []):
-    masked_lit, lit_nums = oci_client.protect_numbers(lit_text, keep_names)
+    masked_lit, lit_nums = ai_client.protect_numbers(lit_text, keep_names)
     assert "4,812.40" not in masked_lit, masked_lit
-    assert oci_client.restore_numbers(masked_lit, lit_nums) == lit_text, (masked_lit, lit_nums)
+    assert ai_client.restore_numbers(masked_lit, lit_nums) == lit_text, (masked_lit, lit_nums)
 
 # ---- B13: no OpenAPI schema; security headers on every response
 assert main.app.openapi_url is None
@@ -541,21 +542,21 @@ assert engine._fmt_dollars(3800000) == main._dollars(3800000) == "38,000"
 assert engine._fmt_amount_due(481240) == main._amount_due(481240) == "4,812.40"
 
 # ---- R1: translate_genai_many runs 3 at a time, keeps order, leaves text unchanged
-_saved = (oci_client.is_fake, oci_client._env, oci_client._chat)
+_saved = (ai_client.is_fake, ai_client._env, ai_client._chat)
 try:
-    oci_client.is_fake = lambda: False
-    oci_client._env = lambda name: "x"
+    ai_client.is_fake = lambda: False
+    ai_client._env = lambda name: "x"
 
     def _slow_chat(model_id, parts, json_mode, max_tokens=600):
         time.sleep(0.3)
         return parts[0].text.split("Text:\n", 1)[1]
-    oci_client._chat = _slow_chat
+    ai_client._chat = _slow_chat
     _texts = ["one 1", "two 2", "three 3", "four 4"]
     _t0 = time.time()
-    _out = oci_client.translate_genai_many(_texts, "hi")
+    _out = ai_client.translate_genai_many(_texts, "hi")
     _dt = time.time() - _t0
 finally:
-    oci_client.is_fake, oci_client._env, oci_client._chat = _saved
+    ai_client.is_fake, ai_client._env, ai_client._chat = _saved
 assert _out == _texts, _out
 assert _dt < 0.9, _dt
 
@@ -925,19 +926,19 @@ try:
     assert main._counts["photos_read"] == 1
     main.packet(body, format="json")
     assert main._counts["packets"] == 1 and main._counts["fallbacks"] == 0
-    real_phrase = oci_client.phrase
-    oci_client.phrase = lambda f, lang: f.replace("38,000", "38,500")
+    real_phrase = ai_client.phrase
+    ai_client.phrase = lambda f, lang: f.replace("38,000", "38,500")
     try:
         main.explain(body)
     finally:
-        oci_client.phrase = real_phrase
+        ai_client.phrase = real_phrase
     assert main._counts["fallbacks"] == 1
-    real_tr = oci_client.translate_many
-    oci_client.translate_many = lambda texts, lang, keep=(): [t.replace("4,812.40", "4,812.04") for t in texts]
+    real_tr = ai_client.translate_many
+    ai_client.translate_many = lambda texts, lang, keep=(): [t.replace("4,812.40", "4,812.04") for t in texts]
     try:
         main.packet(body, format="json")
     finally:
-        oci_client.translate_many = real_tr
+        ai_client.translate_many = real_tr
     assert main._counts["packets"] == 2 and main._counts["fallbacks"] == 2, main._counts
     main.household(main.HouseholdIn(answers=_HA))
     assert main._counts["household_views"] == 1
@@ -983,9 +984,9 @@ assert rn["hospital_id"] == "vumc" and rn["hospital_matches_policy"] is False an
 _missing_bill = copy.deepcopy(bill)
 del _missing_bill["fields"]["hospital_name"]
 _oci_calls2 = []
-_real_phrase2, _real_tr2 = oci_client.phrase, oci_client.translate_many
-oci_client.phrase = lambda f, lang: _oci_calls2.append("phrase") or f
-oci_client.translate_many = lambda texts, lang, keep=(): _oci_calls2.append("translate") or list(texts)
+_real_phrase2, _real_tr2 = ai_client.phrase, ai_client.translate_many
+ai_client.phrase = lambda f, lang: _oci_calls2.append("phrase") or f
+ai_client.translate_many = lambda texts, lang, keep=(): _oci_calls2.append("translate") or list(texts)
 try:
     for label, mb in (("blank", named("")), ("whitespace", named("   ")), ("missing", main.BillIn(**_missing_bill))):
         rm = main.evaluate(main.EvaluateIn(bill=mb, answers=answers(language="es")))
@@ -1017,7 +1018,7 @@ try:
     assert _oci_calls2 == ["phrase"], _oci_calls2
     assert len(exv["text_en"].splitlines()) == 3 and "Apply by" in exv["text_en"], exv["text_en"]
 finally:
-    oci_client.phrase, oci_client.translate_many = _real_phrase2, _real_tr2
+    ai_client.phrase, ai_client.translate_many = _real_phrase2, _real_tr2
 
 # ineligible with another route: result carries it, facts say so, packet is still refused with the old message
 rich_v = answers(language="en", annual_income_cents=13200100)                    # 400% of the guideline: above VUMC's 350%
@@ -1122,8 +1123,8 @@ assert fx["lines"]["items"][1] == {"date": "2026-09-12", "description": "CT scan
                                    "quantity": 1, "amount_cents": 138500, "code": None}
 assert sum(i["amount_cents"] for i in fx["lines"]["items"]) == fx["lines"]["total_charges_cents"]
 main.BillIn(**fx)                                                          # the extract output is a valid BillIn
-assert oci_client.EXTRACT_PROMPT.endswith("Use null for anything you cannot read clearly. Do not guess.")
-assert "line_items" in oci_client.EXTRACT_PROMPT and "even when two rows are identical" in oci_client.EXTRACT_PROMPT
+assert ai_client.EXTRACT_PROMPT.endswith("Use null for anything you cannot read clearly. Do not guess.")
+assert "line_items" in ai_client.EXTRACT_PROMPT and "even when two rows are identical" in ai_client.EXTRACT_PROMPT
 
 # ---- normalize_bill: line_items, total_charges, payments_and_adjustments
 _raw6 = {"hospital_name": "X", "statement_date": "2026-10-01", "account_number": "A-1", "amount_due": "1,385.00",
@@ -1459,7 +1460,7 @@ _eob_new = {"contract_version": 1, "fields": {n: {"value": 100, "confidence": No
 main.EobIn(**_eob_new)
 main.EobIn(contract_version=1, fields={"insurer_name": {"value": "Acme", "confidence": None, "confirmed": True}})   # old payload
 
-# /extract kind=eob (FAKE_OCI): eob-06's fields, lines read and unconfirmed, counted
+# /extract kind=eob (FAKE_AI): eob-06's fields, lines read and unconfirmed, counted
 _before = main._counts["eobs_read"]
 _fe = asyncio.run(main.extract(upload(PNG_SIG + b" fake", "image/png"), kind="eob", date_of_service="2026-09-12"))
 assert {n: f["value"] for n, f in _fe["fields"].items()} == {n: PK["06"]["eob"].get(n) for n in main._EOB_FIELDS}   # columns pair 06 does not print read as None
@@ -1470,12 +1471,12 @@ assert main._counts["eobs_read"] == _before + 1 and "eobs_read" in main._STAT_KE
 
 # the model says it is not an EOB, or reads a hospital bill with the EOB prompt (V1 gate 2026-10-18: invented
 # claim_status "pending", insurer_name and claim_number null): both are a 422 and not counted
-_real_eob = oci_client.extract_eob
+_real_eob = ai_client.extract_eob
 _bill_like = {"insurer_name": None, "claim_number": None, "claim_status": "pending", "amount_billed": 4812.40,
               "patient_owes": 4812.40, "service_lines": []}
 try:
     for _raw, _name in (({"not_eob": True}, "not_eob"), (_bill_like, "bill-like")):
-        oci_client.extract_eob = lambda data, mime, dos, _r=_raw: _r
+        ai_client.extract_eob = lambda data, mime, dos, _r=_raw: _r
         try:
             asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob"))
             raise AssertionError("accepted " + _name)
@@ -1483,25 +1484,25 @@ try:
             assert e.status_code == 422 and e.detail == "This doesn't look like an insurance summary.", (_name, e.detail)
     assert main._counts["eobs_read"] == _before + 1
     # one of insurer_name / claim_number present is enough
-    oci_client.extract_eob = lambda data, mime, dos: dict(_bill_like, insurer_name="Acme Health")
+    ai_client.extract_eob = lambda data, mime, dos: dict(_bill_like, insurer_name="Acme Health")
     assert asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob"))["fields"]["insurer_name"]["value"] == "Acme Health"
     # date_of_service is passed through only as YYYY-MM-DD; a model failure is the same 502 as for a bill
     _seen = []
-    oci_client.extract_eob = lambda data, mime, dos: _seen.append(dos) or _real_eob(data, mime, dos)
+    ai_client.extract_eob = lambda data, mime, dos: _seen.append(dos) or _real_eob(data, mime, dos)
     for _dos in ("2026-09-12", "09/12/2026", None):
         asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob", date_of_service=_dos))
     assert _seen == ["2026-09-12", None, None], _seen
 
     def _boom(data, mime, dos):
         raise RuntimeError("secret detail")
-    oci_client.extract_eob = _boom
+    ai_client.extract_eob = _boom
     try:
         asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="eob"))
         raise AssertionError("model failure accepted")
     except HTTPException as e:
         assert e.status_code == 502 and "secret" not in e.detail, e.detail
 finally:
-    oci_client.extract_eob = _real_eob
+    ai_client.extract_eob = _real_eob
 try:
     asyncio.run(main.extract(upload(PNG_SIG + b" x", "image/png"), kind="xyz"))
     raise AssertionError("unknown kind accepted")

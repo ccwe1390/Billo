@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-// Restyled for Bill to Help: 48px tall, 2px border that turns solid teal on focus, dark field surface.
+// Restyled for Billo: 48px tall, 2px border that turns solid teal on focus, dark field surface.
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

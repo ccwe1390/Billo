@@ -124,8 +124,8 @@ Standing decisions (what is decided NOW). History lives in the record.
   Kurdish, Somali, Burmese, Amharic, Nepali: stated as a known gap. Decided
   by: Evan, chat 2026-10-17.
 - 2026-10-17 ~14:50 CDT - VM auth to OCI: instance principal (Evan chose A
-  over copying his API key). Dynamic group bill-to-help-vm (rule: instances
-  in the root compartment) + policy bill-to-help-vm-ai: `use
+  over copying his API key). Dynamic group billo-vm (rule: instances
+  in the root compartment) + policy billo-vm-ai: `use
   generative-ai-family` and `use ai-service-language-family` in tenancy.
   `use` proved enough for chat and batch translation (live 14:53). No
   credentials on the server. Code: OCI_AUTH=instance_principal in
@@ -146,7 +146,7 @@ Standing decisions (what is decided NOW). History lives in the record.
   Letter wording changed to "apply for financial assistance". Decided by:
   Evan (fix all six), details by Claude.
 - 2026-10-17 ~13:05 CDT (entry added 16:50 by the audit fix) - PIVOT: the Bill
-  Decoder is replaced by "Bill to Help" (bill photo -> that hospital's
+  Decoder is replaced by "Billo" (bill photo -> that hospital's
   financial assistance packet). Decided by Evan (record M; PRD CURRENT
   DIRECTION). Entries above marked SUPERSEDED belong to the Bill Decoder.
 - 2026-10-17 ~14:06 CDT (entry added 16:50) - Language tiers revised: tier 1

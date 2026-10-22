@@ -35,9 +35,9 @@ fi
 /opt/certbot/bin/certbot --help all | grep -q -- '--ip-address' || { echo "certbot has no --ip-address"; exit 1; }
 /opt/certbot/bin/certbot --help all | grep -q -- '--preferred-profile' || { echo "certbot has no --preferred-profile"; exit 1; }
 
-step "C. serve /.well-known/acme-challenge/ from Apache (loads before bill-to-help.conf)"
+step "C. serve /.well-known/acme-challenge/ from Apache (loads before billo.conf)"
 sudo mkdir -p /var/www/acme/.well-known/acme-challenge
-sudo tee $CONF/bill-to-help-acme.conf >/dev/null <<'EOF'
+sudo tee $CONF/billo-acme.conf >/dev/null <<'EOF'
 # Let's Encrypt HTTP-01 challenge files are served by Apache itself, not proxied to the app.
 ProxyPass /.well-known/acme-challenge/ !
 Alias /.well-known/acme-challenge/ /var/www/acme/.well-known/acme-challenge/
@@ -45,7 +45,7 @@ Alias /.well-known/acme-challenge/ /var/www/acme/.well-known/acme-challenge/
     Require all granted
 </Directory>
 EOF
-reload_or_undo $CONF/bill-to-help-acme.conf
+reload_or_undo $CONF/billo-acme.conf
 echo probe-ok | sudo tee /var/www/acme/.well-known/acme-challenge/probe >/dev/null
 p=$(curl -s -m 5 http://127.0.0.1/.well-known/acme-challenge/probe); sudo rm -f /var/www/acme/.well-known/acme-challenge/probe
 [ "$p" = probe-ok ] || { echo "challenge path not served (got: $p)"; exit 1; }
@@ -61,7 +61,7 @@ sudo restorecon -R /etc/letsencrypt 2>/dev/null
 sudo openssl x509 -in /etc/letsencrypt/live/$CERT/fullchain.pem -noout -subject -ext subjectAltName -enddate
 
 step "E. HTTPS site on 443 (same proxy as :80; no redirect, no HSTS)"
-sudo tee $CONF/bill-to-help-ssl.conf >/dev/null <<EOF
+sudo tee $CONF/billo-ssl.conf >/dev/null <<EOF
 # HTTPS for the same app: Apache :443 -> uvicorn 127.0.0.1:8000. Cert: certbot lineage $CERT.
 <VirtualHost *:443>
     SSLEngine on
@@ -74,8 +74,8 @@ sudo tee $CONF/bill-to-help-ssl.conf >/dev/null <<EOF
     LimitRequestBody 10485760
 </VirtualHost>
 EOF
-reload_or_undo $CONF/bill-to-help-ssl.conf
+reload_or_undo $CONF/billo-ssl.conf
 c=$(curl -s -o /dev/null -w '%{http_code}' -m 10 --connect-to $IP:443:127.0.0.1:443 https://$IP/)
 echo "https://$IP/ (certificate verified by curl): $c"
-[ "$c" = 200 ] || { echo "HTTPS check FAILED - removing the 443 site"; sudo rm -f $CONF/bill-to-help-ssl.conf; sudo apachectl graceful; http_ok; exit 1; }
+[ "$c" = 200 ] || { echo "HTTPS check FAILED - removing the 443 site"; sudo rm -f $CONF/billo-ssl.conf; sudo apachectl graceful; http_ok; exit 1; }
 echo "HTTPS DONE"

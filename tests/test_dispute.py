@@ -1,10 +1,11 @@
-"""Plain-assert tests for app/dispute.py. Run from repo root: FAKE_OCI=1 py tests/test_dispute.py"""
+"""Plain-assert tests for app/dispute.py. Run from repo root: FAKE_AI=1 py tests/test_dispute.py"""
 import copy
 import json
 import os
 import sys
 
-os.environ["FAKE_OCI"] = "1"
+os.environ["FAKE_AI"] = "1"
+os.environ["AI_PROVIDER"] = "oci"  # these tests check the OCI translator labels; test_claude_backend.py covers Claude
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 
@@ -72,12 +73,12 @@ def test_hindi_uses_command_a():
 
 
 def test_dropped_number_falls_back_to_english():
-    orig = dispute.oci_client.translate_many
-    dispute.oci_client.translate_many = lambda texts, lang, keep=(): [t.replace("1,385.00", "") for t in texts]
+    orig = dispute.ai_client.translate_many
+    dispute.ai_client.translate_many = lambda texts, lang, keep=(): [t.replace("1,385.00", "") for t in texts]
     try:
         _, _, r = make("ar")
     finally:
-        dispute.oci_client.translate_many = orig
+        dispute.ai_client.translate_many = orig
     assert r["letter_translated"] is None
     assert r["translation_check"] == {"numbers_match": False, "fallback_used": True}
     assert "To the Billing Office" in r["letter_en"]
@@ -85,26 +86,26 @@ def test_dropped_number_falls_back_to_english():
 
 
 def test_dropped_description_falls_back():
-    orig = dispute.oci_client.translate_many
-    dispute.oci_client.translate_many = lambda texts, lang, keep=(): [
+    orig = dispute.ai_client.translate_many
+    dispute.ai_client.translate_many = lambda texts, lang, keep=(): [
         t.replace("CT scan, head, without contrast", "X") for t in texts]
     try:
         _, _, r = make("ar")
     finally:
-        dispute.oci_client.translate_many = orig
+        dispute.ai_client.translate_many = orig
     assert r["translation_check"]["fallback_used"] is True and r["letter_translated"] is None
 
 
 def test_translator_error_falls_back():
-    orig = dispute.oci_client.translate_many
+    orig = dispute.ai_client.translate_many
 
     def boom(*a, **k):
         raise RuntimeError("down")
-    dispute.oci_client.translate_many = boom
+    dispute.ai_client.translate_many = boom
     try:
         _, _, r = make("es")
     finally:
-        dispute.oci_client.translate_many = orig
+        dispute.ai_client.translate_many = orig
     assert r["letter_translated"] is None
     assert r["translation_check"] == {"numbers_match": False, "fallback_used": True}
 
@@ -165,12 +166,12 @@ def make_ins(lang="en", flags=None, **over):
 
 
 def with_translator(fn):
-    orig = dispute.oci_client.translate_many
-    dispute.oci_client.translate_many = fn
+    orig = dispute.ai_client.translate_many
+    dispute.ai_client.translate_many = fn
     try:
         return make_ins("ar")
     finally:
-        dispute.oci_client.translate_many = orig
+        dispute.ai_client.translate_many = orig
 
 
 def test_insurer_letter_full_text():

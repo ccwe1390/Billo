@@ -1,5 +1,5 @@
 "use strict";
-// Billow demo dashboard: renders GET /stats with textContent only (no HTML injection path).
+// Billo demo dashboard: renders GET /stats with textContent only (no HTML injection path).
 
 var COUNT_ROWS = [
   ["photos_read", "Photos read"],

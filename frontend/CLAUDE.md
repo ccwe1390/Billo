@@ -5,7 +5,7 @@ to match them; the earlier "bill + EOB error checker" version (`/audit`, rules R
 
 ## Project
 Hackathon project for Oracle Hackathons International, track #2 "Health Access, Equity & Experience" (TNHacks26).
-"Bill to Help" (placeholder name): a photo of a Nashville hospital bill becomes that hospital's financial assistance
+"Billo" (placeholder name): a photo of a Nashville hospital bill becomes that hospital's financial assistance
 packet: eligibility estimate against the hospital's own published policy (every rule cited), pre-filled application
 fields, document checklist, deadline and cover letter, explained in the family's language, for the family member
 helping a parent. **The AI reads and phrases; a rules engine decides; the family submits; the hospital decides.**
@@ -13,7 +13,7 @@ helping a parent. **The AI reads and phrases; a rules engine decides; the family
 ## Architecture
 - **Backend:** Python FastAPI (repo root: `app/`). It owns ALL OCI calls (Command A Vision reads the bill, Command A
   phrases, OCI Language translates) and the deterministic rules engine. Run locally in fake mode:
-  `$env:FAKE_OCI = "1"; py -m uvicorn app.main:app --port 8000` from the repo root (see `../README_RUN.md`).
+  `$env:FAKE_AI = "1"; py -m uvicorn app.main:app --port 8000` from the repo root (see `../README_RUN.md`).
 - **Frontend (this folder):** Vite + React + TypeScript, Tailwind v4 + shadcn/ui. Owner: Dipayan. Branch: `feature/frontend`.
 - **Reference implementation:** `../app/static/app.js` already does all five screens in plain JS. Port its behavior
   (field confirmation, required fields, language tiers, RTL, citations, fallback notes); don't reinvent it.
@@ -29,7 +29,7 @@ helping a parent. **The AI reads and phrases; a rules engine decides; the family
   Radix `Direction.Provider`, teal theme (contrast notes in src/index.css), Atkinson Hyperlegible + IBM Plex
   Arabic/Devanagari bundled from npm, 48px buttons. UI strings: `src/i18n/strings.ts` is GENERATED from the `T`
   table in `app/static/app.js`; edit there, then regenerate, so both UIs stay identical.
-- Run: backend `$env:FAKE_OCI = "1"; py -m uvicorn app.main:app --port 8000` (repo root), then `npm run dev` here.
+- Run: backend `$env:FAKE_AI = "1"; py -m uvicorn app.main:app --port 8000` (repo root), then `npm run dev` here.
 - Not done: serving `dist/` from FastAPI on the VM (team decision: React vs Paper Trail); browser check in ar/zh.
 - Oxlint `only-export-components` warnings in `src/components/ui/*` are expected (generated files); leave them.
 - Windows + PowerShell. Run npm commands from inside `frontend/`.

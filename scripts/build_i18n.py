@@ -7,7 +7,7 @@ inline in app.js (en, es, ar, zh-CN, zh-TW). Hindi goes through Command A (OCI L
 no Hindi); every other code through OCI Language.
 
 Placeholders like {pct} must survive translation: each is swapped for {0}, {1}... (which
-oci_client already protects), restored after, and checked. A string whose placeholders do
+ai_client already protects), restored after, and checked. A string whose placeholders do
 not come back exactly is left out, so the app shows English for that key; the script prints
 how many were left out per language. Brand and marker words are protected the same way.
 """
@@ -19,14 +19,16 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 os.environ.pop("FAKE_OCI", None)
+os.environ.pop("FAKE_AI", None)
+os.environ["AI_PROVIDER"] = "oci"  # the i18n files were built with OCI Language
 import oci  # noqa: E402
 
 os.environ.setdefault("OCI_COMPARTMENT_ID", oci.config.from_file()["tenancy"])
 os.environ.setdefault("OCI_TEXT_MODEL_ID", "cohere.command-a-03-2025")
-from app import oci_client  # noqa: E402
+from app import ai_client  # noqa: E402
 
 INLINE = {"en", "es", "ar", "zh-CN", "zh-TW"}
-KEEP = ["SYNTHETIC DEMO", "SYNTHETIC", "Billow", "PNG", "JPEG"]
+KEEP = ["SYNTHETIC DEMO", "SYNTHETIC", "Billo", "PNG", "JPEG"]
 NAMED = re.compile(r"\{([A-Za-z_]\w*)\}")
 BATCH = 20  # documents per OCI Language call
 # Machine translations whose meaning flipped when translated back to English (OCI Language,
@@ -76,9 +78,9 @@ def translate(code, texts):
     for i in range(0, len(texts), BATCH):
         chunk = texts[i:i + BATCH]
         if code == "hi":
-            out += oci_client.translate_genai_many(chunk, code, keep=KEEP)
+            out += ai_client.translate_genai_many(chunk, code, keep=KEEP)
         else:
-            out += oci_client.translate_many(chunk, code, keep=KEEP)
+            out += ai_client.translate_many(chunk, code, keep=KEEP)
     return out
 
 

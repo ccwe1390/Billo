@@ -1,4 +1,4 @@
-"""Billow - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
+"""Billo - FastAPI app. Stateless: nothing is written to disk, no request bodies are logged.
 
 Endpoints (shapes in docs/contracts.md): POST /extract, /evaluate, /explain, /packet, /household, /check,
 /dispute; GET /stats; static UI at /.
@@ -25,9 +25,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.formparsers import MultiPartParser
 
-from app import checks, dispute, eob_checks, numlock, oci_client
+from app import checks, dispute, eob_checks, numlock, ai_client
 
-log = logging.getLogger("bill_to_help")
+log = logging.getLogger("billo")
 
 CONTRACT_VERSION = 1
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -46,7 +46,7 @@ NOTICE_EN = "This is a draft you choose to send. The hospital makes the final de
 with open(LANGUAGES_PATH, encoding="utf-8") as _f:
     LANGS = {x["code"]: x for x in json.load(_f)}  # the one language list (app/data/languages.json)
 
-app = FastAPI(title="Billow", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="Billo", docs_url=None, redoc_url=None, openapi_url=None)
 
 
 @app.exception_handler(RequestValidationError)
@@ -607,7 +607,7 @@ async def extract(file: UploadFile, kind: Annotated[str, Form()] = "bill",
     if kind == "eob":
         dos = date_of_service if date_of_service and re.fullmatch(r"\d{4}-\d{2}-\d{2}", date_of_service) else None
         try:
-            raw = await asyncio.to_thread(oci_client.extract_eob, data, mime, dos)
+            raw = await asyncio.to_thread(ai_client.extract_eob, data, mime, dos)
         except Exception as e:  # no detail echoed: it could contain request content
             log.warning("photo reading failed: %s", type(e).__name__)
             raise HTTPException(502, "Photo reading is unavailable. Enter the fields by hand.")
@@ -621,7 +621,7 @@ async def extract(file: UploadFile, kind: Annotated[str, Form()] = "bill",
         _count("eobs_read")
         return out
     try:
-        raw = await asyncio.to_thread(oci_client.extract_bill, data, mime)
+        raw = await asyncio.to_thread(ai_client.extract_bill, data, mime)
     except Exception as e:  # no detail echoed: it could contain request content
         log.warning("photo reading failed: %s", type(e).__name__)
         raise HTTPException(502, "Photo reading is unavailable. Enter the fields by hand.")
@@ -717,9 +717,9 @@ def explain(body: ResultIn):
     required = numlock.extract_numbers(facts)  # the translation must show these; locked numbers may also appear
     try:
         if LANGS[lang]["explain"] == "oci_language":
-            text = oci_client.translate_many([facts], lang)[0]
+            text = ai_client.translate_many([facts], lang)[0]
         else:
-            text = oci_client.phrase(facts, lang)
+            text = ai_client.phrase(facts, lang)
         ok, _missing, _unexpected = numlock.check(text, required, allowed=result["locked_numbers"])
     except Exception as e:
         log.warning("explanation failed: %s", type(e).__name__)
@@ -799,17 +799,17 @@ def build_packet(bill, answers, result):
         hospital = _val(bill, "hospital_name")
         keep = [hospital] if isinstance(hospital, str) and hospital else []
         try:
-            if lang == "hi":  # OCI Language has no Hindi: Command A
-                translated = oci_client.translate_genai_many(sources, "hi", keep=keep)
+            if lang == "hi":  # OCI Language has no Hindi: a language model
+                translated = ai_client.translate_genai_many(sources, "hi", keep=keep)
             else:
-                translated = oci_client.translate_many(sources, lang, keep=keep)
+                translated = ai_client.translate_many(sources, lang, keep=keep)
         except Exception as e:
             log.warning("translation failed: %s", type(e).__name__)
             translated = None
         if translated is None:
             check = {"numbers_match": False, "fallback_used": True}
         else:
-            check["translator"] = "command_a" if lang == "hi" else "oci_language"
+            check["translator"] = ai_client.translator_name(lang)
             for i, (src, tr) in enumerate(zip(sources, translated)):
                 ok, _m, _u = numlock.check(tr, numlock.extract_numbers(src))
                 if not ok or any(k in src and k not in tr for k in keep):

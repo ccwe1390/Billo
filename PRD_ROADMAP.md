@@ -228,7 +228,7 @@ next. **Commits: only when Evan asks; never push without his instruction**
 
 ---
 
-## CURRENT DIRECTION (forked 2026-10-17 ~13:05 CDT): Bill to Help - bill photo to financial assistance packet
+## CURRENT DIRECTION (forked 2026-10-17 ~13:05 CDT): Billo - bill photo to financial assistance packet
 
 **Why forked:** the research brief
 (`docs/research/2026-10-17_bill-decoder-crowding.md`) found the bill/EOB error

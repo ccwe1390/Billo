@@ -11,11 +11,11 @@ test -f ~/backup-before-$C.tar || { echo "FAILED: ~/backup-before-$C.tar is not 
 rm -rf ~/rollback-stage-$C && mkdir ~/rollback-stage-$C
 tar -xf ~/backup-before-$C.tar -C ~/rollback-stage-$C
 test -d ~/rollback-stage-$C/app
-rm -rf /opt/bill-to-help/app.rolledback
-if [ -d /opt/bill-to-help/app ]; then mv /opt/bill-to-help/app /opt/bill-to-help/app.rolledback; fi
-mv ~/rollback-stage-$C/app /opt/bill-to-help/app
-sudo systemctl restart bill-to-help
+rm -rf /opt/billo/app.rolledback
+if [ -d /opt/billo/app ]; then mv /opt/billo/app /opt/billo/app.rolledback; fi
+mv ~/rollback-stage-$C/app /opt/billo/app
+sudo systemctl restart billo
 for i in 1 2 3 4 5 6 7 8 9 10; do curl -fsS -o /dev/null http://127.0.0.1:8000/stats && break; sleep 1; done
-systemctl is-active --quiet bill-to-help || { echo "FAILED: service not active after rollback"; exit 1; }
+systemctl is-active --quiet billo || { echo "FAILED: service not active after rollback"; exit 1; }
 curl -fsS -o /dev/null http://127.0.0.1:8000/stats || { echo "FAILED: /stats does not answer after rollback"; exit 1; }
 echo "ROLLED BACK (restored backup-before-$C)"

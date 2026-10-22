@@ -1,6 +1,10 @@
-"""All OCI calls live here. FAKE_OCI=1 returns fixed data with no network or credentials.
+"""All AI calls live here. FAKE_AI=1 (or the older FAKE_OCI=1) returns fixed data with no
+network or credentials.
 
-Config (env): OCI_COMPARTMENT_ID, OCI_VISION_MODEL_ID, OCI_TEXT_MODEL_ID,
+AI_PROVIDER picks the service: "claude" (default; Anthropic API, see app/claude_backend.py)
+or "oci" (Oracle Cloud: Command A Vision, Command A and OCI Language, as at TNHacks26).
+
+OCI config (env): OCI_COMPARTMENT_ID, OCI_VISION_MODEL_ID, OCI_TEXT_MODEL_ID,
 OCI_AUTH (instance_principal on the OCI VM; otherwise ~/.oci/config),
 OCI_PROFILE (default DEFAULT), OCI_LANGUAGE_ENDPOINT (optional override).
 Nothing here writes to disk or logs request/response bodies.
@@ -37,7 +41,18 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "lang
 
 
 def is_fake():
-    return os.environ.get("FAKE_OCI") == "1"
+    return os.environ.get("FAKE_AI") == "1" or os.environ.get("FAKE_OCI") == "1"
+
+
+def provider():
+    return os.environ.get("AI_PROVIDER", "claude").strip().lower()
+
+
+def translator_name(lang):
+    """Which translator a packet's translation_check reports for `lang`."""
+    if provider() == "claude":
+        return "claude"
+    return "command_a" if lang == "hi" else "oci_language"
 
 
 def _env(name):
@@ -87,6 +102,20 @@ def _chat(model_id, content_parts, json_mode, max_tokens=600):
     return "".join(getattr(p, "text", "") or "" for p in parts)
 
 
+def _ask(prompt, image=None, json_mode=False, max_tokens=600):
+    """One prompt (plus an optional (bytes, mime) image) -> the reply text, on the chosen provider."""
+    if provider() == "claude":
+        from app import claude_backend
+        return claude_backend.ask(prompt, image=image, max_tokens=max_tokens)
+    from oci.generative_ai_inference import models as m
+    parts = [m.CohereTextContentV2(text=prompt)]
+    if image is not None:
+        uri = "data:%s;base64,%s" % (image[1], base64.b64encode(image[0]).decode("ascii"))
+        parts.append(m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)))
+    model_id = _env("OCI_VISION_MODEL_ID" if image is not None else "OCI_TEXT_MODEL_ID")
+    return _chat(model_id, parts, json_mode=json_mode, max_tokens=max_tokens)
+
+
 def parse_json_object(text):
     """Model text -> JSON. Command A Vision wraps its JSON in a ```json fence even in
     JSON mode (seen live 2026-10-17), so fall back to the outermost {...}."""
@@ -123,12 +152,8 @@ def extract_bill(image_bytes, mime):
             "total_charges": 4812.40,
             "payments_and_adjustments": 0.00,
         }
-    from oci.generative_ai_inference import models as m
-    uri = "data:%s;base64,%s" % (mime, base64.b64encode(image_bytes).decode("ascii"))
-    text = _chat(_env("OCI_VISION_MODEL_ID"), [
-        m.CohereTextContentV2(text=EXTRACT_PROMPT),
-        m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)),
-    ], json_mode=True, max_tokens=1500)  # the line items need more room than the six fields did
+    text = _ask(EXTRACT_PROMPT, image=(image_bytes, mime), json_mode=True,
+                max_tokens=1500)  # the line items need more room than the six fields did
     data = parse_json_object(text)
     if not isinstance(data, dict):
         raise ValueError("model did not return a JSON object")
@@ -158,12 +183,7 @@ def extract_eob(image_bytes, mime, date_of_service):
                 {"date": "09/12/2026", "description": "COMPREHENSIVE METABOLIC PANEL", "amount_billed": 412.40, "patient_owes": 0},
             ],
         }
-    from oci.generative_ai_inference import models as m
-    uri = "data:%s;base64,%s" % (mime, base64.b64encode(image_bytes).decode("ascii"))
-    text = _chat(_env("OCI_VISION_MODEL_ID"), [
-        m.CohereTextContentV2(text=eob_prompt.build(date_of_service)),
-        m.CohereImageContentV2(image_url=m.CohereImageUrlV2(url=uri)),
-    ], json_mode=True, max_tokens=1500)
+    text = _ask(eob_prompt.build(date_of_service), image=(image_bytes, mime), json_mode=True, max_tokens=1500)
     data = parse_json_object(text)
     if not isinstance(data, dict):
         raise ValueError("model did not return a JSON object")
@@ -171,13 +191,12 @@ def extract_eob(image_bytes, mime, date_of_service):
 
 
 def phrase(facts_en, language):
-    """Rewrite the engine's English facts in `language` (Command A, text only).
+    """Rewrite the engine's English facts in `language` (Claude or Command A, text only).
 
     The caller number-checks the result and falls back to a template on mismatch.
     """
     if is_fake():
         return facts_en  # English text echoing the numbers
-    from oci.generative_ai_inference import models as m
     prompt = (
         "Rewrite the facts below in %s, in simple everyday words, as the same number of lines. "
         "Write every date exactly in YYYY-MM-DD form. Copy every number, percent and dollar "
@@ -185,8 +204,7 @@ def phrase(facts_en, language):
         "addresses. Do not add, remove or change any fact. Do not add advice. "
         "Output only the rewritten lines.\n\nFacts:\n%s"
         % (LANGUAGE_NAMES[language], facts_en))
-    return _chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False,
-                 max_tokens=1000).strip()
+    return _ask(prompt, max_tokens=1000).strip()
 
 
 def protect_numbers(text, keep=()):
@@ -215,7 +233,8 @@ def restore_numbers(text, nums):
 
 
 def translate_many(texts, target_lang, keep=()):
-    """Translate English texts with OCI Language. Returns a list in the same order.
+    """Translate English texts with OCI Language (Claude when AI_PROVIDER=claude). Returns a list
+    in the same order.
 
     Numbers are swapped for {0}, {1}... before translating and put back after:
     live on 2026-10-17 OCI Language turned "$4,812.40" into "$4.812,40" (es), and
@@ -225,6 +244,8 @@ def translate_many(texts, target_lang, keep=()):
     """
     if is_fake():
         return ["[%s draft] %s" % (target_lang.upper(), t) for t in texts]
+    if provider() == "claude":  # one model for every language, same placeholders and checks
+        return translate_genai_many(texts, target_lang, keep=keep)
     from oci.ai_language import AIServiceLanguageClient
     from oci.ai_language import models as m
     import oci
@@ -246,16 +267,16 @@ def translate_many(texts, target_lang, keep=()):
 
 
 def translate_genai_many(texts, target_lang, keep=()):
-    """Translate English texts with Command A only. Returns a list in the same order.
+    """Translate English texts with a language model (Claude, or Command A on OCI). Returns a list
+    in the same order.
 
-    Used where OCI Language has no support (Hindi). Numbers and `keep` strings are
+    On OCI, used where OCI Language has no support (Hindi). Numbers and `keep` strings are
     masked as {i} placeholders and restored after, as in translate_many; the caller
     checks that they survived.
     """
     if is_fake():
         return ["[%s draft] %s" % (target_lang.upper(), t) for t in texts]
     from concurrent.futures import ThreadPoolExecutor
-    from oci.generative_ai_inference import models as m
 
     def one(text):
         masked, nums = protect_numbers(text, keep)
@@ -264,8 +285,7 @@ def translate_genai_many(texts, target_lang, keep=()):
             "placeholder exactly as written, braces included, and do not translate or remove them. "
             "Keep the line breaks. Output only the translation.\n\nText:\n%s"
             % (LANGUAGE_NAMES[target_lang], masked))
-        reply = _chat(_env("OCI_TEXT_MODEL_ID"), [m.CohereTextContentV2(text=prompt)], json_mode=False,
-                      max_tokens=2000).strip()
+        reply = _ask(prompt, max_tokens=2000).strip()
         return restore_numbers(reply, nums) if text.strip() else text
 
     # One long letter dominated the time (19 s live, 2026-10-17), so each text is split into its

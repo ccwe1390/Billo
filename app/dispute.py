@@ -15,7 +15,7 @@ import logging
 import os
 from datetime import date
 
-from app import numlock, oci_client
+from app import numlock, ai_client
 
 log = logging.getLogger("billscan")
 
@@ -115,10 +115,10 @@ def _translate_one(src, lang, keep):
     or the number lock / kept names did not survive."""
     # shortcut: duplicated from build_packet; merge into one helper after the hackathon
     try:
-        if lang == "hi":  # OCI Language has no Hindi: Command A
-            translated = oci_client.translate_genai_many([src], "hi", keep=keep)
+        if lang == "hi":  # OCI Language has no Hindi: a language model
+            translated = ai_client.translate_genai_many([src], "hi", keep=keep)
         else:
-            translated = oci_client.translate_many([src], lang, keep=keep)
+            translated = ai_client.translate_many([src], lang, keep=keep)
     except Exception as e:
         log.warning("translation failed: %s", type(e).__name__)
         return None
@@ -148,7 +148,7 @@ def build(bill, answers, check_result, today=None):
             ok = ok and il_tr is not None
             il_tr = il_tr or ""
         if ok:
-            check["translator"] = "command_a" if lang == "hi" else "oci_language"
+            check["translator"] = ai_client.translator_name(lang)
         else:
             check = {"numbers_match": False, "fallback_used": True}
         letter_tr = letter_tr or None

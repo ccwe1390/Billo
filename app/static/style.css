@@ -1,4 +1,4 @@
-/* Billow design system - adapted from Dipayan's feature/frontend (PR #1) tokens; light theme derived 2026-10-17.
+/* Billo design system - adapted from Dipayan's feature/frontend (PR #1) tokens; light theme derived 2026-10-17.
    Rules that hold everywhere: logical properties only (the page mirrors in Arabic); weights 400 and 700 only;
    every control is at least 3rem tall; every text pair is >= 4.5:1 and every control edge >= 3:1 in both themes.
    Theme: tokens on :root are the light theme; dark follows the phone (prefers-color-scheme) unless
@@ -31,7 +31,7 @@
   --icon-filter: none;
   --icon-on-primary: invert(1);
 
-  --font: 'Billow', system-ui, 'Segoe UI', sans-serif;
+  --font: 'Billo', system-ui, 'Segoe UI', sans-serif;
   --lh: 1.6;
   --gutter: 1rem;
   --radius: .625rem;

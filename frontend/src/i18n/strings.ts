@@ -2,7 +2,7 @@
 // translator (TODO-REVIEW there). Edit there first, then regenerate, so both UIs stay identical.
 export const T = {
  "app_title": {
-  "en": "Bill to Help",
+  "en": "Billo",
   "es": "Factura a Ayuda",
   "ar": "من الفاتورة إلى المساعدة",
   "zh-CN": "从账单到帮助",
